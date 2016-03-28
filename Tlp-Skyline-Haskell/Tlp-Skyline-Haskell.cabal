@@ -1,9 +1,9 @@
-name:              pec
+name: Tlp-Skyline-Haskell
 version:           1.0
 Build-Type:        Simple
 cabal-version:     >= 1.2
 
 executable pec
-  main-is:         Main.hs
+  main-is:         Skyline.hs
   hs-source-dirs:  src
   build-depends:   base
