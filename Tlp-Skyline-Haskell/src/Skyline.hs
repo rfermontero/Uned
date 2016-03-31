@@ -1,9 +1,5 @@
 module Skyline where
 
-import Data.Ord
-import Data.List
-import Data.Monoid
-
 -- Cabecera del programa Skyline.hs
 -- Práctica de Teoría de los Lenguajes de Programación
 -- Curso 2015-2016
