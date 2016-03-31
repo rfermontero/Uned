@@ -1,5 +1,8 @@
-
 module Skyline where
+
+import Data.Ord
+import Data.List
+import Data.Monoid
 
 -- Cabecera del programa Skyline.hs
 -- Práctica de Teoría de los Lenguajes de Programación
@@ -33,3 +36,37 @@ combina ((ii, ia):ri,(di, da):rd) = subcombina((ii, ia):ri,0) ((di, da):rd,0) 0
                        | ii > di  && uaa == max ih da       =                    subcombina((ii, ia):ri, ih) (rd, da) uaa
           subcombina ([], _) (rd, _) uaa                    = rd
           subcombina (ri, _) ([], _) uaa                    = ri
+
+dibujaSkyline :: [(Int, Int)] -> IO ()
+dibujaSkyline [x] = putStr ""
+dibujaSkyline x = putStr (dibuja (getAlturas x))
+    where getAlturas [] = []
+          getAlturas xs = llenaPares (0,0) xs
+
+          llenaPares _ [] = []
+          llenaPares (a,b) ((c,d):ys) | a < c = (a,b)     : llenaPares (a+1,b) ((c,d):ys)
+                                      | otherwise = (c,d) : llenaPares (c+1,d) ys
+
+          maxAltura [] _ = 0
+          maxAltura ((x, y):[]) max
+            | max > y = max
+            | otherwise = y
+          maxAltura ((x, y):ri) max
+            | max > y = maxAltura ri max
+            | otherwise = maxAltura ri y
+
+          dibuja x = dibujaAltura x (maxAltura x 0) x
+          dibujaAltura [] _ _= ""
+          dibujaAltura ((x, y):[]) aa orig
+            | aa == 0 = dibujaBase ++ "\n"
+            | otherwise = dibujaCoordenada y aa ++ "\n" ++ dibujaAltura orig (aa-1) orig
+          dibujaAltura ((x, y):xs) aa orig
+            | aa == 0 = dibujaBase ++ dibujaAltura xs aa orig
+            | otherwise = dibujaCoordenada y aa ++ dibujaAltura xs aa orig
+          dibujaCoordenada y aa
+            | y >= aa = "*"
+            | otherwise = " "
+          dibujaBase = "_"
+
+
+
