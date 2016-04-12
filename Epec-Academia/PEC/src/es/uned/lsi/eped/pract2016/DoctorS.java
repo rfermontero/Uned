@@ -10,27 +10,17 @@ public class DoctorS implements DoctorIF {
 
     private CollectionIF<DoctorIF> studients;
 
-    private int id; /* Identificador unívoco del Doctor */
+    private int id;
     private DoctorIF supervisor;
-    private AcademiaS academia; /* Academia a la que pertenece el Doctor */
 
     public DoctorS(int id) {
-        this(new Set<DoctorIF>(), id);
+        this(new Set<>(), id);
     }
 
     public DoctorS(CollectionIF<DoctorIF> studients, int id) {
         this.studients = studients;
         this.id = id;
-        this.supervisor = null;
         setSupervisors();
-    }
-
-    private void setSupervisors() {
-        IteratorIF<DoctorIF> it = this.studients.iterator();
-        while (it.hasNext()) {
-            DoctorS studient = (DoctorS) it.getNext();
-            studient.setSupervisor(this);
-        }
     }
 
     public DoctorS(DoctorIF supervisor, int id) {
@@ -39,25 +29,8 @@ public class DoctorS implements DoctorIF {
         this.id = id;
     }
 
-    public int getId() {
-        return id;
-    }
-    /**
-     * Consulta el director de Tesis del doctor
-     *
-     * @returns el Doctor que fue su director de Tesis
-     * null en caso de que sea el fundador de la Academia
-     */
     public DoctorIF getSupervisor() {
         return supervisor;
-    }
-
-    void setSupervisor(DoctorIF supervisor) {
-        this.supervisor = supervisor;
-    }
-
-    void addStudent(DoctorIF student) {
-        studients = new Set<>(student).union((SetIF<DoctorIF>) studients);
     }
 
     @Override
@@ -106,7 +79,7 @@ public class DoctorS implements DoctorIF {
         SetIF<DoctorIF> siblings = new Set<>();
         if (supervisor != null) {
             siblings = siblings.union((SetIF<DoctorIF>) supervisor.getStudents());
-            siblings = siblings.difference(new Set<DoctorIF>(this));
+            siblings = siblings.difference(new Set<>(this));
         }
         return siblings;
     }
@@ -131,6 +104,28 @@ public class DoctorS implements DoctorIF {
 
     @Override
     public int hashCode() {
+        return id;
+    }
+
+
+
+    private void setSupervisors() {
+        IteratorIF<DoctorIF> it = this.studients.iterator();
+        while (it.hasNext()) {
+            DoctorS studient = (DoctorS) it.getNext();
+            studient.setSupervisor(this);
+        }
+    }
+
+    void setSupervisor(DoctorIF supervisor) {
+        this.supervisor = supervisor;
+    }
+
+    void addStudent(DoctorIF student) {
+        studients = new Set<>(student).union((SetIF<DoctorIF>) studients);
+    }
+
+    int getId() {
         return id;
     }
 }
