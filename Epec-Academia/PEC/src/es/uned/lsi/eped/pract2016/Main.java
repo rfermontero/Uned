@@ -1,14 +1,13 @@
 package es.uned.lsi.eped.pract2016;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Created by colymore on 10/4/16.
- */
 public class Main {
 
     public static void main(String[] args) throws IOException {
@@ -28,7 +27,7 @@ public class Main {
         String academiaFounderLine = br.readLine();
         int founderId = getFounderId(academiaFounderLine);
         if (founderId < 0) {
-            System.out.println("Debe ser mayor que cero");
+            System.out.println("Should be bigger than zero");
         } else {
             boolean finished = false;
             DoctorIF founder = new DoctorS(founderId);

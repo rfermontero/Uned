@@ -8,7 +8,7 @@ import es.uned.lsi.eped.DataStructures.SetIF;
 
 public class DoctorS implements DoctorIF {
 
-    private CollectionIF<DoctorIF> studients;
+    private CollectionIF<DoctorIF> students;
 
     private int id;
     private DoctorIF supervisor;
@@ -17,15 +17,15 @@ public class DoctorS implements DoctorIF {
         this(new Set<>(), id);
     }
 
-    public DoctorS(CollectionIF<DoctorIF> studients, int id) {
-        this.studients = studients;
+    public DoctorS(CollectionIF<DoctorIF> students, int id) {
+        this.students = students;
         this.id = id;
         setSupervisors();
     }
 
     public DoctorS(DoctorIF supervisor, int id) {
         this.supervisor = supervisor;
-        this.studients = new Set<>();
+        this.students = new Set<>();
         this.id = id;
     }
 
@@ -52,7 +52,7 @@ public class DoctorS implements DoctorIF {
 
     @Override
     public CollectionIF<DoctorIF> getStudents() {
-        return studients;
+        return students;
     }
 
     @Override
@@ -62,7 +62,7 @@ public class DoctorS implements DoctorIF {
         } else {
             SetIF<DoctorIF> descendants = new Set<>();
             if (generations > 1) {
-                final IteratorIF studientsIterator = studients.iterator();
+                final IteratorIF studientsIterator = students.iterator();
                 while (studientsIterator.hasNext()) {
                     final DoctorIF studient = (DoctorIF) studientsIterator.getNext();
                     descendants = descendants.union((SetIF<DoctorIF>) studient.getDescendants(generations - 1));
@@ -107,10 +107,8 @@ public class DoctorS implements DoctorIF {
         return id;
     }
 
-
-
     private void setSupervisors() {
-        IteratorIF<DoctorIF> it = this.studients.iterator();
+        IteratorIF<DoctorIF> it = this.students.iterator();
         while (it.hasNext()) {
             DoctorS studient = (DoctorS) it.getNext();
             studient.setSupervisor(this);
@@ -122,7 +120,7 @@ public class DoctorS implements DoctorIF {
     }
 
     void addStudent(DoctorIF student) {
-        studients = new Set<>(student).union((SetIF<DoctorIF>) studients);
+        students = new Set<>(student).union((SetIF<DoctorIF>) students);
     }
 
     int getId() {
