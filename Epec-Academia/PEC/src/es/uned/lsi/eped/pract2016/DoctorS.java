@@ -1,129 +1,129 @@
 package es.uned.lsi.eped.pract2016;
 
 
-import es.uned.lsi.eped.DataStructures.CollectionIF;
-import es.uned.lsi.eped.DataStructures.IteratorIF;
-import es.uned.lsi.eped.DataStructures.Set;
-import es.uned.lsi.eped.DataStructures.SetIF;
+import es.uned.lsi.eped.DataStructures.*;
 
 public class DoctorS implements DoctorIF {
 
-    private CollectionIF<DoctorIF> students;
+	private CollectionIF<DoctorIF> students;
 
-    private int id;
-    private DoctorIF supervisor;
+	private int id;
+	private DoctorIF supervisor;
 
-    public DoctorS(int id) {
-        this(new Set<>(), id);
-    }
+	public DoctorS(int id) {
+		this(new Set<DoctorIF>(), id);
+	}
 
-    public DoctorS(CollectionIF<DoctorIF> students, int id) {
-        this.students = students;
-        this.id = id;
-        setSupervisors();
-    }
+	public DoctorS(CollectionIF<DoctorIF> students, int id) {
+		this.students = students;
+		this.id = id;
+		setSupervisors();
+	}
 
-    public DoctorS(DoctorIF supervisor, int id) {
-        this.supervisor = supervisor;
-        this.students = new Set<>();
-        this.id = id;
-    }
+	public DoctorS(DoctorIF supervisor, int id) {
+		this.supervisor = supervisor;
+		this.students = new Set<>();
+		this.id = id;
+	}
 
-    public DoctorIF getSupervisor() {
-        return supervisor;
-    }
+	public DoctorIF getSupervisor() {
+		return supervisor;
+	}
 
-    @Override
-    public CollectionIF<DoctorIF> getAncestors(int generations) {
-        if (generations <= 0) {
-            throw new IllegalArgumentException("Generations number should be > 0");
-        }
-        if (supervisor == null) {
-            return new Set<>();
-        } else {
-            boolean isLastgeneration = generations - 1 == 0;
-            if (!isLastgeneration) {
-                return getCurrentSupervisor().union(getParentAncestorOf(generations));
-            } else {
-                return getCurrentSupervisor();
-            }
-        }
-    }
+	@Override
+	public CollectionIF<DoctorIF> getAncestors(int generations) {
+		if (generations <= 0) {
+			throw new IllegalArgumentException("Generations number should be > 0");
+		}
+		if (supervisor == null) {
+			return new Set<>();
+		} else {
+			boolean isLastgeneration = generations - 1 == 0;
+			if (!isLastgeneration) {
+				return getCurrentSupervisor().union(getParentAncestorOf(generations));
+			} else {
+				return getCurrentSupervisor();
+			}
+		}
+	}
 
-    @Override
-    public CollectionIF<DoctorIF> getStudents() {
-        return students;
-    }
+	@Override
+	public CollectionIF<DoctorIF> getStudents() {
+		return students;
+	}
 
-    @Override
-    public CollectionIF<DoctorIF> getDescendants(int generations) {
-        if (generations <= 0) {
-            throw new IllegalArgumentException("Generations number should be > 0");
-        } else {
-            SetIF<DoctorIF> descendants = new Set<>();
-            if (generations > 1) {
-                final IteratorIF studientsIterator = students.iterator();
-                while (studientsIterator.hasNext()) {
-                    final DoctorIF studient = (DoctorIF) studientsIterator.getNext();
-                    descendants = descendants.union((SetIF<DoctorIF>) studient.getDescendants(generations - 1));
-                }
-                return descendants;
-            } else {
-                return getStudents();
-            }
-        }
-    }
+	@Override
+	public CollectionIF<DoctorIF> getDescendants(int generations) {
+		if (generations <= 0) {
+			throw new IllegalArgumentException("Generations number should be > 0");
+		} else {
+			SetIF<DoctorIF> descendants = new Set<>();
+			if (generations > 1) {
+				final IteratorIF studentsIterator = students.iterator();
+				while (studentsIterator.hasNext()) {
+					final DoctorIF parent = (DoctorIF) studentsIterator.getNext();
+					SetIF<DoctorIF> parentDescendantsSet = (SetIF<DoctorIF>) parent.getDescendants(generations - 1);
+					SetIF<DoctorIF> parentWithChildsSet = new Set<>(parent).union(parentDescendantsSet);
+					descendants = descendants.union(parentWithChildsSet);
+				}
+				return descendants;
+			} else {
+				return getStudents();
+			}
+		}
+	}
 
-    @Override
-    public CollectionIF<DoctorIF> getSiblings() {
-        SetIF<DoctorIF> siblings = new Set<>();
-        if (supervisor != null) {
-            siblings = siblings.union((SetIF<DoctorIF>) supervisor.getStudents());
-            siblings = siblings.difference(new Set<>(this));
-        }
-        return siblings;
-    }
+	@Override
+	public CollectionIF<DoctorIF> getSiblings() {
+		SetIF<DoctorIF> siblings = new Set<>();
+		if (supervisor != null) {
+			siblings = siblings.union((SetIF<DoctorIF>) supervisor.getStudents());
+			siblings = siblings.difference(new Set<DoctorIF>(this));
+		}
+		return siblings;
+	}
 
-    private SetIF<DoctorIF> getParentAncestorOf(int generations) {
-        return (SetIF<DoctorIF>) supervisor.getAncestors(generations - 1);
-    }
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
 
-    private Set<DoctorIF> getCurrentSupervisor() {
-        return new Set<>(supervisor);
-    }
+		DoctorS doctorS = (DoctorS) o;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+		return id == doctorS.id;
+	}
 
-        DoctorS doctorS = (DoctorS) o;
+	@Override
+	public int hashCode() {
+		return id;
+	}
 
-        return id == doctorS.id;
-    }
+	private void setSupervisors() {
+		IteratorIF<DoctorIF> it = this.students.iterator();
+		while (it.hasNext()) {
+			DoctorS studient = (DoctorS) it.getNext();
+			studient.setSupervisor(this);
+		}
+	}
 
-    @Override
-    public int hashCode() {
-        return id;
-    }
+	void setSupervisor(DoctorIF supervisor) {
+		this.supervisor = supervisor;
+	}
 
-    private void setSupervisors() {
-        IteratorIF<DoctorIF> it = this.students.iterator();
-        while (it.hasNext()) {
-            DoctorS studient = (DoctorS) it.getNext();
-            studient.setSupervisor(this);
-        }
-    }
+	void addStudent(DoctorIF student) {
+		students = new Set<>(student).union((SetIF<DoctorIF>) students);
+	}
 
-    void setSupervisor(DoctorIF supervisor) {
-        this.supervisor = supervisor;
-    }
+	int getId() {
+		return id;
+	}
 
-    void addStudent(DoctorIF student) {
-        students = new Set<>(student).union((SetIF<DoctorIF>) students);
-    }
+	private SetIF<DoctorIF> getParentAncestorOf(int generations) {
+		return (SetIF<DoctorIF>) supervisor.getAncestors(generations - 1);
+	}
 
-    int getId() {
-        return id;
-    }
+	private Set<DoctorIF> getCurrentSupervisor() {
+		return new Set<>(supervisor);
+	}
+
 }

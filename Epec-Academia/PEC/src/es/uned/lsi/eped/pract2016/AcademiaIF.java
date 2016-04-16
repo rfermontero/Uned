@@ -3,6 +3,7 @@ package es.uned.lsi.eped.pract2016;
 import es.uned.lsi.eped.DataStructures.CollectionIF;
 
 public interface AcademiaIF extends CollectionIF<DoctorIF> {
+
     /**
      * Consulta el Doctor que fundó la Academia
      *

@@ -20,7 +20,7 @@ public class AcademiaS implements AcademiaIF {
 
     @Override
     public DoctorIF getDoctor(int id) {
-        return findDoctorInStudentsLis(founder, id);
+        return findDoctorInStudentsLis(getFounder(), id);
     }
 
     @Override
@@ -64,7 +64,7 @@ public class AcademiaS implements AcademiaIF {
         DoctorS studientDoctor = (DoctorS) getDoctor(newDoctor);
         if (supervisorDoctor != null && studientDoctor == null) {
             DoctorS newDoctorS = (DoctorS) newDoctor;
-            newDoctorS.setSupervisor(supervisor);
+            newDoctorS.setSupervisor(supervisorDoctor);
             supervisorDoctor.addStudent(newDoctorS);
         }
     }

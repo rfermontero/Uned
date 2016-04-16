@@ -18,9 +18,40 @@ public class Main {
         String operations = args[2];
 
         if (scenario.toUpperCase().equals("S")) {
-            AcademiaIF academia = parseScenarioOne(new BufferedReader(new FileReader(new File(data))));
+            final BufferedReader dataBr = new BufferedReader(new FileReader(new File(data)));
+            final BufferedReader operationBr = new BufferedReader(new FileReader(new File(operations)));
+            AcademiaIF academia = parseScenarioOne(dataBr);
+            String line = operationBr.readLine();
+            if (line != null) {
+                do {
+                    parseOperation(academia, ParserFactory.getParser("S"), line);
+                    line = operationBr.readLine();
+                } while (line != null);
+            }
         }
     }
+
+    private static void parseOperation(AcademiaIF academia, OperationsParser operationsParser, String line) {
+        String operation = line.substring(0, 2);
+        switch (operation) {
+            case "SU":
+                operationsParser.getDirectors(academia, getNumberInLine(line, 0));
+                break;
+            case "AN":
+                operationsParser.getAncestors(academia, getNumberInLine(line, 0), getNumberInLine(line, 1));
+                break;
+            case "ST":
+                operationsParser.getStudients(academia, getNumberInLine(line, 0));
+                break;
+            case "DE":
+                operationsParser.getDescendants(academia, getNumberInLine(line, 0), getNumberInLine(line, 1));
+                break;
+            case "SI":
+                operationsParser.getSiblings(academia, getNumberInLine(line, 0));
+                break;
+        }
+    }
+
 
     private static AcademiaIF parseScenarioOne(BufferedReader fileData) throws IOException {
         BufferedReader br = new BufferedReader(fileData);
@@ -37,7 +68,9 @@ public class Main {
                 if (line != null) {
                     int doctorId = getNextStudient(line);
                     int supervisorId = getNextSupervisor(line);
-                    academiaIF.addDoctor(new DoctorS(doctorId), new DoctorS(supervisorId));
+                    DoctorIF newDoctor = new DoctorS(doctorId);
+                    DoctorIF doctorSupervisor = new DoctorS(supervisorId);
+                    academiaIF.addDoctor(newDoctor, doctorSupervisor);
                 } else {
                     finished = true;
                 }
@@ -50,8 +83,7 @@ public class Main {
     private static int getNextStudient(String line) throws IOException {
         int nextId = -1;
         if (line != null) {
-            line = line.replaceAll("[^-?0-9]+", " ");
-            nextId = Integer.parseInt(Arrays.asList(line.trim().split(" ")).get(0));
+            nextId = getNumberInLine(line, 0);
         }
         return nextId;
     }
@@ -59,10 +91,14 @@ public class Main {
     private static int getNextSupervisor(String line) throws IOException {
         int nextId = -1;
         if (line != null) {
-            line = line.replaceAll("[^-?0-9]+", " ");
-            nextId = Integer.parseInt(Arrays.asList(line.trim().split(" ")).get(1));
+            nextId = getNumberInLine(line, 1);
         }
         return nextId;
+    }
+
+    private static int getNumberInLine(String line, int position) {
+        line = line.replaceAll("[^-?0-9]+", " ");
+        return Integer.parseInt(Arrays.asList(line.trim().split(" ")).get(position));
     }
 
     private static int getFounderId(String academiaFounderLine) {

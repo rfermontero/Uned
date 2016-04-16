@@ -1,158 +1,163 @@
 package es.uned.lsi.eped.pract2016;
 
+import org.junit.Test;
+
 import es.uned.lsi.eped.DataStructures.CollectionIF;
 import es.uned.lsi.eped.DataStructures.IteratorIF;
 import es.uned.lsi.eped.DataStructures.Set;
 import es.uned.lsi.eped.DataStructures.SetIF;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class DoctorSTest {
 
-    private static final int ID = 1;
+	private static final int ID = 1;
 
-    @Test
-    public void shouldReturnEmptyCollectionIfDoctorHasNotStudients() {
-        DoctorIF doctor = givenADoctorWithoutStudientsAnAncestor();
+	@Test
+	public void shouldReturnEmptyCollectionIfDoctorHasNotStudients() {
+		DoctorIF doctor = givenADoctorWithoutStudentsAnAncestor();
 
-        CollectionIF<DoctorIF> studients = doctor.getStudents();
+		CollectionIF<DoctorIF> studients = doctor.getStudents();
 
-        assertTrue(studients.isEmpty());
-    }
+		assertTrue(studients.isEmpty());
+	}
 
-    @Test
-    public void shouldReturnListOfTwoStudientsUsedToCreateTheDoctor() {
-        int anyNumberOfStudents = 2;
-        DoctorIF doctor = givenADoctorWithStudents(anyNumberOfStudents);
+	@Test
+	public void shouldReturnListOfTwoStudentsUsedToCreateTheDoctor() {
+		int anyNumberOfStudents = 2;
+		DoctorIF doctor = givenADoctorWithStudents(anyNumberOfStudents);
 
-        CollectionIF<DoctorIF> students = doctor.getStudents();
+		CollectionIF<DoctorIF> students = doctor.getStudents();
 
-        assertEquals(anyNumberOfStudents, students.size());
-    }
+		assertEquals(anyNumberOfStudents, students.size());
+	}
 
-    @Test
-    public void shouldReturnAnEmptyCollectionOfAncestorsIfTheDoctorIsAFounder() {
-        int anyGenerations = 1;
-        DoctorIF founder = givenAFounder();
+	@Test
+	public void shouldReturnAnEmptyCollectionOfAncestorsIfTheDoctorIsAFounder() {
+		int anyGenerations = 1;
+		DoctorIF founder = givenAFounder();
 
-        CollectionIF<DoctorIF> ancestors = founder.getAncestors(anyGenerations);
+		CollectionIF<DoctorIF> ancestors = founder.getAncestors(anyGenerations);
 
-        assertTrue(ancestors.isEmpty());
-    }
+		assertTrue(ancestors.isEmpty());
+	}
 
-    @Test
-    public void shouldReturnAnCollectionWithJustOneAncestorIfTheDoctorHasOneSupervisorAndTheGenerationUsedIsOne() {
-        DoctorIF doctor = givenADoctorWithOneSupervisor();
+	@Test
+	public void shouldReturnAnCollectionWithJustOneAncestorIfTheDoctorHasOneSupervisorAndTheGenerationUsedIsOne() {
+		DoctorIF doctor = givenADoctorWithOneSupervisor();
 
-        CollectionIF<DoctorIF> ancestors = doctor.getAncestors(1);
+		CollectionIF<DoctorIF> ancestors = doctor.getAncestors(1);
 
-        assertEquals(1, ancestors.size());
-    }
+		assertEquals(1, ancestors.size());
+	}
 
-    @Test
-    public void shouldReturnMaxAncestorsFoundedIfAskForBiggerAncestorsNumber() {
-        DoctorIF doctor = givenADoctorWithSupervisorGenerations(2);
+	@Test
+	public void shouldReturnMaxAncestorsFoundedIfAskForBiggerAncestorsNumber() {
+		DoctorIF doctor = givenADoctorWithSupervisorGenerations(2);
 
-        CollectionIF<DoctorIF> ancestors = doctor.getAncestors(3);
+		CollectionIF<DoctorIF> ancestors = doctor.getAncestors(3);
 
-        assertEquals(2, ancestors.size());
-    }
+		assertEquals(2, ancestors.size());
+	}
 
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowAnExceptionIfTheGenerationIsLessOrEqualToZero() {
-        DoctorIF doctor = givenAnyDoctor();
+	@Test(expected = IllegalArgumentException.class)
+	public void shouldThrowAnExceptionIfTheGenerationIsLessOrEqualToZero() {
+		DoctorIF doctor = givenAnyDoctor();
 
-        doctor.getAncestors(0);
-    }
+		doctor.getAncestors(0);
+	}
 
-    @Test
-    public void shouldReturnEmptyDescendantsCollectionIfNotHasDescendants() {
-        DoctorS doctor = givenAnyDoctor();
+	@Test
+	public void shouldReturnEmptyDescendantsCollectionIfNotHasDescendants() {
+		DoctorS doctor = givenAnyDoctor();
 
-        assertTrue(doctor.getDescendants(1).isEmpty());
-    }
+		assertTrue(doctor.getDescendants(1).isEmpty());
+	}
 
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowAnExceptionIfTheDescendantsGenerationIsLessOrEqualToZero() {
-        DoctorIF doctor = givenAnyDoctor();
+	@Test(expected = IllegalArgumentException.class)
+	public void shouldThrowAnExceptionIfTheDescendantsGenerationIsLessOrEqualToZero() {
+		DoctorIF doctor = givenAnyDoctor();
 
-        doctor.getDescendants(0);
-    }
+		doctor.getDescendants(0);
+	}
 
-    @Test
-    public void shouldReturnStudientsIfTheDescendantGenerationIsOne() {
-        DoctorIF doctor = givenADoctorWithStudents(2);
+	@Test
+	public void shouldReturnStudentsIfTheDescendantGenerationIsOne() {
+		DoctorIF doctor = givenADoctorWithStudents(2);
 
-        CollectionIF<DoctorIF> descendats = doctor.getDescendants(1);
+		CollectionIF<DoctorIF> descendants = doctor.getDescendants(1);
 
-        assertEquals(2, descendats.size());
-    }
+		assertEquals(2, descendants.size());
+	}
 
-    @Test
-    public void shoudlNotContainsCurrentDoctorInSlibings() {
-        DoctorIF doctor = givenADoctorWithStudents(4);
-        DoctorIF anyStudientOfDoctor = getAnyStudientForDoctor(doctor);
+	@Test
+	public void shouldNotContainsCurrentDoctorInSibling() {
+		DoctorIF doctor = givenADoctorWithStudents(4);
+		DoctorIF anyStudentOfDoctor = getAnyStudientForDoctor(doctor);
 
-        CollectionIF<DoctorIF> slibings = anyStudientOfDoctor.getSiblings();
+		CollectionIF<DoctorIF> siblings = anyStudentOfDoctor.getSiblings();
 
-        assertTrue(!slibings.contains(anyStudientOfDoctor));
-    }
+		assertTrue(!siblings.contains(anyStudentOfDoctor));
+	}
 
-    @Test
-    public void shouldHaveStudientsOfDoctorAsSlibingsLessOne() {
-        DoctorIF doctor = givenADoctorWithStudents(4);
-        DoctorIF anyStudientOfDoctor = getAnyStudientForDoctor(doctor);
+	@Test
+	public void shouldHaveStudentsOfDoctorAsSiblingLessOne() {
+		int anyStudentsSize = 4;
+		DoctorIF doctor = givenADoctorWithStudents(anyStudentsSize);
+		DoctorIF anyStudentOfDoctor = getAnyStudientForDoctor(doctor);
 
-        CollectionIF<DoctorIF> slibings = anyStudientOfDoctor.getSiblings();
+		CollectionIF<DoctorIF> siblings = anyStudentOfDoctor.getSiblings();
 
-        assertEquals(4-1, slibings.size());
-    }
+		assertEquals(anyStudentsSize - 1, siblings.size());
+	}
 
-    private DoctorIF getAnyStudientForDoctor(DoctorIF doctor) {
-        int size = doctor.getStudents().size() / 2;
-        IteratorIF<DoctorIF> it = doctor.getStudents().iterator();
-        DoctorIF studient = null;
-        for (int i = 0; i < size; i++) {
-            studient = it.getNext();
-        }
-        return studient;
-    }
+	private DoctorIF getAnyStudientForDoctor(DoctorIF doctor) {
+		int size = doctor.getStudents().size() / 2;
+		IteratorIF<DoctorIF> it = doctor.getStudents().iterator();
+		DoctorIF student = null;
+		for (int i = 0; i < size; i++) {
+			student = it.getNext();
+		}
+		return student;
+	}
 
-    private DoctorS givenAnyDoctor() {
-        return new DoctorS(ID);
-    }
+	private DoctorS givenAnyDoctor(int id) {
+		return new DoctorS(ID + id);
+	}
 
-    private DoctorIF givenADoctorWithSupervisorGenerations(int numberOfSupervisorGenerations) {
-        DoctorS currentDoctor = givenAnyDoctor();
+	private DoctorS givenAnyDoctor() {
+		return new DoctorS(ID);
+	}
 
-        for (int i = 0; i < numberOfSupervisorGenerations; i++) {
-            currentDoctor = new DoctorS(currentDoctor, i);
-        }
+	private DoctorIF givenADoctorWithSupervisorGenerations(int numberOfSupervisorGenerations) {
+		DoctorS currentDoctor = givenAnyDoctor();
 
-        return currentDoctor;
-    }
+		for (int i = 0; i < numberOfSupervisorGenerations; i++) {
+			currentDoctor = new DoctorS(currentDoctor, i);
+		}
 
-    private DoctorIF givenADoctorWithOneSupervisor() {
-        DoctorIF supervisor = givenADoctorWithoutStudientsAnAncestor();
-        return new DoctorS(supervisor, ID);
-    }
+		return currentDoctor;
+	}
 
-    private DoctorIF givenAFounder() {
-        return givenADoctorWithoutStudientsAnAncestor();
-    }
+	private DoctorIF givenADoctorWithOneSupervisor() {
+		DoctorIF supervisor = givenADoctorWithoutStudentsAnAncestor();
+		return new DoctorS(supervisor, ID);
+	}
 
-    private DoctorIF givenADoctorWithoutStudientsAnAncestor() {
-        return givenAnyDoctor();
-    }
+	private DoctorIF givenAFounder() {
+		return givenADoctorWithoutStudentsAnAncestor();
+	}
 
-    private DoctorIF givenADoctorWithStudents(int numberOfStudients) {
-        SetIF<DoctorIF> studients = new Set<>();
-        for (int i = 0; i < numberOfStudients; i++) {
-            Set<DoctorIF> oneStudientSet = new Set<>(givenADoctorWithoutStudientsAnAncestor());
-            studients = studients.union(oneStudientSet);
-        }
-        return new DoctorS(studients, ID);
-    }
+	private DoctorIF givenADoctorWithoutStudentsAnAncestor() {
+		return givenAnyDoctor();
+	}
+
+	private DoctorIF givenADoctorWithStudents(int numberOfStudents) {
+		SetIF<DoctorIF> students = new Set<>();
+		for (int i = 1; i <= numberOfStudents; i++) {
+			Set<DoctorIF> oneStudentSet = new Set<DoctorIF>(givenAnyDoctor(i));
+			students = students.union(oneStudentSet);
+		}
+		return new DoctorS(students, ID);
+	}
 }

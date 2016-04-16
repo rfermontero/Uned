@@ -6,13 +6,13 @@ public class Tree<T> extends Collection<T> implements TreeIF<T> {
 	private ListIF<TreeIF<T>> children; 
 	
 	//constructor por defecto: construye un árbol n-ário vacío
-	Tree(){
+	public Tree(){
 		root = null;
 		children = new List<TreeIF<T>>();
 	}
 	//constructor por parámetro: construye un árbol n-ário sin hijos
 	//cuya raíz es el elemento dado por parámetro
-	Tree(T e){
+	public Tree(T e){
 		setRoot(e);
 		children = new List<TreeIF<T>>();
 	}
