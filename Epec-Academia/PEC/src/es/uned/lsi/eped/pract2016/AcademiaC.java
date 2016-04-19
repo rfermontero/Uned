@@ -5,11 +5,11 @@ import es.uned.lsi.eped.DataStructures.IteratorIF;
 import es.uned.lsi.eped.DataStructures.Set;
 import es.uned.lsi.eped.DataStructures.SetIF;
 
-public class AcademiaS implements AcademiaIF {
+public class AcademiaC implements AcademiaIF {
 
 	private DoctorIF founder;
 
-	public AcademiaS(DoctorIF founder) {
+	public AcademiaC(DoctorIF founder) {
 		this.founder = founder;
 	}
 
@@ -28,10 +28,10 @@ public class AcademiaS implements AcademiaIF {
 		int counter = founder == null ? 0 : 1 + founder.getStudents().size();
 
 		if (founder != null) {
-			CollectionIF<DoctorIF> founderStudents = founder.getStudents();
-			IteratorIF<DoctorIF> studentsIterator = founderStudents.iterator();
-			while (studentsIterator.hasNext()) {
-				counter += getNumberOfStudents(studentsIterator.getNext());
+			CollectionIF<DoctorIF> founderStudients = founder.getStudents();
+			IteratorIF<DoctorIF> studientsIterator = founderStudients.iterator();
+			while (studientsIterator.hasNext()) {
+				counter += getNumberOfStudents(studientsIterator.getNext());
 			}
 		}
 		return counter;
@@ -69,36 +69,47 @@ public class AcademiaS implements AcademiaIF {
 
 	private SetIF<DoctorIF> getAll(DoctorIF doctor) {
 		SetIF<DoctorIF> current = new Set<>(doctor);
-		IteratorIF<DoctorIF> studentsIterator = doctor.getStudents().iterator();
-		while (studentsIterator.hasNext()) {
-			current = current.union(getAll(studentsIterator.getNext()));
+		IteratorIF<DoctorIF> studentsIt = doctor.getStudents().iterator();
+		while (studentsIt.hasNext()) {
+			current = current.union(getAll(studentsIt.getNext()));
 		}
 		return current;
 	}
 
 	@Override
 	public void addDoctor(DoctorIF newDoctor, DoctorIF supervisor) {
-		DoctorS supervisorDoctor = (DoctorS) getDoctor(supervisor);
-		DoctorS student = (DoctorS) getDoctor(newDoctor);
+		DoctorC supervisorDoctor = (DoctorC) getDoctor(supervisor);
+		DoctorC student = (DoctorC) getDoctor(newDoctor);
 		if (supervisorDoctor != null && student == null) {
-			DoctorS newDoctorS = (DoctorS) newDoctor;
-			newDoctorS.setSupervisor(supervisorDoctor);
-			supervisorDoctor.addStudent(newDoctorS);
+			DoctorC newDoctorC = (DoctorC) newDoctor;
+			newDoctorC.setSupervisor(supervisorDoctor);
+			supervisorDoctor.addStudent(newDoctorC);
 		}
 	}
 
 	@Override
-	public void addSupervision(DoctorIF student, DoctorIF supervisor) {
-		//
+	public void addSupervision(DoctorIF student, DoctorIF newSupervisor) {
+		DoctorC supervisorDoctor = (DoctorC) getDoctor(newSupervisor);
+		DoctorC studentDoctor = (DoctorC) getDoctor(student);
+		if (supervisorDoctor != null && student != null && canBeNewSupervisor(supervisorDoctor, studentDoctor)) {
+			studentDoctor.setSupervisor(newSupervisor);
+			supervisorDoctor.addStudent(studentDoctor);
+		}
 	}
 
-	private DoctorIF getDoctor(DoctorIF e) {
-		DoctorS doctor = (DoctorS) e;
-		return findDoctorInStudentsLis(founder, doctor.getId());
+	private boolean canBeNewSupervisor(DoctorC newSupervisor, DoctorC studentDoctor) {
+		IteratorIF<DoctorIF> studentSupervisorsIt = studentDoctor.getSupervisors().iterator();
+		while (studentSupervisorsIt.hasNext()) {
+			DoctorIF supervisor = studentSupervisorsIt.getNext();
+			if (supervisor != null && supervisor.equals(newSupervisor)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private DoctorIF findDoctorInStudentsLis(DoctorIF doctor, int id) {
-		if (doctor == null || doctor.equals(new DoctorS(id))) {
+		if (doctor == null || doctor.equals(new DoctorC(id))) {
 			return doctor;
 		} else {
 			CollectionIF<DoctorIF> students = doctor.getStudents();
@@ -115,5 +126,10 @@ public class AcademiaS implements AcademiaIF {
 				return null;
 			}
 		}
+	}
+
+	private DoctorIF getDoctor(DoctorIF e) {
+		DoctorC doctor = (DoctorC) e;
+		return findDoctorInStudentsLis(founder, doctor.getId());
 	}
 }

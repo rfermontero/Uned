@@ -5,29 +5,41 @@ import es.uned.lsi.eped.DataStructures.*;
 
 public class DoctorS implements DoctorIF {
 
+	private final int id;
 	private CollectionIF<DoctorIF> students;
-
-	private int id;
 	private DoctorIF supervisor;
 
 	public DoctorS(int id) {
-		this(new Set<DoctorIF>(), id);
-	}
-
-	public DoctorS(CollectionIF<DoctorIF> students, int id) {
-		this.students = students;
+		this.students = new Set<>();
 		this.id = id;
-		setSupervisors();
 	}
 
-	public DoctorS(DoctorIF supervisor, int id) {
+	DoctorS(DoctorIF supervisor, int id) {
 		this.supervisor = supervisor;
 		this.students = new Set<>();
 		this.id = id;
 	}
 
+	DoctorS(CollectionIF<DoctorIF> students, int id) {
+		this.students = students;
+		this.id = id;
+		setSupervisors();
+	}
+
+	public int getId() {
+		return id;
+	}
+
 	public DoctorIF getSupervisor() {
 		return supervisor;
+	}
+
+	void setSupervisor(DoctorIF supervisor) {
+		this.supervisor = supervisor;
+	}
+
+	void addStudent(DoctorIF student) {
+		students = new Set<>(student).union((SetIF<DoctorIF>) students);
 	}
 
 	@Override
@@ -38,8 +50,8 @@ public class DoctorS implements DoctorIF {
 		if (supervisor == null) {
 			return new Set<>();
 		} else {
-			boolean isLastgeneration = generations - 1 == 0;
-			if (!isLastgeneration) {
+			boolean isLastGeneration = generations - 1 == 0;
+			if (!isLastGeneration) {
 				return getCurrentSupervisor().union(getParentAncestorOf(generations));
 			} else {
 				return getCurrentSupervisor();
@@ -104,18 +116,6 @@ public class DoctorS implements DoctorIF {
 			DoctorS studient = (DoctorS) it.getNext();
 			studient.setSupervisor(this);
 		}
-	}
-
-	void setSupervisor(DoctorIF supervisor) {
-		this.supervisor = supervisor;
-	}
-
-	void addStudent(DoctorIF student) {
-		students = new Set<>(student).union((SetIF<DoctorIF>) students);
-	}
-
-	int getId() {
-		return id;
 	}
 
 	private SetIF<DoctorIF> getParentAncestorOf(int generations) {

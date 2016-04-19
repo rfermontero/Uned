@@ -1,16 +1,13 @@
-package es.uned.lsi.eped.pract2016;
+package es.uned.lsi.eped.pract2016.parser;
 
 import es.uned.lsi.eped.DataStructures.CollectionIF;
 import es.uned.lsi.eped.DataStructures.IteratorIF;
+import es.uned.lsi.eped.pract2016.AcademiaIF;
+import es.uned.lsi.eped.pract2016.DoctorIF;
+import es.uned.lsi.eped.pract2016.DoctorS;
+import es.uned.lsi.eped.pract2016.OperationsParser;
 
-/**
- * Created by colymore on 12/4/16.
- */
-public class OperationsParserCScenario implements OperationsParser {
-
-    public OperationsParserCScenario() {
-        //empty
-    }
+class OperationsParserCScenario implements OperationsParser {
 
     @Override
     public void getSiblings(AcademiaIF academia, int doctorId) {
@@ -35,7 +32,7 @@ public class OperationsParserCScenario implements OperationsParser {
     }
 
     @Override
-    public void getStudients(AcademiaIF academia, int doctorId) {
+    public void getStudents(AcademiaIF academia, int doctorId) {
         DoctorS doctor = (DoctorS) academia.getDoctor(doctorId);
         if (doctor != null) {
             CollectionIF<DoctorIF> students = doctor.getStudents();
