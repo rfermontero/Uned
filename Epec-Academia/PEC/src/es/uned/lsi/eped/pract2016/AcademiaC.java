@@ -28,10 +28,10 @@ public class AcademiaC implements AcademiaIF {
 		int counter = founder == null ? 0 : 1 + founder.getStudents().size();
 
 		if (founder != null) {
-			CollectionIF<DoctorIF> founderStudients = founder.getStudents();
-			IteratorIF<DoctorIF> studientsIterator = founderStudients.iterator();
-			while (studientsIterator.hasNext()) {
-				counter += getNumberOfStudents(studientsIterator.getNext());
+			CollectionIF<DoctorIF> founderStudents = founder.getStudents();
+			IteratorIF<DoctorIF> studentsIterator = founderStudents.iterator();
+			while (studentsIterator.hasNext()) {
+				counter += getNumberOfStudents(studentsIterator.getNext());
 			}
 		}
 		return counter;

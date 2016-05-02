@@ -25,6 +25,7 @@ public class Main {
 			final BufferedReader dataBr = new BufferedReader(new FileReader(new File(data)));
 			final BufferedReader operationBr = new BufferedReader(new FileReader(new File(operations)));
 			AcademiaIF academia = parseScenarioOne(dataBr);
+			System.out.println("Doctores en la Academia: " + academia.size() + ".");
 			String line = operationBr.readLine();
 			if (line != null) {
 				do {
@@ -36,6 +37,7 @@ public class Main {
 			final BufferedReader dataBr = new BufferedReader(new FileReader(new File(data)));
 			final BufferedReader operationBr = new BufferedReader(new FileReader(new File(operations)));
 			AcademiaIF academia = parseScenarioTwo(dataBr);
+			System.out.println("Doctores en la Academia: " + academia.size() + ".");
 			String line = operationBr.readLine();
 			if (line != null) {
 				do {

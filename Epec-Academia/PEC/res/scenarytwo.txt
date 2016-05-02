@@ -1,7 +1,0 @@
-La Academia fue Fundada por “1”
-Tesis de “2” dirigida por “1”
-Tesis de “3” codirigida por “1” y “2”
-Tesis de “4” dirigida por “2”
-Tesis de “5” codirigida por “1” y “3”
-Tesis de “6” codirigida por “4” y “5”
-Tesis de “7” dirigida por “3”
