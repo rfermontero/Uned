@@ -24,18 +24,18 @@ combina ([], x) = x
 combina (x, []) = x
 combina ((ii, ia):ri,(di, da):rd) = subcombina((ii, ia):ri,0) ((di, da):rd,0) 0
     where subcombina ((ii, ia):ri, ih) ((di, da):rd, dh) uaa
+                       | ii == di && uaa /= max ia da       = (ii, max ia da)  : subcombina(ri,ia) (rd, da) (max ia da)
+                       | ii == di && uaa == max ia da       =                    subcombina(ri,ia) (rd, da) uaa
                        | ii < di  && uaa /= max ia dh       = (ii, max ia dh)  : subcombina(ri,ia) ((di, da):rd, dh) (max ia dh)
                        | ii < di  && uaa == max ia dh       =                    subcombina(ri,ia) ((di, da):rd, dh) uaa
-                       | ii == di && uaa /= max ih dh       = (ii, max ih dh)  : subcombina(ri,ih) (rd, dh) (max ih dh)
-                       | ii == di && uaa == max ih dh       =                    subcombina(ri,ih) (rd, dh) uaa
                        | ii > di  && uaa /= max ih da       = (di, max ih da)  : subcombina((ii, ia):ri, ih) (rd, da) (max ih da)
                        | ii > di  && uaa == max ih da       =                    subcombina((ii, ia):ri, ih) (rd, da) uaa
           subcombina ([], _) (rd, _) uaa                    = rd
           subcombina (ri, _) ([], _) uaa                    = ri
 
-dibujaSkyline :: [(Int, Int)] -> IO ()
-dibujaSkyline [x] = putStr ""
-dibujaSkyline x = putStr (dibuja (getAlturas x))
+dibujaSkyline :: [(Int, Int)] -> [Char]
+dibujaSkyline [x] = ""
+dibujaSkyline x = dibuja (getAlturas x)
     where getAlturas [] = []
           getAlturas xs = llenaPares (0,0) xs
 
@@ -54,7 +54,7 @@ dibujaSkyline x = putStr (dibuja (getAlturas x))
           dibuja x = dibujaAltura x (maxAltura x 0) x
           dibujaAltura [] _ _= ""
           dibujaAltura ((x, y):[]) aa orig
-            | aa == 0 = dibujaBase ++ "\n"
+            | aa == 0 = dibujaBase
             | otherwise = dibujaCoordenada y aa ++ "\n" ++ dibujaAltura orig (aa-1) orig
           dibujaAltura ((x, y):xs) aa orig
             | aa == 0 = dibujaBase ++ dibujaAltura xs aa orig
@@ -62,7 +62,7 @@ dibujaSkyline x = putStr (dibuja (getAlturas x))
           dibujaCoordenada y aa
             | y >= aa = "*"
             | otherwise = " "
-          dibujaBase = "_"
+          dibujaBase = "-"
 
 
 
