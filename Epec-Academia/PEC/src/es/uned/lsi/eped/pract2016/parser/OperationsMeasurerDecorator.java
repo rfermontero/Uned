@@ -15,6 +15,7 @@ public class OperationsMeasurerDecorator implements OperationsParser {
 
 	@Override
 	public void getSiblings(AcademiaIF academia, int doctorId) {
+		System.out.println("getSiblings");
 		long startTime = System.currentTimeMillis();
 		for (int i = 0; i < OPERATIONS; i++) {
 			decorated.getSiblings(academia, doctorId);
@@ -25,6 +26,7 @@ public class OperationsMeasurerDecorator implements OperationsParser {
 
 	@Override
 	public void getDescendants(AcademiaIF academia, int doctorId, int generations) {
+		System.out.println("getDescendants");
 		long startTime = System.currentTimeMillis();
 		for (int i = 0; i < OPERATIONS; i++) {
 			decorated.getDescendants(academia, doctorId, generations);
@@ -34,6 +36,7 @@ public class OperationsMeasurerDecorator implements OperationsParser {
 
 	@Override
 	public void getStudents(AcademiaIF academia, int doctorId) {
+		System.out.println("getStudents");
 		long startTime = System.currentTimeMillis();
 		for (int i = 0; i < OPERATIONS; i++) {
 			decorated.getStudents(academia, doctorId);
@@ -43,6 +46,7 @@ public class OperationsMeasurerDecorator implements OperationsParser {
 
 	@Override
 	public void getAncestors(AcademiaIF academia, int doctorId, int generations) {
+		System.out.println("getAncestors");
 		long startTime = System.currentTimeMillis();
 		for (int i = 0; i < OPERATIONS; i++) {
 			decorated.getAncestors(academia, doctorId, generations);
@@ -52,6 +56,7 @@ public class OperationsMeasurerDecorator implements OperationsParser {
 
 	@Override
 	public void getDirectors(AcademiaIF academia, int doctorId) {
+		System.out.println("getDirectors");
 		long startTime = System.currentTimeMillis();
 		for (int i = 0; i < OPERATIONS; i++) {
 			decorated.getDirectors(academia, doctorId);

@@ -15,8 +15,8 @@ class ParserSSceario implements OperationsParser {
 		if (doctor != null) {
 			CollectionIF<DoctorIF> siblings = doctor.getSiblings();
 			IteratorIF<DoctorIF> siblingsIterator = siblings.iterator();
-			System.out.println(String.format("Los hermanos de \"%d\" son %s",
-					doctorId, getStringForElementsIn(siblingsIterator)));
+			//System.out.println(String.format("Los hermanos de \"%d\" son %s",
+					//		doctorId, getStringForElementsIn(siblingsIterator)));
 		}
 	}
 
@@ -26,8 +26,8 @@ class ParserSSceario implements OperationsParser {
 		if (doctor != null) {
 			CollectionIF<DoctorIF> supervisors = doctor.getDescendants(generations);
 			IteratorIF<DoctorIF> supervisorsIterator = supervisors.iterator();
-			System.out.println(String.format("Los descendientes de \"%d\" hasta %d generaciones son %s",
-					doctorId, generations, getStringForElementsIn(supervisorsIterator)));
+			//	System.out.println(String.format("Los descendientes de \"%d\" hasta %d generaciones son %s",
+			//			doctorId, generations, getStringForElementsIn(supervisorsIterator)));
 		}
 	}
 
@@ -37,8 +37,8 @@ class ParserSSceario implements OperationsParser {
 		if (doctor != null) {
 			CollectionIF<DoctorIF> students = doctor.getStudents();
 			IteratorIF<DoctorIF> studientsIterator = students.iterator();
-			System.out.println(String.format("\"%d\" ha dirigido la tesis de %s",
-					doctorId, getStringForElementsIn(studientsIterator)));
+			//	System.out.println(String.format("\"%d\" ha dirigido la tesis de %s",
+					//		doctorId, getStringForElementsIn(studientsIterator)));
 		}
 	}
 
@@ -48,8 +48,8 @@ class ParserSSceario implements OperationsParser {
 		if (doctor != null) {
 			CollectionIF<DoctorIF> supervisors = doctor.getAncestors(generations);
 			IteratorIF<DoctorIF> supervisorsIterator = supervisors.iterator();
-			System.out.println(String.format("Los ancestros de \"%d\" hasta %d generaciones son %s",
-					doctorId, generations, getStringForElementsIn(supervisorsIterator)));
+			//	System.out.println(String.format("Los ancestros de \"%d\" hasta %d generaciones son %s",
+			//			doctorId, generations, getStringForElementsIn(supervisorsIterator)));
 		}
 	}
 
@@ -58,7 +58,7 @@ class ParserSSceario implements OperationsParser {
 		DoctorS doctor = (DoctorS) academia.getDoctor(doctorId);
 		if (doctor != null) {
 			DoctorS supervisor = (DoctorS) doctor.getSupervisor();
-			System.out.println(String.format("Tesis de \"%d\" dirigida por %d", doctorId, supervisor.getId()));
+			//	System.out.println(String.format("Tesis de \"%d\" dirigida por %d", doctorId, supervisor.getId()));
 		}
 	}
 
