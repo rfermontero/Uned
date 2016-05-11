@@ -58,64 +58,57 @@ resuelveSkyline(EDS, SAL):-
 			resuelveSkyline(Y, B),
 			combina(A, B, SAL).
 
-llenaPares(A,B,[], []).
-llenaPares(A,B,[c(X,H1)|R1], RES) :-
-		A < X,
-		append([c(A,B)], SOL, RES),
-		sum(A,1,SIG),
-		llenaPares(SIG,B,[c(X,H1)|R1],SOL).
-llenaPares(A,B,[c(X,H1)|R1], RES) :-
-     A >= X,
-     append([c(X,H1)], SOL, RES),
-     sum(X,1,SIG),
-	 llenaPares(SIG,H1,R1,SOL).
-
 sum(A,B,C):-C is A+B.
-	
-dibuja(X, DIB):-
-	maxAltura(X,0,MAXALTURA),
-	dibujaAltura(X,MAXALTURA,X,DIB).
-dibujaAltura([],_,_,'').
-dibujaAltura([c(X,Y)|[]],AA,ORIG,DIB):-
-	AA=:=0,
-	dibujaBase(DIB).
-dibujaAltura([c(X,Y)|[]],AA,ORIG,DIB):-
-	AA=\=0,
-	dibujaCoordenada(Y,AA,DIB),
-	sum(AA,-1,SIG),
-	dibujaAltura(ORIG,SIG,ORIG,DIB).
-dibujaBase(DIB):-'-'.
-dibujaCoordenada(Y,AA,DIB):-
-	Y>=AA,
-	append('*', SOL, DIB).
-dibujaCoordenada(Y,AA,DIB):-
-	Y<AA,
-	append(' ', SOL, DIB).
-dibujaAltura([c(X,Y)|[]],AA,[c(OX,OY)], DIB):-
-	AA=:=0,
-	dibujaBase(DIB).
-dibujaAltura([c(X,Y)|[]],AA,[c(OX,OY)], DIB):-
-	AA=\=0,	
-	dibujaCoordenada(Y,AA,DIB),
-	dibujaSaltoLinea(DIB),
-	sum(AA,-1,SIG),
-	dibujaAltura([c(OX,OY)],SIG,[c(OX,OY)],DIB).
-dibujaAltura([c(X,Y)|RL],AA,[c(OX,OY)], DIB):-
-	AA=:=0,
-	dibujaBase(DIB),
-	dibujaAltura(RL,AA,[c(OX,OY)],DIB).
-dibujaAltura([c(X,Y)|RL],AA,[c(OX,OY)], DIB):-
-	AA=\=0,	
-	dibujaCoordenada(Y,AA,DIB),
-	dibujaAltura(RL,AA,[c(OX,OY)],DIB).	
 
-dibujaSaltoLinea(DIB):-	append('\n', SOL, DIB).
+dibujaSkyline(LISTA,SOL) :- llenaPares(0,0,LISTA,PARES), maxh(LISTA,ALTURA), dibujaSkylineAuxiliar(PARES,ALTURA,PARES,SOL), !.
+dibujaSkylineAuxiliar([],0,_,'-') :- !.
+dibujaSkylineAuxiliar([c(_,_)|R],0,_,SOL) :- dibujaSkylineAuxiliar(R,0,_,SOL1), concat('-',SOL1,SOL).
+dibujaSkylineAuxiliar([],M,L,SOL) :- N is M-1, dibujaSkylineAuxiliar(L,N,L,SOL1), concat('\n',SOL1,SOL).
+dibujaSkylineAuxiliar([c(_,H)|R],M,L,SOL) :- H >= M, dibujaSkylineAuxiliar(R,M,L,SOL1), concat('*',SOL1,SOL).
+dibujaSkylineAuxiliar([c(_,H)|R],M,L,SOL) :- dibujaSkylineAuxiliar(R,M,L,SOL1), concat(' ',SOL1,SOL).
 
-maxAltura([],AA,SOL) :- max(0,AA,SOL).
-maxAltura([c(X,Y)|[]],AA,SOL) :- max(Y, AA, SOL).
-maxAltura([c(X,Y)|R1],AA,SOL) :- AA>Y,   maxAltura(R1,AA,SOL).
-maxAltura([c(X,Y)|R1],AA,SOL) :- AA<Y,   maxAltura(R1,Y,SOL).
-maxAltura([c(X,Y)|R1],AA,SOL) :- AA=:=Y, maxAltura(R1,Y,SOL).
+maxh([c(_,H)|[]],H) :- !.
+maxh([c(_,H)|R],H) :- maxh(R,C2), H > C2, !.
+maxh([_|R],C) :- maxh(R,C).
+
+llenaPares(A,B,[], []).
+llenaPares(A,B,[c(C,D)|YS], RES) :-
+        A < C,
+        append([c(A,B)], SOL, RES),
+        sum(A,1,SIG),
+        llenaPares(SIG,B,[c(C,D)|YS],SOL), !.
+llenaPares(A,B,[c(C,D)|YS], RES) :-
+     A >= C,
+     append([c(C,D)], SOL, RES),
+     sum(C,1,SIG),
+     llenaPares(SIG,D,YS, SOL), !.
+getAlturas([],[]).
+getAlturas([c(X,Y)],SOL) :- 
+ llenaPares(0,0,[c(X,Y)], SOL).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
