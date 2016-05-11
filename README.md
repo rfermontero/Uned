@@ -11,3 +11,6 @@ This repository contains solutions for practises career of Uned in IT engineerin
  
 ### Estrategias de programación y estructuras de datos  
 * [Academia de doctores] (https://github.com/colymore/Uned/tree/master/Epec-Academia/PEC)
+
+### Automatas, gramaticas y lenguajes. 
+* [Academia de doctores] (https://github.com/colymore/Uned/tree/master/Automatas/AutomatasFinitos)
