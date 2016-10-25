@@ -13,4 +13,4 @@ This repository contains solutions for practises career of Uned in IT engineerin
 * [Academia de doctores] (https://github.com/colymore/Uned/tree/master/Epec-Academia/PEC)
 
 ### Automatas, gramaticas y lenguajes. 
-* [Academia de doctores] (https://github.com/colymore/Uned/tree/master/Automatas/AutomatasFinitos)
+* [Automatas finitos] (https://github.com/colymore/Uned/tree/master/Automatas/AutomatasFinitos)
