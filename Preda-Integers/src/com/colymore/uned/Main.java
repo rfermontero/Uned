@@ -1,5 +1,7 @@
 package com.colymore.uned;
 
+import java.math.BigInteger;
+
 import com.colymore.uned.Input.Builder;
 import com.colymore.uned.strategy.PrintStrategy;
 import com.colymore.uned.strategy.PrintStrategyFactory;
@@ -9,10 +11,10 @@ public class Main {
 	public static void main(String[] args) {
 		Input input = getInput(args);
 
-		long result = new Karatsuba().resolve(input.getFirstInput(), input.getSecondInput());
+		BigInteger result = new Karatsuba().resolve(input.getFirstInput(), input.getSecondInput());
 
 		PrintStrategy printStrategy = PrintStrategyFactory.getResult(input);
-		printStrategy.resolve(result);
+		printStrategy.resolve(result.toString());
 	}
 
 	private static Input getInput(String[] args) {

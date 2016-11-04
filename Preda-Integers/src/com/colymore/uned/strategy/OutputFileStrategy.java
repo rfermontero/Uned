@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 
 class OutputFileStrategy implements PrintStrategy {
 
@@ -22,18 +23,12 @@ class OutputFileStrategy implements PrintStrategy {
 	}
 
 	@Override
-	public void resolve(long result) {
+	public void resolve(String result) {
 		try {
 			OutputStream outputStream = new FileOutputStream(file);
-			outputStream.write(longToBytes(result));
+			outputStream.write(result.getBytes(Charset.defaultCharset()));
 		} catch (IOException e) {
 			//empty
 		}
-	}
-
-	private byte[] longToBytes(long x) {
-		ByteBuffer buffer = ByteBuffer.allocate(8 / Byte.SIZE);
-		buffer.putLong(x);
-		return buffer.array();
 	}
 }
