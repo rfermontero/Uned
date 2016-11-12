@@ -6,15 +6,15 @@ import java.util.Scanner;
 
 public class Input {
 
-	private final String firstInput;
-	private final String secondInput;
+	private final BigNumber firstInput;
+	private final BigNumber secondInput;
 	private final boolean withTraces;
 	private final boolean withHelp;
 	private final String inputFile;
 	private final String outputFile;
 
-	private Input(String firstInput,
-			String secondInput,
+	private Input(BigNumber firstInput,
+			BigNumber secondInput,
 			boolean withTraces,
 			boolean withHelp,
 			String inputFile,
@@ -27,11 +27,11 @@ public class Input {
 		this.outputFile = outputFile;
 	}
 
-	public String getFirstInput() {
+	BigNumber getFirstInput() {
 		return firstInput;
 	}
 
-	public String getSecondInput() {
+	BigNumber getSecondInput() {
 		return secondInput;
 	}
 
@@ -39,7 +39,7 @@ public class Input {
 		return withTraces;
 	}
 
-	public boolean isWithHelp() {
+	boolean hasHelp() {
 		return withHelp;
 	}
 
@@ -56,9 +56,6 @@ public class Input {
 	}
 
 	static class Builder {
-
-		private final String pattern = "\\d \\D \\W \\w \\S \\s";
-
 
 		private String inputFile;
 		private String outputFIle;
@@ -98,7 +95,11 @@ public class Input {
 					} else {
 						String firstNumber = parseFirstNumber(inputFile);
 						String secondNumber = parseSecondNumber(inputFile);
-						return new Input(firstNumber, secondNumber, false, withTraces, inputFile, outputFIle);
+						return new Input(new BigNumber(firstNumber),
+								new BigNumber(secondNumber),
+								withTraces,
+								withHelp,
+								inputFile, outputFIle);
 					}
 				}
 			} catch (FileNotFoundException e) {

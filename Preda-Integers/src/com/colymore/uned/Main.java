@@ -1,20 +1,35 @@
 package com.colymore.uned;
 
-import java.math.BigInteger;
+import java.io.IOException;
 
 import com.colymore.uned.Input.Builder;
-import com.colymore.uned.strategy.PrintStrategy;
-import com.colymore.uned.strategy.PrintStrategyFactory;
+import com.colymore.uned.print.PrintStrategy;
+import com.colymore.uned.print.PrintStrategyFactory;
+import com.colymore.uned.resolver.Resolver;
+import com.colymore.uned.resolver.ResolverFactory;
 
 public class Main {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		Input input = getInput(args);
+		if (input.hasHelp()) {
+			printHelp();
+		} else {
+			PrintStrategy printStrategy = PrintStrategyFactory.getResult(input);
+			Resolver resolver = ResolverFactory.get(input, printStrategy);
+			BigNumber result = resolver.resolve(input.getFirstInput(), input.getSecondInput());
+			printStrategy.printResult("Final result is " + result.toString() +" \n");
+		}
+	}
 
-		BigInteger result = new Karatsuba().resolve(input.getFirstInput(), input.getSecondInput());
+	private static void printHelp() {
+		String help = "SINTAXIS:\n" +
+				"multiplica [-t][-h] [fichero_entrada] [fichero_salida]\n" +
+				"-t Traza\n" +
+				"-h Muestra esta ayuda\n" +
+				"fichero_salida Nombre del fichero de salida";
 
-		PrintStrategy printStrategy = PrintStrategyFactory.getResult(input);
-		printStrategy.resolve(result.toString());
+		System.out.println(help);
 	}
 
 	private static Input getInput(String[] args) {

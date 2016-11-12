@@ -1,4 +1,4 @@
-package com.colymore.uned.strategy;
+package com.colymore.uned.print;
 
 
 import com.colymore.uned.Input;
