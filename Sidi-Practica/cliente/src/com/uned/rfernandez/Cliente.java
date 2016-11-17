@@ -9,9 +9,9 @@ public class Cliente {
 	public static void main(String[] args) throws Exception {
 		Registry registry = LocateRegistry.getRegistry();
 		Server server = (Server) registry.lookup(Server.NAME);
-		UID uid = server.singUp("colymore", "21082108");
+		UID uid = server.singUp("colymore", "aa");
 		System.out.println(server);
-		boolean result = server.login("colymore", "21082108k");
+		boolean result = server.login("colymore", "aa");
 		System.out.println(result);
 	}
 }
