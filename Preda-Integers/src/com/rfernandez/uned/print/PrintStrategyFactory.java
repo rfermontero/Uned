@@ -1,7 +1,7 @@
-package com.colymore.uned.print;
+package com.rfernandez.uned.print;
 
 
-import com.colymore.uned.Input;
+import com.rfernandez.uned.Input;
 
 public class PrintStrategyFactory {
 

@@ -1,4 +1,4 @@
-package com.colymore.uned.resolver;
+package com.rfernandez.uned.resolver;
 
 import java.math.BigInteger;
 

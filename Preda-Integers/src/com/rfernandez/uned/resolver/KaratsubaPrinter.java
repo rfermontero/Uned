@@ -1,9 +1,9 @@
-package com.colymore.uned.resolver;
+package com.rfernandez.uned.resolver;
 
 import java.io.IOException;
 import java.math.BigInteger;
 
-import com.colymore.uned.print.PrintStrategy;
+import com.rfernandez.uned.print.PrintStrategy;
 
 class KaratsubaPrinter extends Karatsuba {
 

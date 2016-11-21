@@ -1,4 +1,4 @@
-package com.colymore.uned.print;
+package com.rfernandez.uned.print;
 
 class ConsoleStrategy implements PrintStrategy {
 

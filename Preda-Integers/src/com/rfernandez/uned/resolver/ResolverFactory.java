@@ -1,7 +1,7 @@
-package com.colymore.uned.resolver;
+package com.rfernandez.uned.resolver;
 
-import com.colymore.uned.Input;
-import com.colymore.uned.print.PrintStrategy;
+import com.rfernandez.uned.Input;
+import com.rfernandez.uned.print.PrintStrategy;
 
 public class ResolverFactory {
 

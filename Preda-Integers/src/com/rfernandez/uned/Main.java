@@ -1,13 +1,13 @@
-package com.colymore.uned;
+package com.rfernandez.uned;
 
 import java.io.IOException;
 import java.math.BigInteger;
 
-import com.colymore.uned.Input.Builder;
-import com.colymore.uned.print.PrintStrategy;
-import com.colymore.uned.print.PrintStrategyFactory;
-import com.colymore.uned.resolver.Resolver;
-import com.colymore.uned.resolver.ResolverFactory;
+import com.rfernandez.uned.Input.Builder;
+import com.rfernandez.uned.print.PrintStrategy;
+import com.rfernandez.uned.print.PrintStrategyFactory;
+import com.rfernandez.uned.resolver.Resolver;
+import com.rfernandez.uned.resolver.ResolverFactory;
 
 public class Main {
 
