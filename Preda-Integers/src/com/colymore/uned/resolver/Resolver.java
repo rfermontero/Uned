@@ -1,7 +1,7 @@
 package com.colymore.uned.resolver;
 
-import com.colymore.uned.BigNumber;
+import java.math.BigInteger;
 
 public interface Resolver {
-	BigNumber resolve(BigNumber left, BigNumber right);
+	BigInteger resolve(BigInteger left, BigInteger right);
 }

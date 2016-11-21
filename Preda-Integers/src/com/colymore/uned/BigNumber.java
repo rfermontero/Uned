@@ -1,11 +1,11 @@
 package com.colymore.uned;
 
-public class BigNumber implements Comparable<BigNumber> {
+class BigNumber implements Comparable<BigNumber> {
 
 	private final static long MASK = 0xffffffffL;
 	private int[] digits;
 
-	public BigNumber(String number) {
+	private BigNumber(String number) {
 		int length = number.length();
 		digits = new int[length];
 		for (int i = 0; i < length; i++) {
@@ -64,7 +64,7 @@ public class BigNumber implements Comparable<BigNumber> {
 		return new BigNumber(result);
 	}
 
-	public int getLength() {
+	private int getLength() {
 		return digits.length;
 	}
 

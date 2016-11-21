@@ -1,37 +1,30 @@
 package com.colymore.uned.resolver;
 
-import com.colymore.uned.BigNumber;
+import java.math.BigInteger;
 
 class Karatsuba implements Resolver {
 
-	private final BigNumber baseComparator;
-
-	Karatsuba() {
-		baseComparator = new BigNumber("10");
-	}
-
-	public BigNumber resolve(BigNumber left, BigNumber right) {
-
-		int size1 = left.getLength();
-		int size2 = right.getLength();
-		int number = Math.max(size1, size2);
-		if (number < 10) {
+	public BigInteger resolve(BigInteger left, BigInteger right) {
+		int digits = Math.max(left.bitLength(), left.bitLength());
+		if (digits <= 10) {
 			return left.multiply(right);
+		} else {
+			digits = digits / 2;
+			BigInteger firstLeft = left.shiftRight(digits);
+			BigInteger secondLeft = left.subtract(firstLeft.shiftLeft(digits));
+			BigInteger firstRight = right.shiftRight(digits);
+			BigInteger secondRight = right.subtract(firstRight.shiftLeft(digits));
+
+			BigInteger z2 = resolve(firstLeft, firstRight);
+			BigInteger z0 = resolve(secondLeft, secondRight);
+			BigInteger z1 = resolve(firstLeft.add(secondLeft),
+					firstRight.add(secondRight))
+					.subtract(z2)
+					.subtract(z0);
+
+			return z2.shiftLeft(2 * digits).add(z1.shiftLeft(digits)).add(z0);
 		}
-		number = (number / 2) + (number % 2);
-		long m = (long) Math.pow(10, number);
 
-		long b = left.toLong() / m;
-		long a = left.toLong() - (b * m);
-		long d = right.toLong() / m;
-		long c = right.toLong() - (d * number);
-
-		BigNumber z0 = resolve(new BigNumber(a), new BigNumber(c));
-		BigNumber z1 = resolve(new BigNumber(a + b), new BigNumber(c + d));
-		BigNumber z2 = resolve(new BigNumber(b), new BigNumber(d));
-
-		return new BigNumber(z0.toLong() + ((z1.toLong() - z0.toLong() - z2.toLong()) * m) +
-				(z2.toLong() * (long) (Math.pow(10, 2 * number))));
 	}
 }
 

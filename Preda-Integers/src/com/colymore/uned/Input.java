@@ -2,36 +2,34 @@ package com.colymore.uned;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.math.BigInteger;
 import java.util.Scanner;
 
 public class Input {
 
-	private final BigNumber firstInput;
-	private final BigNumber secondInput;
+	private final BigInteger firstInput;
+	private final BigInteger secondInput;
 	private final boolean withTraces;
 	private final boolean withHelp;
-	private final String inputFile;
 	private final String outputFile;
 
-	private Input(BigNumber firstInput,
-			BigNumber secondInput,
+	private Input(String firstInput,
+			String secondInput,
 			boolean withTraces,
 			boolean withHelp,
-			String inputFile,
 			String outputFile) {
-		this.firstInput = firstInput;
-		this.secondInput = secondInput;
+		this.firstInput = new BigInteger(firstInput, 10);
+		this.secondInput = new BigInteger(secondInput, 10);
 		this.withTraces = withTraces;
 		this.withHelp = withHelp;
-		this.inputFile = inputFile;
 		this.outputFile = outputFile;
 	}
 
-	BigNumber getFirstInput() {
+	BigInteger getFirstInput() {
 		return firstInput;
 	}
 
-	BigNumber getSecondInput() {
+	BigInteger getSecondInput() {
 		return secondInput;
 	}
 
@@ -39,16 +37,12 @@ public class Input {
 		return withTraces;
 	}
 
-	boolean hasHelp() {
+	boolean isWithHelp() {
 		return withHelp;
 	}
 
-	public String getInputFile() {
-		return inputFile;
-	}
-
 	public Boolean hasOutputFile() {
-		return outputFile!=null;
+		return outputFile != null;
 	}
 
 	public String getOutputFile() {
@@ -58,7 +52,7 @@ public class Input {
 	static class Builder {
 
 		private String inputFile;
-		private String outputFIle;
+		private String outputFile;
 		private boolean withHelp;
 		private boolean withTraces;
 
@@ -71,7 +65,7 @@ public class Input {
 		}
 
 		Builder withOutput(String file) {
-			this.outputFIle = file;
+			this.outputFile = file;
 			return this;
 		}
 
@@ -88,18 +82,14 @@ public class Input {
 		Input build() {
 			try {
 				if (withHelp) {
-					return new Input(null, null, false, true, null, null);
+					return new Input(null, null, false, true, null);
 				} else {
 					if (inputFile == null) {
 						throw new IllegalArgumentException("Input file should exists");
 					} else {
 						String firstNumber = parseFirstNumber(inputFile);
 						String secondNumber = parseSecondNumber(inputFile);
-						return new Input(new BigNumber(firstNumber),
-								new BigNumber(secondNumber),
-								withTraces,
-								withHelp,
-								inputFile, outputFIle);
+						return new Input(firstNumber, secondNumber, withTraces, false, outputFile);
 					}
 				}
 			} catch (FileNotFoundException e) {

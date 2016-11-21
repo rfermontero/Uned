@@ -5,10 +5,10 @@ import com.colymore.uned.print.PrintStrategy;
 
 public class ResolverFactory {
 
-	public static Resolver get(Input input, PrintStrategy printStrategy){
-		if(input.isWithTraces()){
+	public static Resolver get(Input input, PrintStrategy printStrategy) {
+		if (input.isWithTraces()) {
 			return new KaratsubaPrinter(printStrategy);
-		}else{
+		} else {
 			return new Karatsuba();
 		}
 	}

@@ -1,6 +1,7 @@
 package com.colymore.uned;
 
 import java.io.IOException;
+import java.math.BigInteger;
 
 import com.colymore.uned.Input.Builder;
 import com.colymore.uned.print.PrintStrategy;
@@ -12,12 +13,12 @@ public class Main {
 
 	public static void main(String[] args) throws IOException {
 		Input input = getInput(args);
-		if (input.hasHelp()) {
+		if (input.isWithHelp()) {
 			printHelp();
 		} else {
 			PrintStrategy printStrategy = PrintStrategyFactory.getResult(input);
 			Resolver resolver = ResolverFactory.get(input, printStrategy);
-			BigNumber result = resolver.resolve(input.getFirstInput(), input.getSecondInput());
+			BigInteger result = resolver.resolve(input.getFirstInput(), input.getSecondInput());
 			printStrategy.printResult("Final result is " + result.toString() +" \n");
 		}
 	}

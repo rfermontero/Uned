@@ -1,8 +1,8 @@
 package com.colymore.uned.resolver;
 
 import java.io.IOException;
+import java.math.BigInteger;
 
-import com.colymore.uned.BigNumber;
 import com.colymore.uned.print.PrintStrategy;
 
 class KaratsubaPrinter extends Karatsuba {
@@ -14,8 +14,8 @@ class KaratsubaPrinter extends Karatsuba {
 	}
 
 	@Override
-	public BigNumber resolve(BigNumber left, BigNumber right) {
-		final BigNumber result;
+	public BigInteger resolve(BigInteger left, BigInteger right) {
+		final BigInteger result;
 		try {
 			printStrategy.trace(getTrace(left, right));
 			result = super.resolve(left, right);
@@ -27,7 +27,7 @@ class KaratsubaPrinter extends Karatsuba {
 		}
 	}
 
-	private String getTrace(BigNumber left, BigNumber right) {
+	private String getTrace(BigInteger left, BigInteger right) {
 		return "Applying karatsuba algorithm for " + left.toString() + " and " + right.toString() + System.lineSeparator();
 	}
 }
