@@ -1,11 +1,11 @@
-package com.uned.rfernandez.auth.backend.model;
+package com.uned.rfernandez.services.data.model;
 
-public class User {
+public class Repository {
 
 	private final String name;
 	private final String password;
 
-	public User(String name, String password) {
+	public Repository(String name, String password) {
 		this.name = name;
 		this.password = password;
 	}
@@ -23,8 +23,9 @@ public class User {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 
-		User user = (User) o;
-		return name != null ? name.equals(user.name) : user.name == null;
+		Repository that = (Repository) o;
+
+		return name != null ? name.equals(that.name) : that.name == null;
 	}
 
 	@Override

@@ -1,11 +1,10 @@
-package com.uned.rfernandez;
+package com.uned.rfernandez.services.impls;
 
 import java.rmi.RemoteException;
 
-import com.uned.rfernandez.auth.ServicioAutenticacionImpl;
-import com.uned.rfernandez.auth.ServicioAutenticacionInterface;
-import com.uned.rfernandez.auth.backend.ServicioDatosImpl;
-import com.uned.rfernandez.auth.backend.ServicioDatosInterface;
+import com.uned.rfernandez.services.auth.ServicioAutenticacionInterface;
+import com.uned.rfernandez.services.data.ServicioDatosImpl;
+import com.uned.rfernandez.services.data.ServicioDatosInterface;
 
 public class ServicesFactory {
 
@@ -13,7 +12,7 @@ public class ServicesFactory {
 	private static ServicioDatosInterface dataService;
 
 
-	static ServicioAutenticacionInterface getAuthService() {
+	public static ServicioAutenticacionInterface getAuthService() {
 		if (authService == null) {
 			try {
 				authService = ServicioAutenticacionImpl.getInstance();
@@ -24,7 +23,7 @@ public class ServicesFactory {
 		return authService;
 	}
 
-	public static ServicioDatosInterface getDataService() {
+	static ServicioDatosInterface getDataService() {
 		if (dataService == null) {
 			dataService = ServicioDatosImpl.getInstance();
 		}
