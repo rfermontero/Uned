@@ -17,9 +17,12 @@ public class KaratsubaTest {
 	public void karatsubaShouldMultiply() {
 		Karatsuba karatsuba = new Karatsuba();
 
+		long time = System.currentTimeMillis();
 		BigInteger result = karatsuba.resolve(new BigInteger(FIRST_NUMBER), new BigInteger(SECOND_NUMBER));
+		System.out.println(System.currentTimeMillis() - time);
+		time = System.currentTimeMillis();
 		BigInteger bigIntegerResult = new BigInteger(FIRST_NUMBER).multiply(new BigInteger(SECOND_NUMBER));
-
+		System.out.println(System.currentTimeMillis() - time);
 		assertEquals(result.toString(), bigIntegerResult.toString());
 	}
 
