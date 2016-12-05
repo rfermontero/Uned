@@ -71,7 +71,7 @@ sort -k6 -nr -k7 -nr <tmp.out | head -10 > ./final.out
 cat ./final.out
 #--REMOVE FILES--#
 rm tmp.out
-rm tmp.out
+rm final.out
 exit;
 
 
