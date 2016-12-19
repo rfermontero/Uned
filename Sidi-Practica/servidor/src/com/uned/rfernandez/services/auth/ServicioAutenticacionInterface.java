@@ -1,19 +1,18 @@
-package com.uned.rfernandez;
+package com.uned.rfernandez.services.auth;
 
-import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.server.UID;
 
 import com.uned.rfernandez.services.data.model.SignUpException;
 
-interface Server extends Remote {
-	String NAME = "Server";
+
+public interface ServicioAutenticacionInterface {
 
 	UID singUpClient(String name, String password) throws RemoteException, SignUpException;
 
-	boolean loginClient(String uniqueId, String password) throws RemoteException;
+	boolean loginClient(String name, String password) throws RemoteException;
 
 	UID singUpRepository(String name, String password) throws RemoteException, SignUpException;
 
-	boolean loginRepository(String uniqueId, String password) throws RemoteException;
+	boolean loginRepository(String name, String password) throws RemoteException;
 }

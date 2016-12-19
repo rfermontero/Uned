@@ -5,17 +5,17 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UID;
 import java.rmi.server.UnicastRemoteObject;
 
-import com.uned.rfernandez.auth.ServicioAutenticacionInterface;
-import com.uned.rfernandez.auth.backend.model.SignUpException;
+import com.uned.rfernandez.services.auth.ServicioAutenticacionInterface;
+import com.uned.rfernandez.services.data.model.SignUpException;
+import com.uned.rfernandez.services.impls.ServicesFactory;
 
-public class Servidor extends UnicastRemoteObject implements Server{
+class Servidor extends UnicastRemoteObject implements Server {
 
 	private static final String CODEBASE = "java.rmi.server.codebase";
 
 	private final ServicioAutenticacionInterface servicioAutenticacionInterface;
 
 	private Servidor(ServicioAutenticacionInterface servicioAutenticacionInterface) throws RemoteException {
-		super();
 		this.servicioAutenticacionInterface = servicioAutenticacionInterface;
 		try {
 			registerService();
@@ -38,8 +38,8 @@ public class Servidor extends UnicastRemoteObject implements Server{
 		}
 	}
 
-	private static void setCodeBase(Class<?> c) {
-		String root = c.getProtectionDomain().getCodeSource().getLocation().toString();
+	private static void setCodeBase(Class<?> clazz) {
+		String root = clazz.getProtectionDomain().getCodeSource().getLocation().toString();
 		String path = System.getProperty(CODEBASE);
 		if (path != null && !path.isEmpty()) {
 			root = path + " " + root;
@@ -48,12 +48,22 @@ public class Servidor extends UnicastRemoteObject implements Server{
 	}
 
 	@Override
-	public UID singUp(String name, String password) throws RemoteException, SignUpException {
-		return servicioAutenticacionInterface.singUp(name, password);
+	public UID singUpClient(String name, String password) throws RemoteException, SignUpException {
+		return servicioAutenticacionInterface.singUpClient(name, password);
 	}
 
 	@Override
-	public boolean login(String uniqueId, String password) throws RemoteException {
-		return servicioAutenticacionInterface.login(uniqueId, password);
+	public boolean loginClient(String uniqueId, String password) throws RemoteException {
+		return servicioAutenticacionInterface.loginClient(uniqueId, password);
+	}
+
+	@Override
+	public UID singUpRepository(String name, String password) throws RemoteException, SignUpException {
+		return servicioAutenticacionInterface.singUpRepository(name, password);
+	}
+
+	@Override
+	public boolean loginRepository(String uniqueId, String password) throws RemoteException {
+		return servicioAutenticacionInterface.loginRepository(uniqueId, password);
 	}
 }

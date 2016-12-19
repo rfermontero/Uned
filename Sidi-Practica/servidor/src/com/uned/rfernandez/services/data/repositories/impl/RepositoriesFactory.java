@@ -1,6 +1,6 @@
-package com.uned.rfernandez.auth.backend.repositories.impl;
+package com.uned.rfernandez.services.data.repositories.impl;
 
-import com.uned.rfernandez.auth.backend.repositories.AuthRepository;
+import com.uned.rfernandez.services.data.repositories.AuthRepository;
 
 public class RepositoriesFactory {
 
