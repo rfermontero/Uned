@@ -11,7 +11,7 @@
 #include <fcntl.h>
 #include <stdbool.h>
 
-static const char FILE_NAME_PROCESS_1[] = "/fuente1.c";
+static const char * FILE_NAME_PROCESS_1 = "/fuente1.c";
 static const char * FIFO_FILE_NAME = "fichero1";
 static const int MESSAGE_TYPE = 1;
 
