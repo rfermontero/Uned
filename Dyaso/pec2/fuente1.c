@@ -4,13 +4,15 @@
 #include <sys/wait.h>
 #include <sys/ioctl.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 #include <string.h>
 #include <signal.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <stdbool.h>
 
 static const char FILE_NAME_PROCESS_1[] = "/fuente1.c";
-static const char FIFO_FILE_NAME[] = "./fichero1";
+static const char * FIFO_FILE_NAME = "fichero1";
 static const int MESSAGE_TYPE = 1;
 
 struct Message {
@@ -24,7 +26,7 @@ void waitForMessageInQueue(key_t key);
 void sendMessageOverPipe(int fd[], char message[]);
 void onMessageReceived(struct Message message);
 void killProcess(pid_t pid);
-void writeMessageInFifo(char message[]);
+bool writeMessageInFifo(char message[]);
 int getMessageQueueId(key_t key);
 
 pid_t p2;
@@ -64,24 +66,36 @@ void handleProcess2(pid_t pid, int fd[]){
                 buffer = malloc(count+1);
                 buffer[0] = byte;
                 if (read(fd[0], buffer+1, count) == count){
-                    fprintf(stdout,"%s\n", buffer);
-                    writeMessageInFifo(buffer);
-                    execl(".", "Ej2", NULL);
+                    if(writeMessageInFifo(buffer)){
+                        printf("Finished writting in FIFO\n");
+                        free(buffer);
+                        execl("./Ej2", "Ej2", NULL);
+                    }
                 }
             }
-            free(buffer);
-    }
+    }    
 }
 
-void writeMessageInFifo(char message[]){
-    if (mkfifo(FIFO_FILE_NAME, 0600) < 0) {
-        printf("Error creating FIFO");
+bool writeMessageInFifo(char message[]){
+    printf("Creating fifo in %s\n", FIFO_FILE_NAME);
+    if (mkfifo(FIFO_FILE_NAME, O_RDWR) == 0) {
+        printf("Fifo created\n");
+        int fifo;
+        fifo = open(FIFO_FILE_NAME, O_RDWR);
+        if(fifo < 0) {
+            printf("Error opening fifo: %s\n", strerror(errno));
+            return false;
+        }
+        int writeResult;
+        writeResult = write(fifo, message, strlen(message));
+        if(writeResult<0){
+           printf("Error writing fifo: %s\n", strerror(errno));
+           return false;
+        }
+        return true;
     } else {
-        int pipe;
-        pipe = open(FIFO_FILE_NAME, O_WRONLY);
-        write(pipe, message, strlen(message));
-        close(pipe);
-        printf("closed\n");
+        printf("Error creating fifo %s\n", strerror(errno));
+        return false;
     }
 }
 
