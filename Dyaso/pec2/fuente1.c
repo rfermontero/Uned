@@ -20,7 +20,7 @@ struct Message {
     pid_t pid;
 };
 
-void handleProcess2(pid_t pid, int fd[]);
+void handleProcess2(int fd[]);
 void getMessage();
 void waitForMessageInQueue(key_t key);
 void sendMessageOverPipe(int fd[], char message[]);
@@ -41,10 +41,10 @@ int main() {
 
     switch(p2 = fork()){
         case -1: 
-            printf("Se ha producido un error");
+            printf("Error");
             break;
         case 0:
-            handleProcess2(p2, fd);
+            handleProcess2(fd);
             break;
         default:
             getMessage(message, sizeof(message) - 1);
@@ -56,7 +56,7 @@ int main() {
     return 0;
 }
 
-void handleProcess2(pid_t pid, int fd[]){
+void handleProcess2(int fd[]){
     char *buffer = NULL;
     char byte = 0;
     int count = 0;
@@ -67,7 +67,6 @@ void handleProcess2(pid_t pid, int fd[]){
                 buffer[0] = byte;
                 if (read(fd[0], buffer+1, count) == count){
                     if(writeMessageInFifo(buffer)){
-                        printf("Finished writting in FIFO\n");
                         free(buffer);
                         execl("./Ej2", "Ej2", NULL);
                     }
@@ -77,9 +76,7 @@ void handleProcess2(pid_t pid, int fd[]){
 }
 
 bool writeMessageInFifo(char message[]){
-    printf("Creating fifo in %s\n", FIFO_FILE_NAME);
-    if (mkfifo(FIFO_FILE_NAME, O_RDWR) == 0) {
-        printf("Fifo created\n");
+    if (mkfifo(FIFO_FILE_NAME, S_IRWXU) == 0) {
         int fifo;
         fifo = open(FIFO_FILE_NAME, O_RDWR);
         if(fifo < 0) {
@@ -92,6 +89,7 @@ bool writeMessageInFifo(char message[]){
            printf("Error writing fifo: %s\n", strerror(errno));
            return false;
         }
+        printf("El proceso P2 (PID=%d, Ej1) transmite un mensaje al proceso P2 por una tubería FIFO\n", getpid());
         return true;
     } else {
         printf("Error creating fifo %s\n", strerror(errno));
@@ -106,6 +104,7 @@ void getMessage(char *message){
 
 void sendMessageOverPipe(int fd[], char message[]){
     close(fd[0]);
+    printf("El proceso P1 (PID=%d, Ej1) transmite un mensaje al proceso P2 por una tubería anonima\n", getpid());
     write(fd[1], message, (strlen(message)+1));
 }
 
@@ -127,7 +126,6 @@ void waitForMessageInQueue(key_t key){
 }
 
 void onMessageReceived(struct Message message){
-    printf("received\n");
     pid_t messageSenderPid = message.pid;
     char filePath[1024];
     killProcess(messageSenderPid);
