@@ -1,15 +1,17 @@
 #include <stdio.h>
 #include <errno.h>
-#include <sys/msg.h>
-#include <sys/wait.h>
-#include <sys/ioctl.h>
 #include <stdlib.h>
-#include <sys/stat.h>
 #include <string.h>
+#include <stdbool.h>
 #include <signal.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <stdbool.h>
+#include <time.h>
+#include <sys/stat.h>
+#include <sys/msg.h>
+#include <sys/wait.h>
+#include <sys/ioctl.h>
+#include <sys/times.h>
 
 static const char * FILE_NAME_PROCESS_1 = "/Ej1";
 static const char * FIFO_FILE_NAME = "fichero1";
@@ -29,23 +31,29 @@ void getMessage(char *message);
 void waitForMessageInQueue(key_t key);
 //Send message over pipe as fd
 void sendMessageOverPipe(int fd[], char message[]);
-//Handle message received in order to kill process arg, p2 and remove unused files
-void onMessageReceived(pid_t pidToKill);
-//Send a SIGKILL sinnal to pid
-void killProcess(pid_t pid);
+//Kill 2 processes
+void killProcess(pid_t pidToKill, pid_t pidToKill2);
 //Write message in FIFO attached to constant FIFO_FILE_NAME
 bool writeMessageInFifo(char message[]);
 //Get a message queue id for key
 int getMessageQueueId(key_t key);
+//Delete file
+void deleteFile(const char *file);
+//Print usage time
+void printTime();
 
-pid_t p2; //Global variable to keep p2 pid
+pid_t p2;//Global variable to keep p2 pid
+clock_t start;//Global variable clock start time
+struct tms pb1;//Global struct tms start
 
 int main() {
 
     int fd[2];
     char message[1024];
     key_t key;
-            
+
+    start = times(&pb1);//Save init time
+
     pipe(fd); //Create a pipe in FD
 
     switch(p2 = fork()){
@@ -128,19 +136,24 @@ void waitForMessageInQueue(key_t key){
                 0/*Wait for message flag*/);
 
              pid_t pidReceived = message.pid;
-             onMessageReceived(pidReceived);
-
+             killProcess(pidReceived, p2);
+             deleteFile(FIFO_FILE_NAME);
+             printTime();
+             exit(0);
     } else {
         printf("Error creando cola de mensajes: %s\n", strerror(errno));
     }
 }
 
-void onMessageReceived(pid_t pidToKill){
+void killProcess(pid_t pidToKill, pid_t p2){
+    kill(pidToKill, SIGKILL);
+    kill(p2, SIGKILL);
+}
+
+void deleteFile(const char * file){
     char filePath[1024];
-    killProcess(pidToKill);
-    killProcess(p2);
     if (getcwd(filePath, sizeof(filePath)) != NULL){
-        strcat(filePath, FIFO_FILE_NAME);
+        strcat(filePath, file);
         remove(filePath);
     }
 }
@@ -159,6 +172,12 @@ int getMessageQueueId(key_t key){
     }
 }
 
-void killProcess(pid_t pid){
-    kill(pid, SIGKILL);
+void printTime(){
+    struct tms pb2;
+    clock_t end;
+    int CLK_TCK;
+    end=times(&pb2);
+    CLK_TCK=sysconf(_SC_CLK_TCK);
+    printf("\nTiempo real = %g segundos\n", (float)(end-start)/ CLK_TCK); 
+    printf("Tiempo de uso de la CPU en modo usuario = %gsegundos\n",(float)(pb2.tms_utime-pb1.tms_utime)/ CLK_TCK);
 }

@@ -17,6 +17,7 @@ static const char * FILE_NAME_PROCESS_1 = "/Ej1";
 static const char * FIFO_FILE_NAME = "fichero1";
 static const int MESSAGE_TYPE = 1;
 
+//Struct for shared message over MessageQueue
 struct Message {
     long id;
     pid_t pid;
@@ -69,8 +70,8 @@ int main() {
 		                sizeof(pid_t),
 		                IPC_NOWAIT);
 		            if(sendop==0){
-		               printf("El proceso P3 (PID=%d, Ej3) transmite un mensaje al proceso P1 por una cola de mensajes\n", getpid());
-		               pause();
+		                printf("El proceso P3 (PID=%d, Ej3) transmite un mensaje al proceso P1 por una cola de mensajes\n", getpid());
+		                pause();
 		            } else {
 		            	printf("Error enviando mensaje a cola de mensajes: %s\n", strerror(errno));
 		            }
