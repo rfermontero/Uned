@@ -13,7 +13,7 @@
 
 #define MAX_BUF 1024 * 4
 
-static const char * FILE_NAME_PROCESS_1 = "/Ej1";
+static const char * FILE_NAME_PROCESS_1 = "Ej1";
 static const char * FIFO_FILE_NAME = "fichero1";
 static const int MESSAGE_TYPE = 1;
 
@@ -25,8 +25,8 @@ struct Message {
 
 //Allocate a shared memory id
 int createSharedMemoryId(key_t key, int size);
-//Get key_t for file defined as a constant FIFO_FILE_NAME
-int getKeyForFile();
+//Get key_t for file
+key_t getKeyForFile(const char * file);
 //Perform a P operation over operations struct and applies to semaphoreid
 int P(int semaphoreId, struct sembuf *operations);
 //Perform a V operation over operations struct and applies to semaphoreid
@@ -49,10 +49,10 @@ int main() {
 	int semop;
 	int messageQueueId;
 	int sendop;
-    struct sembuf operations[1];
-    struct Message messagebuf;
+  struct sembuf operations[1];
+  struct Message messagebuf;
 
-    key = getKeyForFile();
+  key = getKeyForFile(FIFO_FILE_NAME);
 	if(key != -1){
 			sharedMemoryId = createSharedMemoryId(key, sizeof(message));
 			semaphoreId = createSemaphoreId(key);
@@ -75,7 +75,9 @@ int main() {
 		            } else {
 		            	printf("Error enviando mensaje a cola de mensajes: %s\n", strerror(errno));
 		            }
-				  }
+				  } else {
+            printf("Error abriendo cola de mensajes: %s\n", strerror(errno));
+          }
 			} else {
 				printf("Error leyendo variable de memoria compartida: %s\n", strerror(errno));
 			}
@@ -89,18 +91,11 @@ int createSharedMemoryId(key_t key, int size){
   return shmget(key, size, IPC_CREAT | 0600);
 }
 
-key_t getKeyForFile(){
-  char filePath[1024];
-  if (getcwd(filePath, sizeof(filePath)) != NULL){
-        strcat(filePath, "/");
-        strcat(filePath, FIFO_FILE_NAME);
-        return ftok(filePath, 0777);
-  } else {
-    return (key_t) -1;
-  }
+key_t getKeyForFile(const char * file) {
+  return ftok(file, 0777);
 }
 
-int createSemaphoreId(key_t key){
+int createSemaphoreId(key_t key) {
   return semget(key, 3, IPC_CREAT| 0600);
 }
 
@@ -125,15 +120,11 @@ int V(int semaphoreId, struct sembuf *operations){
 }
 
 int getMessageQueueId(key_t key){
-    char filePath[1024];
     int messageQueueId;
-    if (getcwd(filePath, sizeof(filePath)) != NULL){
-        strcat(filePath, FILE_NAME_PROCESS_1);
-        key = ftok(filePath, 0777);
-        if (key != (key_t)-1) {
-            return msgget(key, 0600 | IPC_CREAT);
-        } else {
-            return -1;
-        }
-    }
+    key = ftok(FILE_NAME_PROCESS_1, 0777);
+    if (key != (key_t)-1) {
+       return msgget(key, 0600 | IPC_CREAT);
+    } else {
+      return -1;
+  }
 }

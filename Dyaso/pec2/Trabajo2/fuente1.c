@@ -13,7 +13,7 @@
 #include <sys/ioctl.h>
 #include <sys/times.h>
 
-static const char * FILE_NAME_PROCESS_1 = "/Ej1";
+static const char * FILE_NAME_PROCESS_1 = "Ej1";
 static const char * FIFO_FILE_NAME = "fichero1";
 static const int MESSAGE_TYPE = 1;
 
@@ -151,24 +151,16 @@ void killProcess(pid_t pidToKill, pid_t p2){
 }
 
 void deleteFile(const char * file){
-    char filePath[1024];
-    if (getcwd(filePath, sizeof(filePath)) != NULL){
-        strcat(filePath, file);
-        remove(filePath);
-    }
+    remove(file);
 }
 
 int getMessageQueueId(key_t key){
-    char filePath[1024];
     int messageQueueId;
-    if (getcwd(filePath, sizeof(filePath)) != NULL){
-        strcat(filePath, FILE_NAME_PROCESS_1);
-        key = ftok(filePath, 0777);
-        if (key != (key_t)-1) {
-            return msgget(key, 0600 | IPC_CREAT);
-        } else {
-            return -1;
-        }
+    key = ftok(FILE_NAME_PROCESS_1, 0777);
+    if (key != (key_t)-1) {
+        return msgget(key, 0600 | IPC_CREAT);
+    } else {
+        return -1;
     }
 }
 

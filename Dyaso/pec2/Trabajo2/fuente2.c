@@ -25,7 +25,7 @@ char* shareContentInMemoryId(int memoryId);
 //Allocate a shared memory id
 int createSharedMemoryId(key_t key);
 //Get key_t for file defined as a constant FIFO_FILE_NAME
-int getKeyForFile();
+key_t getKeyForFile(const char * file);
 //Create a semaphore attached to key
 int createSemaphoreId(key_t key);
 //Perform a P operation over operations struct and applies to semaphoreid
@@ -52,7 +52,7 @@ int main() {
       return -1;
     }
 
-    key = getKeyForFile();
+    key = getKeyForFile(FIFO_FILE_NAME);
 
     if(key != -1){
       sharedMemoryId = createSharedMemoryId(key);
@@ -126,15 +126,8 @@ int createSemaphoreId(key_t key){
   return semget(key, 3, IPC_CREAT | 0600);
 }
 
-key_t getKeyForFile(){
-  char filePath[1024];
-  if (getcwd(filePath, sizeof(filePath)) != NULL){
-        strcat(filePath, "/");//Add / to get absolute file path
-        strcat(filePath, FIFO_FILE_NAME);
-        return ftok(filePath, 0777);
-  } else {
-    return (key_t) -1;
-  }
+key_t getKeyForFile(const char * file){
+  return ftok(file, 0777);
 }
 
 void saveMesageInBuffer(char message[]){
