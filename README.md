@@ -21,4 +21,8 @@ This repository contains solutions for practises career of Uned in IT engineerin
 ### Programacion y estructuras de datos avanzadas
 * [Multiplicar numeros grandes] (https://github.com/colymore/Uned/tree/master/Preda-Integers)
 
+### Diseño y administracion de sistemas operativos
+* [MiTop] https://github.com/colymore/Uned/tree/master/Dyaso/pec1
+* [Comunicacion procesos C] https://github.com/colymore/Uned/tree/master/Dyaso/pec2
+
 
