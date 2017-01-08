@@ -17,7 +17,7 @@ public class Main {
 			printHelp();
 		} else {
 			Printer printer = PrintStrategyFactory.getResult(input);
-			Resolver resolver = ResolverFactory.get(input, printer);
+			Resolver resolver = ResolverFactory.get(printer, input);
 			resolver.resolve(input.getNumber());
 		}
 	}

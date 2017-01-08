@@ -46,6 +46,10 @@ public class Main {
 			case 0:
 				throw new IllegalArgumentException("Need more arguments");
 			case 1:
+				if(hasHelp(args[0])){
+					builder.withHelp();
+					break;
+				}
 				builder.withInput(args[0]);
 				break;
 			case 2:

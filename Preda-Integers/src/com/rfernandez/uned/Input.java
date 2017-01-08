@@ -18,8 +18,8 @@ public class Input {
 			boolean withTraces,
 			boolean withHelp,
 			String outputFile) {
-		this.firstInput = new BigInteger(firstInput, 10);
-		this.secondInput = new BigInteger(secondInput, 10);
+		this.firstInput = new BigInteger(firstInput != null ? firstInput : "0", 10);
+		this.secondInput = new BigInteger(secondInput != null ? secondInput : "0", 10);
 		this.withTraces = withTraces;
 		this.withHelp = withHelp;
 		this.outputFile = outputFile;

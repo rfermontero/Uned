@@ -1,19 +1,17 @@
 package com.uned.rfernandez.resolver;
 
-import java.util.Optional;
-
+import com.uned.rfernandez.Input;
 import com.uned.rfernandez.print.Printer;
 
 class Queens implements Resolver {
 
-	private Optional<Printer> printer = Optional.empty();
+	private final Printer printer;
+	private final Input input;
 	private int[] solution;
 
-	Queens(Printer printer) {
-		this.printer = Optional.ofNullable(printer);
-	}
-
-	Queens() {
+	Queens(Printer printer, Input input) {
+		this.printer = printer;
+		this.input = input;
 	}
 
 	@Override
@@ -25,16 +23,19 @@ class Queens implements Resolver {
 
 	private void resolveHelper(int column) {
 		if (column == solution.length) {
-			printer.ifPresent(printer -> printer.printResult(solution));
+			printer.printResult(solution);
 		} else {
 			for (int row = 0; row < solution.length; row++) {
-				int finalRow = row;
 				if (isValid(column, row)) {
 					solution[column] = row;
-					printer.ifPresent(printer -> printer.accept(column, finalRow));
+					if (input.isWithTraces()) {
+						printer.accept(column, row);
+					}
 					resolveHelper(column + 1);
 				} else {
-					printer.ifPresent(printer -> printer.denied(column, finalRow));
+					if (input.isWithTraces()) {
+						printer.denied(column, row);
+					}
 				}
 			}
 		}
