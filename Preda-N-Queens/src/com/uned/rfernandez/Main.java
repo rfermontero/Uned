@@ -45,7 +45,13 @@ public class Main {
 			case 0:
 				throw new IllegalArgumentException("Need more arguments");
 			case 1:
-				builder = new Builder(Integer.valueOf(args[0]));
+				if (hasHelp(args[0])) {
+					builder = new Builder(0);
+					builder.withHelp();
+				} else {
+					builder = new Builder(Integer.valueOf(args[0]));
+				}
+
 				break;
 			case 2:
 				builder = parseForArguments(args[0], args[1]);

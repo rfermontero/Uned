@@ -22,12 +22,4 @@ class GraphicConsoleStrategy extends ConsoleStrategy {
 			System.out.print("----");
 		}
 	}
-
-	@Override
-	public void accept(int row, int column) {
-	}
-
-	@Override
-	public void denied(int row, int column) {
-	}
 }
