@@ -7,12 +7,14 @@ public class Repository implements Serializable {
 
 	private final String name;
 	private final String password;
+	private final long internalIdentifier;
 	private UID uid;
 	private boolean online;
 
-	public Repository(String name, String password) {
+	public Repository(String name, String password, long internalIdentifier) {
 		this.name = name;
 		this.password = password;
+		this.internalIdentifier = internalIdentifier;
 		this.online = false;
 	}
 
@@ -32,20 +34,6 @@ public class Repository implements Serializable {
 		this.uid = uid;
 	}
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-
-		Repository that = (Repository) o;
-
-		return name != null ? name.equals(that.name) : that.name == null;
-	}
-
-	@Override
-	public int hashCode() {
-		return name != null ? name.hashCode() : 0;
-	}
 
 	public boolean isOnline() {
 		return online;
@@ -54,4 +42,25 @@ public class Repository implements Serializable {
 	public void setOnline(boolean online) {
 		this.online = online;
 	}
+
+	public long getInternalIdentifier() {
+		return internalIdentifier;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		Repository that = (Repository) o;
+
+		return internalIdentifier == that.internalIdentifier;
+	}
+
+	@Override
+	public int hashCode() {
+		return (int) (internalIdentifier ^ (internalIdentifier >>> 32));
+	}
 }
+
+

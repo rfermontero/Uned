@@ -2,6 +2,7 @@ package server.services.auth;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UID;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.Optional;
 
 import factories.RemoteServicesFactory;
@@ -12,7 +13,7 @@ import model.Client;
 import model.Repository;
 
 
-public class ServicioAutenticacionImpl implements ServicioAutenticacionInterface {
+public class ServicioAutenticacionImpl extends UnicastRemoteObject implements ServicioAutenticacionInterface {
 
 	private static ServicioAutenticacionImpl instance;
 
@@ -23,38 +24,62 @@ public class ServicioAutenticacionImpl implements ServicioAutenticacionInterface
 		return instance;
 	}
 
-	private ServicioAutenticacionImpl() {
+	private ServicioAutenticacionImpl() throws RemoteException {
+		super();
 	}
 
 	@Override
-	public Optional<UID> singUpClient(String name, String password) throws RemoteException {
+	public UID singUpClient(String name, String password, long internalId) throws RemoteException {
+		final UID[] result = {null};
+		final Client client = new Client(name, password, internalId);
 		final ServicioDatosInterface dataService = RemoteServicesFactory.getDataService();
-		final ServicioSrOperadorInterface srOperatorService = RemoteServicesFactory.getSrOpService();
-		final Client client = new Client(name, password);
-		Optional<UID> clientUid = dataService.addClient(client);
-		Optional<Repository> optionalRepository = dataService.getRepositoryForClient(client);
-		clientUid.ifPresent(uid -> optionalRepository.ifPresent(repository -> {
+		final Optional<UID> optionalClientUID = Optional.ofNullable(dataService.signUpClient(client));
+		optionalClientUID.ifPresent(uid -> {
 			try {
-				srOperatorService.createFolderFor(client);
+				client.setClientUID(uid);
+				final Optional<Repository> optionalRepository = Optional.ofNullable(dataService.attachRepositoryTo(client));
+				optionalRepository.ifPresent(repository -> {
+					result[0] = uid;
+					final ServicioSrOperadorInterface srOperatorService = RemoteServicesFactory.getSrOpService(repository.getInternalIdentifier());
+					if (srOperatorService != null) {
+						if (optionalClientUID.isPresent() && optionalRepository.isPresent()) {
+							client.setRepositoryId(repository.getUid());
+							try {
+								srOperatorService.createFolderFor(client);
+							} catch (RemoteException ignored) {
+							}
+						} else {
+							optionalClientUID.ifPresent(clientUid -> {
+								try {
+									dataService.removeClient(clientUid);
+								} catch (RemoteException e) {
+									System.out.println("Error deleting temporal client created");
+								}
+							});
+						}
+
+					}
+				});
 			} catch (RemoteException ignored) {
 			}
-		}));
-		return clientUid;
+
+		});
+		return result[0];
 	}
 
 	@Override
-	public Optional<UID> loginClient(String name, String password) throws RemoteException {
-		return RemoteServicesFactory.getDataService().login(new Client(name, password));
+	public UID loginClient(String name, String password, long internalIdentifier) throws RemoteException {
+		return RemoteServicesFactory.getDataService().loginClient(new Client(name, password, internalIdentifier));
 	}
 
 	@Override
-	public Optional<UID> singUpRepository(String name, String password) throws RemoteException {
-		return RemoteServicesFactory.getDataService().addRepository(new Repository(name, password));
+	public UID singUpRepository(String name, String password, long internalIdentifier) throws RemoteException {
+		return RemoteServicesFactory.getDataService().signUpRepository(new Repository(name, password, internalIdentifier));
 	}
 
 	@Override
-	public Optional<UID> loginRepository(String name, String password) throws RemoteException {
-		return RemoteServicesFactory.getDataService().login(new Repository(name, password));
+	public UID loginRepository(String name, String password, long internalIdentifier) throws RemoteException {
+		return RemoteServicesFactory.getDataService().loginRepository(new Repository(name, password, internalIdentifier));
 	}
 
 	@Override

@@ -2,108 +2,166 @@ package server.services.data;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UID;
-import java.util.Collection;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
 import interfaces.ServicioDatosInterface;
 import model.Client;
+import model.Metadata;
 import model.Repository;
 import server.services.data.repositories.RepositoriesFactory;
 import server.services.data.repositories.auth.AuthRepository;
+import server.services.data.repositories.metadata.MetadataRepository;
 import server.services.data.repositories.online.ConnectedClientsRepository;
 
-public class ServicioDatosImpl implements ServicioDatosInterface {
+public class ServicioDatosImpl extends UnicastRemoteObject implements ServicioDatosInterface {
 
 	private final AuthRepository authRepository;
 	private final ConnectedClientsRepository connectedClientsRepository;
+	private final MetadataRepository metadataRepository;
 
 	private static ServicioDatosInterface instance;
 
 	private ServicioDatosImpl(AuthRepository authRepository,
-			ConnectedClientsRepository connectedClientsRepository) {
+			ConnectedClientsRepository connectedClientsRepository,
+			MetadataRepository metadataRepository) throws RemoteException {
+		super();
 		this.authRepository = authRepository;
 		this.connectedClientsRepository = connectedClientsRepository;
+		this.metadataRepository = metadataRepository;
 	}
 
-	public static ServicioDatosInterface getInstance() {
+	public static ServicioDatosInterface getInstance() throws RemoteException {
 		if (instance == null) {
 			instance = new ServicioDatosImpl(RepositoriesFactory.getAuthRepository(),
-					RepositoriesFactory.getConnectedClientsRepository());
+					RepositoriesFactory.getConnectedClientsRepository(),
+					RepositoriesFactory.getMetadataRepository());
 		}
 		return instance;
 	}
 
 	@Override
-	public Optional<UID> addClient(Client client) throws RemoteException {
-		return Optional.ofNullable(authRepository.getUid(client));
+	public UID signUpClient(Client client) throws RemoteException {
+		return authRepository.getUid(client);
 	}
 
 	@Override
-	public Optional<Repository> getRepositoryForClient(Client client) throws RemoteException {
+	public void removeClient(UID uid) throws RemoteException {
+		authRepository.removeClient(uid);
+	}
+
+	@Override
+	public Repository attachRepositoryTo(Client client) throws RemoteException {
 		Optional<Repository> repositoryOptional = authRepository.getNextRepository();
 		repositoryOptional.ifPresent(repository -> connectedClientsRepository.mapClientToRepository(client, repository));
-		return repositoryOptional;
+		return repositoryOptional.orElse(null);
 	}
 
 	@Override
-	public Optional<UID> login(Client client) throws RemoteException {
+	public Repository getRepositoryFor(UID client) throws RemoteException {
+		return connectedClientsRepository.getRepositoryFor(client);
+	}
+
+	@Override
+	public UID loginClient(Client client) throws RemoteException {
 		Optional<Client> optionalUser = authRepository.getClientByName(client.getName());
-		Optional<UID> uidOptional = Optional.empty();
+		UID uid = null;
 		if (optionalUser.isPresent()) {
 			boolean match = optionalUser.get().getPassword().equals(client.getPassword());
 			if (match) {
-				uidOptional = Optional.of(optionalUser.get().getUid());
-				setOnlineClient(optionalUser.get().getUid(), true);
+				uid = optionalUser.get().getClientUID();
+				setOnlineClient(optionalUser.get().getClientUID(), true);
 			}
 		}
-		return uidOptional;
+		return uid;
 	}
 
 	@Override
-	public Optional<UID> addRepository(Repository repository) throws RemoteException {
-		return Optional.ofNullable(authRepository.getUid(repository));
+	public UID signUpRepository(Repository repository) throws RemoteException {
+		return authRepository.getUid(repository);
 	}
 
 	@Override
-	public Optional<UID> login(Repository repository) throws RemoteException {
+	public UID loginRepository(Repository repository) throws RemoteException {
 		Optional<Repository> optionalRepository = authRepository.getRepositoryByName(repository.getName());
-		Optional<UID> uidOptional = Optional.empty();
+		UID uid = null;
 		if (optionalRepository.isPresent()) {
 			boolean match = optionalRepository.get().getPassword().equals(repository.getPassword());
 			if (match) {
-				uidOptional = Optional.of(optionalRepository.get().getUid());
+				uid = optionalRepository.get().getUid();
 				setOnlineRepository(optionalRepository.get().getUid(), true);
 			}
 		}
-		return uidOptional;
+		return uid;
 	}
 
 	@Override
-	public void setOnlineClient(UID uid, boolean online) throws RemoteException {
+	public boolean setOnlineClient(UID uid, boolean online) throws RemoteException {
 		if (online) {
 			authRepository.setClientOnline(uid);
 		} else {
 			authRepository.setClientOffline(uid);
 		}
+		return true;
 	}
 
 	@Override
-	public void setOnlineRepository(UID uid, boolean online) throws RemoteException {
+	public boolean setOnlineRepository(UID uid, boolean online) throws RemoteException {
 		if (online) {
 			authRepository.setRepositoryOnline(uid);
 		} else {
 			authRepository.setRepositoryOffline(uid);
 		}
+		return true;
 	}
 
 	@Override
-	public Collection<Client> getClients() throws RemoteException {
-		return authRepository.getClients();
+	public List<Client> getClients() throws RemoteException {
+		return new ArrayList<>(authRepository.getClients());
 	}
 
 	@Override
-	public Collection<Repository> getRepositories() throws RemoteException {
-		return authRepository.getRepositories();
+	public List<Repository> getRepositories() throws RemoteException {
+		return new ArrayList<>(authRepository.getRepositories());
+	}
+
+	@Override
+	public List<Client> getClientsFor(UID uid) throws RemoteException {
+		Optional<Repository> repositoryOptional = authRepository.getRepositoryFrom(uid);
+		List<Client> clients = new ArrayList<>();
+		if(repositoryOptional.isPresent()){
+			Repository repository = repositoryOptional.get();
+			clients.addAll(connectedClientsRepository.getClientsFor(repository));
+		}
+		return clients;
+	}
+
+	@Override
+	public HashMap<Client, Repository> getClientRepositories() throws RemoteException {
+		return (HashMap<Client, Repository>) connectedClientsRepository.getClientRepositoriesMap();
+	}
+
+	@Override
+	public void addMetadata(Metadata metadata) throws RemoteException {
+		metadataRepository.addMetaData(metadata);
+	}
+
+	@Override
+	public List<Metadata> getClientFiles(UID uid) throws RemoteException {
+		return metadataRepository.getMetadataFor(uid);
+	}
+
+	@Override
+	public void removeMetadata(UID clientUid, Metadata metadata) throws RemoteException {
+		metadataRepository.remove(clientUid, metadata);
+	}
+
+	@Override
+	public Client getClientFor(UID clientUid) throws RemoteException {
+		return authRepository.getClientFrom(clientUid);
 	}
 
 	@Override

@@ -3,8 +3,10 @@ package server.services.data.repositories;
 
 import server.services.data.repositories.auth.AuthRepository;
 import server.services.data.repositories.auth.InMemoryAuthRepository;
+import server.services.data.repositories.metadata.InMemoryMetadataRepository;
+import server.services.data.repositories.metadata.MetadataRepository;
+import server.services.data.repositories.online.ClientsRepositorysInMemoryRepository;
 import server.services.data.repositories.online.ConnectedClientsRepository;
-import server.services.data.repositories.online.InMemoryConnectedClientsRepository;
 
 public class RepositoriesFactory {
 
@@ -13,6 +15,10 @@ public class RepositoriesFactory {
 	}
 
 	public static ConnectedClientsRepository getConnectedClientsRepository() {
-		return InMemoryConnectedClientsRepository.getInstance();
+		return ClientsRepositorysInMemoryRepository.getInstance();
+	}
+
+	public static MetadataRepository getMetadataRepository() {
+		return InMemoryMetadataRepository.getInstance();
 	}
 }

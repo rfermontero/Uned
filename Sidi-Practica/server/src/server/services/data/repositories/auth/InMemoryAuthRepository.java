@@ -39,7 +39,7 @@ public class InMemoryAuthRepository implements AuthRepository {
 	public UID getUid(Client client) {
 		if (!clientsMap.containsValue(client)) {
 			UID uid = new UID();
-			client.setUid(new UID());
+			client.setClientUID(uid);
 			clientsMap.put(uid, client);
 			return uid;
 		}
@@ -91,6 +91,11 @@ public class InMemoryAuthRepository implements AuthRepository {
 	}
 
 	@Override
+	public Optional<Repository> getRepositoryFrom(UID uid) {
+		return Optional.ofNullable(repositoryMap.get(uid));
+	}
+
+	@Override
 	public void setClientOnline(UID uid) {
 		clientsMap.get(uid).setOnline(true);
 	}
@@ -110,7 +115,13 @@ public class InMemoryAuthRepository implements AuthRepository {
 		repositoryMap.get(uid).setOnline(false);
 	}
 
-	public static class AuthRepositoryException extends Exception {
+	@Override
+	public void removeClient(UID uid) {
+		clientsMap.remove(uid);
+	}
 
+	@Override
+	public Client getClientFrom(UID uid) {
+		return clientsMap.get(uid);
 	}
 }

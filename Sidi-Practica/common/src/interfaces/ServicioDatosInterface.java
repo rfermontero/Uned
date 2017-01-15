@@ -2,31 +2,48 @@ package interfaces;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UID;
-import java.util.Collection;
-import java.util.Optional;
+import java.util.HashMap;
+import java.util.List;
 
 import model.Client;
+import model.Metadata;
 import model.Repository;
 
 public interface ServicioDatosInterface extends RemoteService {
 
 	String NAME = "DataService";
 
-	Optional<UID> addClient(Client client) throws RemoteException;
+	UID signUpClient(Client client) throws RemoteException;
 
-	Optional<Repository> getRepositoryForClient(Client client) throws RemoteException;
+	UID loginClient(Client client) throws RemoteException;
 
-	Optional<UID> login(Client client) throws RemoteException;
+	void removeClient(UID uid) throws RemoteException;
 
-	Optional<UID> addRepository(Repository repository) throws RemoteException;
+	boolean setOnlineClient(UID uid, boolean online) throws RemoteException;
 
-	Optional<UID> login(Repository repository) throws RemoteException;
+	UID signUpRepository(Repository repository) throws RemoteException;
 
-	void setOnlineClient(UID uid, boolean online) throws RemoteException;
+	UID loginRepository(Repository repository) throws RemoteException;
 
-	void setOnlineRepository(UID uid, boolean online) throws RemoteException;
+	Repository attachRepositoryTo(Client client) throws RemoteException;
 
-	Collection<Client> getClients() throws RemoteException;
+	Repository getRepositoryFor(UID client) throws RemoteException;
 
-	Collection<Repository> getRepositories() throws RemoteException;
+	boolean setOnlineRepository(UID uid, boolean online) throws RemoteException;
+
+	List<Client> getClients() throws RemoteException;
+
+	List<Repository> getRepositories() throws RemoteException;
+
+	List<Client> getClientsFor(UID repositoryUid) throws RemoteException;
+
+	HashMap<Client, Repository> getClientRepositories() throws RemoteException;
+
+	void addMetadata(Metadata metadata) throws RemoteException;
+
+	List<Metadata> getClientFiles(UID files) throws RemoteException;
+
+	void removeMetadata(UID clientUid, Metadata metadata) throws RemoteException;
+
+	Client getClientFor(UID clientUid) throws RemoteException;
 }

@@ -1,6 +1,12 @@
 package util;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 import java.util.zip.CheckedOutputStream;
@@ -15,8 +21,7 @@ public class Fichero implements Serializable {
 	private long checksum;            //Suma de chequeo de los bytes del fichero
 	private byte[] data;            //Contenido del fichero
 
-	public Fichero(String nombre, String propietario)    //constructor
-	{
+	public Fichero(String ruta, String nombre, String propietario) {
 		this.nombre = nombre;
 		this.propietario = propietario;
 
@@ -24,43 +29,20 @@ public class Fichero implements Serializable {
 		peso = 0;
 
 		try {
-			c = new CheckedInputStream(new FileInputStream(nombre), new CRC32());
-			peso = new File(nombre).length();
+			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+			c = new CheckedInputStream(new FileInputStream(ruta + File.separator + nombre), new CRC32());
+			peso = new File(ruta + File.separator+ nombre).length();
 			data = new byte[(int) this.peso];
-			while (c.read(data) > 0) {
+			int leido;
+			while ((leido = c.read(data, 0, data.length)) != -1) {
+				buffer.write(data, 0, leido);
 			}
+			data = buffer.toByteArray();
 			c.close();
 
 		} catch (FileNotFoundException ef) {
 			System.err.println("Fichero no encontrado");
 		} catch (IOException e) {
-
-			System.err.println("Error leyendo fichero" + e.toString());
-		}
-		checksum = c.getChecksum().getValue();
-
-	}
-
-	public Fichero(String ruta, String nombre, String propietario)    //constructor
-	{
-		this.nombre = nombre;
-		this.propietario = propietario;
-
-		CheckedInputStream c = null;
-		peso = 0;
-
-		try {
-			c = new CheckedInputStream(new FileInputStream(ruta + "\\" + nombre), new CRC32());
-			peso = new File(ruta + "\\" + nombre).length();
-			data = new byte[(int) this.peso];
-			while (c.read(data) >= 0) {
-			}
-			c.close();
-
-		} catch (FileNotFoundException ef) {
-			System.err.println("Fichero no encontrado");
-		} catch (IOException e) {
-
 			System.err.println("Error leyendo fichero" + e.toString());
 		}
 		checksum = c.getChecksum().getValue();

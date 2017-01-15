@@ -1,32 +1,27 @@
 package server;
 
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-
-import factories.RemoteServicesFactory;
-import interfaces.RemoteService;
-import server.gui.Gui;
+import server.gui.ServidorGui;
 import server.services.auth.ServicioAutenticacionImpl;
 import server.services.data.ServicioDatosImpl;
+import server.services.filemanager.ServicioGestorImpl;
 import util.CodeBase;
 
 class Servidor {
 
-	private static void registerService(RemoteService service) throws RemoteException {
-		LocateRegistry.getRegistry().rebind(service.getName(), service);
-	}
 
 	public static void main(String[] args) {
 		try {
 			CodeBase.set(Servidor.class);
-			registerService(ServicioAutenticacionImpl.getInstance());
-			registerService(ServicioDatosImpl.getInstance());
-			new Gui();
-			RemoteServicesFactory.getAuthService().singUpClient("name", "pass");
-		} catch (RemoteException e) {
-			System.out.println("Error");
+			CodeBase.registerService(ServicioDatosImpl.getInstance());
+			CodeBase.registerService(ServicioAutenticacionImpl.getInstance());
+			CodeBase.registerService(ServicioGestorImpl.getInstance());
+			initGui();
+		} catch (Exception e) {
+			System.out.println("Error " + e.getMessage());
 		}
-		while (true) {
-		}
+	}
+
+	private static void initGui() {
+		new ServidorGui();
 	}
 }

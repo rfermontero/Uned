@@ -3,6 +3,7 @@ package server.services.data.repositories.auth;
 import java.io.Serializable;
 import java.rmi.server.UID;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 
 import model.Client;
@@ -25,6 +26,8 @@ public interface AuthRepository extends Serializable {
 
 	Optional<Repository> getNextRepository();
 
+	Optional<Repository> getRepositoryFrom(UID uid);
+
 	void setClientOnline(UID uid);
 
 	void setClientOffline(UID uid);
@@ -32,4 +35,8 @@ public interface AuthRepository extends Serializable {
 	void setRepositoryOnline(UID uid);
 
 	void setRepositoryOffline(UID uid);
+
+	void removeClient(UID uid);
+
+	Client getClientFrom(UID uid);
 }

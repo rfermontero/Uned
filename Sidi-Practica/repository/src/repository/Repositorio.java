@@ -1,37 +1,31 @@
 package repository;
 
 
+import java.net.MalformedURLException;
+import java.net.UnknownHostException;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.server.UID;
-import java.util.Optional;
 
-import interfaces.RemoteService;
+import repository.gui.RepositoryInitGui;
+import repository.repository.RepositoryData;
+import repository.services.clop.ServicioClOperadorImpl;
 import repository.services.srop.ServicioSrOperadorImpl;
-import repository.usecases.Login;
-import repository.usecases.SignUp;
 import util.CodeBase;
 
 public class Repositorio {
 
-	private static final String CODEBASE = "java.rmi.server.codebase";
-
 	public static void main(String[] args) {
 		try {
 			CodeBase.set(Repositorio.class);
-			registerService(ServicioSrOperadorImpl.getInstance());
-
-			Optional<UID> result = new SignUp().execute("nombre", "password");
-			Optional<UID> res2ult = new Login().execute("nombre", "password");
-
-
-		} catch (RemoteException ignored) {
+			long internalIdentifier = RepositoryData.getInstance().getInternalIdentifier();
+			CodeBase.registerService(ServicioSrOperadorImpl.getInstance(internalIdentifier));
+			CodeBase.registerService(ServicioClOperadorImpl.getInstance(internalIdentifier));
+			initGui();
+		} catch (RemoteException | UnknownHostException | MalformedURLException e) {
+			System.out.println("Error " + e.getMessage());
 		}
-		while(true){}
-
 	}
 
-	private static void registerService(RemoteService service) throws RemoteException {
-		LocateRegistry.getRegistry().rebind(service.getName(), service);
+	private static void initGui() {
+		new RepositoryInitGui();
 	}
 }
