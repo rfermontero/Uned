@@ -41,13 +41,13 @@ class LoguedClientGui extends JFrame {
 				}
 			};
 			List filesGui = new List(listModel, "Lista de ficheros", (JPanel comp) -> {
+				files.clear();
 				LoguedClientGui.this.remove(comp);
 				LoguedClientGui.this.setSize(new Dimension(350, 350));
 				pnPanel0.setVisible(true);
 			});
 			pnPanel0.setVisible(false);
 			add(filesGui);
-
 		});
 
 		gbcPanel0.gridx = 3;
@@ -71,6 +71,9 @@ class LoguedClientGui extends JFrame {
 				JOptionPane.showMessageDialog(this, uploadFileResult ? "Fichero subido" : "Error subiendo fichero");
 				fileChooser.cancelSelection();
 				System.out.println("Uploading file " + selectedFile.getAbsolutePath());
+				pnPanel0.setVisible(true);
+				LoguedClientGui.this.validate();
+				LoguedClientGui.this.repaint();
 			}
 		});
 		gbcPanel0.gridx = 3;
@@ -105,9 +108,6 @@ class LoguedClientGui extends JFrame {
 				LoguedClientGui.this.remove(list);
 				LoguedClientGui.this.setSize(new Dimension(350, 350));
 				pnPanel0.setVisible(true);
-				JOptionPane.showMessageDialog(this, "Fichero descargado");
-				LoguedClientGui.this.validate();
-				LoguedClientGui.this.repaint();
 			};
 			List filesGui = new List(listModel, fileClickListener, "Lista de ficheros", (JPanel comp) -> {
 				LoguedClientGui.this.remove(comp);
@@ -116,7 +116,6 @@ class LoguedClientGui extends JFrame {
 			});
 			pnPanel0.setVisible(false);
 			add(filesGui);
-
 		});
 		gbcPanel0.gridx = 3;
 		gbcPanel0.gridy = 9;
@@ -145,11 +144,11 @@ class LoguedClientGui extends JFrame {
 			};
 			Listener fileClickListener = (list, index) -> {
 				boolean result = new DeleteFile().execute(files.get(index).getName());
+				JOptionPane.showMessageDialog(this, result ? "Fichero eliminado" : "Error eliminando fichero");
 				list.setVisible(false);
+				pnPanel0.setVisible(true);
 				LoguedClientGui.this.remove(list);
 				LoguedClientGui.this.setSize(new Dimension(350, 350));
-				pnPanel0.setVisible(true);
-				JOptionPane.showMessageDialog(this, result ? "Fichero eliminado" : "Error eliminando fichero");
 				LoguedClientGui.this.validate();
 				LoguedClientGui.this.repaint();
 			};
@@ -173,7 +172,7 @@ class LoguedClientGui extends JFrame {
 		gbPanel0.setConstraints(btDeleteFile, gbcPanel0);
 		pnPanel0.add(btDeleteFile);
 
-		JLabel lbLabel0 = new JLabel("Servidor");
+		JLabel lbLabel0 = new JLabel("Cliente");
 		gbcPanel0.gridx = 3;
 		gbcPanel0.gridy = 2;
 		gbcPanel0.gridwidth = 1;

@@ -10,6 +10,9 @@ import interfaces.ServicioDatosInterface;
 import model.Client;
 import repository.repository.RepositoryData;
 
+/**
+ * Get clients use case
+ */
 public class GetClients {
 
 	public List<String> execute() {

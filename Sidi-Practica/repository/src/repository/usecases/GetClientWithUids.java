@@ -11,6 +11,9 @@ import interfaces.ServicioDatosInterface;
 import model.Client;
 import repository.repository.RepositoryData;
 
+/**
+ * Get client with UIDs use case.
+ */
 public class GetClientWithUids {
 
 	public List<ClientUid> execute() {

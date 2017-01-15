@@ -11,6 +11,9 @@ import model.Client;
 import model.Repository;
 
 
+/**
+ * Get all client-repository relations usecase.
+ */
 public class GetClientRelationships {
 	public List<String> execute() {
 		try {

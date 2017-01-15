@@ -3,6 +3,9 @@ package model;
 import java.io.Serializable;
 import java.rmi.server.UID;
 
+/**
+ * Metadata POJO
+ */
 public class Metadata implements Serializable {
 
 	private final UID clientUidOwner;

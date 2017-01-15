@@ -11,6 +11,10 @@ import repository.services.clop.ServicioClOperadorImpl;
 import repository.services.srop.ServicioSrOperadorImpl;
 import util.CodeBase;
 
+/**
+ * Main repository class
+ * Set current codebase and init gui.
+ */
 public class Repositorio {
 
 	public static void main(String[] args) {

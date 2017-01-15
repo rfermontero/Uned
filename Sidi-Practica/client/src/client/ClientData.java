@@ -2,6 +2,11 @@ package client;
 
 import java.rmi.server.UID;
 
+
+/**
+ * Client data class.
+ * It stores data related to this client instance
+ */
 public interface ClientData {
 
 	void setUid(UID uid);

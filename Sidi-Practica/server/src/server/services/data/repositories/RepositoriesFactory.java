@@ -5,9 +5,12 @@ import server.services.data.repositories.auth.AuthRepository;
 import server.services.data.repositories.auth.InMemoryAuthRepository;
 import server.services.data.repositories.metadata.InMemoryMetadataRepository;
 import server.services.data.repositories.metadata.MetadataRepository;
-import server.services.data.repositories.online.ClientsRepositorysInMemoryRepository;
+import server.services.data.repositories.online.ClientsRepositoryInMemoryRepository;
 import server.services.data.repositories.online.ConnectedClientsRepository;
 
+/**
+ * Factory for internal repositories
+ */
 public class RepositoriesFactory {
 
 	public static AuthRepository getAuthRepository() {
@@ -15,7 +18,7 @@ public class RepositoriesFactory {
 	}
 
 	public static ConnectedClientsRepository getConnectedClientsRepository() {
-		return ClientsRepositorysInMemoryRepository.getInstance();
+		return ClientsRepositoryInMemoryRepository.getInstance();
 	}
 
 	public static MetadataRepository getMetadataRepository() {

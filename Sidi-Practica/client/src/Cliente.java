@@ -6,6 +6,11 @@ import gui.ClientInitGui;
 import services.ServicioDiscoClienteImpl;
 import util.CodeBase;
 
+
+/**
+ * Main client class
+ * Set current codebase and init gui.
+ */
 public class Cliente {
 	public static void main(String[] args) {
 		try {

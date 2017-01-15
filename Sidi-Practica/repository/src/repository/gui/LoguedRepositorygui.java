@@ -64,11 +64,11 @@ class LoguedRepositorygui extends JFrame {
 			};
 
 			final Component[] component = new Component[1];
-			Listener listener = (list, element) -> {
+			Listener listener = (JList<String> list, int element) -> {
 				UID uid = relations.get(element).getUid();
 				LoguedRepositorygui.this.remove(list);
 				java.util.List<String> files = new GetFilesForUID().execute(uid);
-				List filesGui = new List(files, "Lista de ficheros de cliente", comp -> {
+				List filesGui = new List(files, "Lista de ficheros de cliente", (JPanel comp) -> {
 					LoguedRepositorygui.this.remove(comp);
 					pnPanel0.setVisible(true);
 				});

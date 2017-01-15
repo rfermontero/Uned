@@ -10,6 +10,9 @@ import interfaces.ServicioClOperadorInterface;
 import interfaces.ServicioGestorInterface;
 import util.Fichero;
 
+/**
+ * Upload fle use case
+ */
 public class UploadFile {
 
 	public boolean execute(File file) {

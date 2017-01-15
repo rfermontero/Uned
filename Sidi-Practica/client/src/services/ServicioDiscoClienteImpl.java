@@ -9,6 +9,9 @@ import client.ClientData;
 import interfaces.RemoteService;
 import interfaces.ServicioDiscoClienteInterface;
 
+/**
+ * @inheritDoc
+ */
 public class ServicioDiscoClienteImpl implements ServicioDiscoClienteInterface {
 
 	private static ServicioDiscoClienteInterface instance;

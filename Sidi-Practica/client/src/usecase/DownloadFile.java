@@ -5,6 +5,9 @@ import java.rmi.RemoteException;
 import client.ClientData;
 import factories.RemoteServicesFactory;
 
+/**
+ * Download file use case
+ */
 public class DownloadFile {
 
 	public boolean execute(String path) {

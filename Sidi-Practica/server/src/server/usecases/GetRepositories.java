@@ -9,6 +9,9 @@ import java.util.stream.Collectors;
 import factories.RemoteServicesFactory;
 import model.Repository;
 
+/**
+ * Get all repositories usecase.
+ */
 public class GetRepositories {
 	public List<String> execute() {
 		List<String> repositorieNames = Collections.emptyList();

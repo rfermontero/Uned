@@ -7,6 +7,9 @@ import java.util.Optional;
 
 import model.Client;
 
+/**
+ * @inheritDoc
+ */
 public class InMemoryRepositoryData implements RepositoryData {
 
 	private static RepositoryData instance;

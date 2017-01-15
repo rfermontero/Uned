@@ -9,6 +9,9 @@ import factories.RemoteServicesFactory;
 import interfaces.ServicioAutenticacionInterface;
 import repository.repository.RepositoryData;
 
+/**
+ * Login use case
+ */
 public class Login {
 	public Optional<UID> execute(String name, String password) {
 		try {

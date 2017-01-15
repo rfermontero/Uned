@@ -17,6 +17,9 @@ import server.services.data.repositories.auth.AuthRepository;
 import server.services.data.repositories.metadata.MetadataRepository;
 import server.services.data.repositories.online.ConnectedClientsRepository;
 
+/**
+ * @inheritDoc
+ */
 public class ServicioDatosImpl extends UnicastRemoteObject implements ServicioDatosInterface {
 
 	private final AuthRepository authRepository;
@@ -73,7 +76,7 @@ public class ServicioDatosImpl extends UnicastRemoteObject implements ServicioDa
 			boolean match = optionalUser.get().getPassword().equals(client.getPassword());
 			if (match) {
 				uid = optionalUser.get().getClientUID();
-				setOnlineClient(optionalUser.get().getClientUID(), true);
+				setOnlineClient(optionalUser.get().getClientUID());
 			}
 		}
 		return uid;
@@ -92,29 +95,19 @@ public class ServicioDatosImpl extends UnicastRemoteObject implements ServicioDa
 			boolean match = optionalRepository.get().getPassword().equals(repository.getPassword());
 			if (match) {
 				uid = optionalRepository.get().getUid();
-				setOnlineRepository(optionalRepository.get().getUid(), true);
+				setOnlineRepository(optionalRepository.get().getUid());
 			}
 		}
 		return uid;
 	}
 
-	@Override
-	public boolean setOnlineClient(UID uid, boolean online) throws RemoteException {
-		if (online) {
-			authRepository.setClientOnline(uid);
-		} else {
-			authRepository.setClientOffline(uid);
-		}
+	private boolean setOnlineClient(UID uid) throws RemoteException {
+		authRepository.setClientOnline(uid);
 		return true;
 	}
 
-	@Override
-	public boolean setOnlineRepository(UID uid, boolean online) throws RemoteException {
-		if (online) {
-			authRepository.setRepositoryOnline(uid);
-		} else {
-			authRepository.setRepositoryOffline(uid);
-		}
+	private boolean setOnlineRepository(UID uid) throws RemoteException {
+		authRepository.setRepositoryOnline(uid);
 		return true;
 	}
 
@@ -132,7 +125,7 @@ public class ServicioDatosImpl extends UnicastRemoteObject implements ServicioDa
 	public List<Client> getClientsFor(UID uid) throws RemoteException {
 		Optional<Repository> repositoryOptional = authRepository.getRepositoryFrom(uid);
 		List<Client> clients = new ArrayList<>();
-		if(repositoryOptional.isPresent()){
+		if (repositoryOptional.isPresent()) {
 			Repository repository = repositoryOptional.get();
 			clients.addAll(connectedClientsRepository.getClientsFor(repository));
 		}

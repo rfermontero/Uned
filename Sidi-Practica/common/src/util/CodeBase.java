@@ -10,6 +10,9 @@ import java.rmi.registry.Registry;
 
 import interfaces.RemoteService;
 
+/**
+ * Codebase helper class
+ */
 public class CodeBase {
 	private static final String CODEBASE = "java.rmi.server.codebase";
 	private static Registry registry;
@@ -21,6 +24,11 @@ public class CodeBase {
 		}
 	}
 
+	/**
+	 * Add the clazz parameter to current classpath
+	 *
+	 * @param clazz Class to add to Classpath
+	 */
 	public static void set(Class<?> clazz) {
 		String root = clazz.getProtectionDomain().getCodeSource().getLocation().toString();
 		String path = System.getProperty(CODEBASE);
@@ -33,6 +41,15 @@ public class CodeBase {
 		System.setProperty(CODEBASE, root);
 	}
 
+
+	/**
+	 * Register a RemoteService class into current java RMI registry
+	 *
+	 * @param service to register
+	 * @throws RemoteException
+	 * @throws UnknownHostException
+	 * @throws MalformedURLException
+	 */
 	public static void registerService(RemoteService service) throws RemoteException, UnknownHostException, MalformedURLException {
 		if (registry == null) {
 			registry = LocateRegistry.getRegistry();

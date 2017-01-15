@@ -12,6 +12,9 @@ import model.Metadata;
 import repository.utils.FileUtils;
 import util.Fichero;
 
+/**
+ * @inheritDoc
+ */
 public class ServicioClOperadorImpl implements ServicioClOperadorInterface {
 
 	private static ServicioClOperadorInterface instance;
@@ -50,8 +53,8 @@ public class ServicioClOperadorImpl implements ServicioClOperadorInterface {
 	}
 
 	@Override
-	public boolean removeFile(UID clientUid, String folder) throws RemoteException {
-		File fileToRemove = new File(folder);
+	public boolean removeFile(UID clientUid, String file) throws RemoteException {
+		File fileToRemove = new File(file);
 		Metadata metadata = new Metadata(clientUid, fileToRemove.getAbsolutePath());
 		boolean result = fileToRemove.delete();
 		if (result) {

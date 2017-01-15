@@ -2,12 +2,16 @@ package client;
 
 import java.rmi.server.UID;
 
+/**
+ * @inheritDoc
+ */
 public class InMemoryClientData implements ClientData {
 	private static ClientData instance;
 
 	private UID uid;
 	private String name;
 	private final long internalId = System.currentTimeMillis();
+
 	static ClientData getInstance() {
 		if (instance == null) {
 			instance = new InMemoryClientData();

@@ -10,6 +10,9 @@ import factories.RemoteServicesFactory;
 import model.Client;
 
 
+/**
+ * Get all clients use case.
+ */
 public class GetClients {
 
 	public List<String> execute() {

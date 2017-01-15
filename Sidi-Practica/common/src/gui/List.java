@@ -4,6 +4,9 @@ import java.awt.*;
 import java.util.Optional;
 import javax.swing.*;
 
+/**
+ * Java swing class to show a list of elements
+ */
 public class List extends JPanel {
 
 	protected final JList<String> list;

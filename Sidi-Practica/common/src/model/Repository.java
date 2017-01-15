@@ -3,6 +3,9 @@ package model;
 import java.io.Serializable;
 import java.rmi.server.UID;
 
+/**
+ * Repository POJO
+ */
 public class Repository implements Serializable {
 
 	private final String name;

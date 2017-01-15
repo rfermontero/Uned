@@ -14,6 +14,9 @@ import interfaces.ServicioSrOperadorInterface;
 import model.Client;
 import model.Repository;
 
+/**
+ * @inheritDoc
+ */
 public class ServicioGestorImpl extends UnicastRemoteObject implements ServicioGestorInterface {
 
 	private static ServicioGestorInterface instance;
@@ -39,7 +42,7 @@ public class ServicioGestorImpl extends UnicastRemoteObject implements ServicioG
 	}
 
 	@Override
-	public boolean download(UID clientUid, String path) throws RemoteException {
+	public boolean download(UID clientUid, String file) throws RemoteException {
 		String remoteRepositoryUrl = getRemoteServiceForDownload(clientUid);
 		final ServicioDatosInterface dataService = RemoteServicesFactory.getDataService();
 		final ServicioSrOperadorInterface srOpService = RemoteServicesFactory.getSrOpService(remoteRepositoryUrl);
@@ -48,7 +51,7 @@ public class ServicioGestorImpl extends UnicastRemoteObject implements ServicioG
 			final ServicioDiscoClienteInterface diskService = RemoteServicesFactory.getClientDiskService(client.getInternalId());
 			if (diskService != null) {
 				String remoteRepository = String.valueOf(ServicioDiscoClienteInterface.NAME + client.getInternalId());
-				return srOpService.downloadFileTo(remoteRepository, path);
+				return srOpService.downloadFileTo(remoteRepository, file);
 			}
 		} catch (RemoteException e) {
 			System.out.println("Error downloading file" + e.getMessage());

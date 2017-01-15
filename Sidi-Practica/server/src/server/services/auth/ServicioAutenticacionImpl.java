@@ -12,7 +12,9 @@ import interfaces.ServicioSrOperadorInterface;
 import model.Client;
 import model.Repository;
 
-
+/**
+ * @inheritDoc
+ */
 public class ServicioAutenticacionImpl extends UnicastRemoteObject implements ServicioAutenticacionInterface {
 
 	private static ServicioAutenticacionImpl instance;

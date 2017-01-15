@@ -9,12 +9,38 @@ import java.util.Map;
 import model.Client;
 import model.Repository;
 
+/**
+ * Repository for online clients
+ */
 public interface ConnectedClientsRepository extends Serializable {
+
+	/**
+	 * Map a client with a repository
+	 *
+	 * @param client
+	 * @param repository
+	 */
 	void mapClientToRepository(Client client, Repository repository);
 
-	Map<Client,Repository> getClientRepositoriesMap();
+	/**
+	 * Return all relations.
+	 *
+	 * @return
+	 */
+	Map<Client, Repository> getClientRepositoriesMap();
 
+	/**
+	 * Return a list of clients attached to specified repository
+	 *
+	 * @param repository
+	 * @return
+	 */
 	List<Client> getClientsFor(Repository repository);
 
+	/**
+	 * Return a repository data for a client.
+	 * @param client
+	 * @return
+	 */
 	Repository getRepositoryFor(UID client);
 }

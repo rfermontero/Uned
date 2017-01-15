@@ -8,6 +8,9 @@ import java.util.Optional;
 import client.ClientData;
 import factories.RemoteServicesFactory;
 
+/**
+ * Register use case
+ */
 public class SignUp {
 	public Optional<UID> execute(String name, String password) {
 		try {

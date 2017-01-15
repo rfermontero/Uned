@@ -11,15 +11,18 @@ import model.Client;
 import model.Repository;
 
 
-public class ClientsRepositorysInMemoryRepository implements ConnectedClientsRepository {
+/**
+ * @inheritDoc
+ */
+public class ClientsRepositoryInMemoryRepository implements ConnectedClientsRepository {
 
-	private static ClientsRepositorysInMemoryRepository instance;
+	private static ClientsRepositoryInMemoryRepository instance;
 
 	private final HashMap<Client, Repository> onlineClientsRepositories = new HashMap<>();
 
-	public static ClientsRepositorysInMemoryRepository getInstance() {
+	public static ClientsRepositoryInMemoryRepository getInstance() {
 		if (instance == null) {
-			instance = new ClientsRepositorysInMemoryRepository();
+			instance = new ClientsRepositoryInMemoryRepository();
 		}
 		return instance;
 	}

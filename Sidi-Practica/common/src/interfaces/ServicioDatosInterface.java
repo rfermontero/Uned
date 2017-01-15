@@ -19,8 +19,6 @@ public interface ServicioDatosInterface extends RemoteService {
 
 	void removeClient(UID uid) throws RemoteException;
 
-	boolean setOnlineClient(UID uid, boolean online) throws RemoteException;
-
 	UID signUpRepository(Repository repository) throws RemoteException;
 
 	UID loginRepository(Repository repository) throws RemoteException;
@@ -28,8 +26,6 @@ public interface ServicioDatosInterface extends RemoteService {
 	Repository attachRepositoryTo(Client client) throws RemoteException;
 
 	Repository getRepositoryFor(UID client) throws RemoteException;
-
-	boolean setOnlineRepository(UID uid, boolean online) throws RemoteException;
 
 	List<Client> getClients() throws RemoteException;
 

@@ -8,6 +8,9 @@ import java.util.Optional;
 import client.ClientData;
 import factories.RemoteServicesFactory;
 
+/**
+ * Login use case
+ */
 public class Login {
 	public Optional<UID> execute(String name, String password) {
 		try {

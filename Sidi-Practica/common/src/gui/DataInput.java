@@ -3,7 +3,13 @@ package gui;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
+/**
+ * Java swing class to show an input class.
+ * Used for login and password.
+ */
 public class DataInput extends JDialog {
 
 	private JTextField tfUsername;
@@ -44,9 +50,33 @@ public class DataInput extends JDialog {
 		cs.gridwidth = 2;
 		panel.add(pfPassword, cs);
 		panel.setBorder(new LineBorder(Color.GRAY));
+		pfPassword.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				verifyPassword();
+			}
+
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				verifyPassword();
+			}
+
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				verifyPassword();
+			}
+
+			private void verifyPassword() {
+				if (getPassword().isEmpty()) {
+					btnLogin.setEnabled(false);
+				} else {
+					btnLogin.setEnabled(true);
+				}
+			}
+		});
 
 		btnLogin = new JButton("Aceptar");
-
+		btnLogin.setEnabled(false);
 		btnLogin.addActionListener(e -> onclickListener.onAccept(getUsername(), getPassword(), this));
 		btnCancel = new JButton("Cancel");
 		btnCancel.addActionListener(e -> dispose());

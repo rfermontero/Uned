@@ -12,6 +12,9 @@ import interfaces.ServicioSrOperadorInterface;
 import model.Client;
 import repository.repository.RepositoryData;
 
+/**
+ * @inheritDoc
+ */
 public class ServicioSrOperadorImpl implements ServicioSrOperadorInterface {
 
 	private static ServicioSrOperadorImpl instance;

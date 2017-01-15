@@ -9,7 +9,9 @@ import java.util.Optional;
 import model.Client;
 import model.Repository;
 
-
+/**
+ * @inheritDoc
+ */
 public class InMemoryAuthRepository implements AuthRepository {
 
 	private static InMemoryAuthRepository instance;
@@ -101,18 +103,8 @@ public class InMemoryAuthRepository implements AuthRepository {
 	}
 
 	@Override
-	public void setClientOffline(UID uid) {
-		clientsMap.get(uid).setOnline(false);
-	}
-
-	@Override
 	public void setRepositoryOnline(UID uid) {
 		repositoryMap.get(uid).setOnline(true);
-	}
-
-	@Override
-	public void setRepositoryOffline(UID uid) {
-		repositoryMap.get(uid).setOnline(false);
 	}
 
 	@Override

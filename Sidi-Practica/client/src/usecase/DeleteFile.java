@@ -8,6 +8,9 @@ import factories.RemoteServicesFactory;
 import interfaces.ServicioClOperadorInterface;
 import interfaces.ServicioGestorInterface;
 
+/**
+ * Delete file usecase
+ */
 public class DeleteFile {
 	public boolean execute(String file) {
 		ServicioGestorInterface fileManager = RemoteServicesFactory.getFileManager();

@@ -9,6 +9,9 @@ import factories.RemoteServicesFactory;
 import interfaces.ServicioDatosInterface;
 import model.Metadata;
 
+/**
+ * Get files use case
+ */
 public class GetFiles {
 
 	public List<Metadata> execute() {

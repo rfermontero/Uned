@@ -3,6 +3,9 @@ package model;
 import java.io.Serializable;
 import java.rmi.server.UID;
 
+/**
+ * Client POJO
+ */
 public class Client implements Serializable {
 
 	private final String name;

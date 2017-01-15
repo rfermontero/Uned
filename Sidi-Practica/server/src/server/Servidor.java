@@ -6,8 +6,12 @@ import server.services.data.ServicioDatosImpl;
 import server.services.filemanager.ServicioGestorImpl;
 import util.CodeBase;
 
-class Servidor {
 
+/**
+ * Main server class
+ * Set current codebase and init gui.
+ */
+class Servidor {
 
 	public static void main(String[] args) {
 		try {

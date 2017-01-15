@@ -4,6 +4,10 @@ import java.rmi.server.UID;
 
 import model.Client;
 
+/**
+ * Repository data class.
+ * It stores data related to this repository instance
+ */
 public interface RepositoryData {
 
 	void saveRemoteIdentifier(UID uid);
