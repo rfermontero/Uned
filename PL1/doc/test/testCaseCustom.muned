@@ -1,0 +1,60 @@
+(*
+  Prueba
+  (*
+    Mas larga
+	(* De comentario*)
+	*)  sadasdasd
+*)
+
+(*1*)
+MODULE testBuild;
+	(*2*)
+	CONST pepe = TRUE;
+		  patatas = 165;
+		  canguingos = 5;
+	(*3*)
+	TYPE arrayEnteros = ARRAY[1..15] OF INTEGER;
+		 arrayBooleanos = ARRAY[1..3] OF BOOLEAN;
+	
+	(*4*)
+	VAR var1, var2, var3 : INTEGER;
+		var6 : BOOLEAN;
+		var7, var9 : arrayEnteros;
+		
+	(*5*)
+	PROCEDURE pro1 : INTEGER;
+		VAR var4 : INTEGER;
+	BEGIN
+		return var4;
+	END pro1;
+	
+	PROCEDURE pro2( var5, var11 : INTEGER;
+	                var8 : BOOLEAN ) : BOOLEAN;
+		CONST var10 = FALSE;
+		VAR var12 : INTEGER;
+	BEGIN
+		var12 := (var5-2)>var11 OR FALSE;
+		var8 := var10 OR NOT FALSE var10;
+		FOR a := var5*var11 TO 100 
+		DO
+		END;
+		return pro1;
+	END pro2;
+	
+	PROCEDURE pro3();
+	BEGIN
+		WRITESTRING( "hola!" );
+		writeln;
+		writeint( 1-var4 );
+		var7[canguingos-1] :=pro2( 1, 4*3-canguingos, TRUE );
+	END pro3;
+BEGIN
+	If pro2( 1,2,TRue) theN
+		pro3;
+	else
+		var7[pro2(1,2,true)] := 10;
+		if 1-2 > 1-3 then
+			writeint(7);
+		end;
+	end;
+END testBuild;

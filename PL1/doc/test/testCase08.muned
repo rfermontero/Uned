@@ -1,0 +1,15 @@
+(* bucle for*)
+
+MODULE ocho;
+    
+  VAR a1:INTEGER;
+  
+  
+  BEGIN
+    
+	FOR a1:=1 TO 9 DO
+		WRITEINT(a1);
+	END;    
+
+	    
+END ocho;

@@ -1,0 +1,246 @@
+package compiler.syntax;
+
+// Declaracion de importaciones 
+//(No modificar las proporcionadas. Se pueden agregar mas)
+
+import java_cup.runtime.Symbol;
+import java.util.*;
+
+import es.uned.lsi.compiler.lexical.*;
+import es.uned.lsi.compiler.code.*;
+import es.uned.lsi.compiler.intermediate.*;
+import es.uned.lsi.compiler.semantic.*;
+import es.uned.lsi.compiler.semantic.symbol.*;
+import es.uned.lsi.compiler.semantic.type.*;
+import es.uned.lsi.compiler.syntax.*;
+
+import compiler.CompilerContext;
+import compiler.lexical.*;
+import compiler.syntax.nonTerminal.*;
+import compiler.semantic.*;
+import compiler.semantic.symbol.*;
+import compiler.semantic.type.*;
+import compiler.intermediate.*;
+import compiler.code.*;
+
+action code {:
+	SyntaxErrorManager   syntaxErrorManager   = CompilerContext.getSyntaxErrorManager();
+	SemanticErrorManager semanticErrorManager = CompilerContext.getSemanticErrorManager();
+	ScopeManagerIF       scopeManager         = CompilerContext.getScopeManager();
+	FinalCodeFactoryIF   finalCodeFactory     = CompilerContext.getFinalCodeFactory();
+:};
+
+parser code {:
+	SyntaxErrorManager syntaxErrorManager = CompilerContext.getSyntaxErrorManager();
+	
+	public void syntax_error(Symbol symbol)
+	{ 
+	    Token token = (Token) symbol.value;
+	    syntaxErrorManager.syntaxError ("Error sintactico", token);	    
+	}
+		
+	public void unrecovered_syntax_error(java_cup.runtime.Symbol symbol)
+	{	
+	    Token token = (Token) symbol.value;
+	    syntaxErrorManager.syntaxFatalError ("Error fatal", token);
+	}
+:};
+
+// Declaracion de terminales (Ejemplo)
+
+terminal Token MINUS;
+terminal Token MULT;
+terminal Token TRUE;
+terminal Token FALSE;
+terminal Token DIGITS;
+terminal Token LITERAL_STRING;
+terminal Token IDENTIFIER;
+terminal Token ARRAY;
+terminal Token BEGIN;
+terminal Token BOOLEAN;
+terminal Token CONST;
+terminal Token DO;
+terminal Token ELSE;
+terminal Token END;
+terminal Token FOR;
+terminal Token IF;
+terminal Token INTEGER;
+terminal Token MODULE;
+terminal Token NOT;
+terminal Token OF;
+terminal Token OR;
+terminal Token PROCEDURE;
+terminal Token RETURN;
+terminal Token THEN;
+terminal Token TYPE;
+terminal Token TO;
+terminal Token VAR;
+terminal Token WRITESTRING;
+terminal Token WRITEINT;
+terminal Token WRITELN;
+terminal Token SEMICOLON;
+terminal Token LEFT_PAREN;
+terminal Token RIGHT_PAREN;
+terminal Token RIGHT_BRACK;
+terminal Token LEFT_BRACK;
+terminal Token COLON;
+terminal Token COMMA;
+terminal Token COLON_EQUAL;
+terminal Token EQUALS;
+terminal Token BIGGER_THAN;
+terminal Token POINT;
+
+// Declaracion de no terminales
+// no modificar los propuestos
+
+non terminal program;
+non terminal Axiom axiom;
+non terminal declarations;
+non terminal sentences;
+non terminal sentence;
+
+non terminal constantsDeclaration;
+non terminal constants;
+non terminal constant;
+
+non terminal typesDeclaration;
+non terminal types;
+non terminal type;
+
+non terminal varsDeclaration;
+non terminal vars;
+non terminal var;
+
+non terminal proceduresDeclaration;
+non terminal procedure;
+non terminal procedureArguments;
+non terminal procedureCall;
+non terminal procedureCallArgs;
+non terminal procedureArg;
+
+non terminal expression;
+non terminal assignation;
+non terminal boolean;
+non terminal arithmetic;
+non terminal arithmeticValue;
+non terminal booleanExpression;	
+non terminal booleanValue;
+non terminal pritimiveTypes;
+non terminal vectorValue;
+
+non terminal IO;
+non terminal writeInt;
+non terminal writeString;
+
+non terminal for;
+non terminal if;
+// Declaracion de relaciones de precedencia
+
+precedence left MULT, MINUS;
+
+// Declaracion de reglas de produccion
+
+start with program;
+
+axiom ::= ;
+
+program ::= {: 
+				syntaxErrorManager.syntaxInfo("Starting parsing..."); 
+			:}
+MODULE IDENTIFIER SEMICOLON
+	declarations
+BEGIN
+    sentences
+END IDENTIFIER SEMICOLON;
+
+declarations ::= constantsDeclaration typesDeclaration varsDeclaration proceduresDeclaration;
+
+constantsDeclaration ::= CONST constants|;
+constants ::= constant constants | constant;
+constant ::= IDENTIFIER EQUALS DIGITS SEMICOLON | IDENTIFIER EQUALS booleanValue SEMICOLON;
+
+typesDeclaration ::= TYPE types|;
+types ::= type types | type;
+type ::= IDENTIFIER EQUALS ARRAY LEFT_BRACK DIGITS POINT POINT DIGITS RIGHT_BRACK OF pritimiveTypes SEMICOLON;
+
+varsDeclaration::= VAR vars|;
+vars ::= var vars | var;
+var ::= IDENTIFIER COMMA var | IDENTIFIER COLON pritimiveTypes SEMICOLON | IDENTIFIER COLON IDENTIFIER SEMICOLON;
+
+proceduresDeclaration ::= procedure proceduresDeclaration |;
+procedure ::= PROCEDURE IDENTIFIER COLON pritimiveTypes SEMICOLON
+				declarations
+			  BEGIN
+			    sentences
+				RETURN IDENTIFIER SEMICOLON
+			  END IDENTIFIER SEMICOLON |
+
+			  PROCEDURE IDENTIFIER LEFT_PAREN RIGHT_PAREN COLON pritimiveTypes SEMICOLON
+			  	declarations
+			  BEGIN
+			    sentences
+				RETURN IDENTIFIER SEMICOLON
+			  END IDENTIFIER SEMICOLON |
+
+			  PROCEDURE IDENTIFIER LEFT_PAREN RIGHT_PAREN SEMICOLON
+			  	declarations
+			  BEGIN
+			    sentences
+			  END IDENTIFIER SEMICOLON |
+			  
+			  PROCEDURE IDENTIFIER LEFT_PAREN procedureArguments RIGHT_PAREN COLON pritimiveTypes SEMICOLON
+			  	declarations
+			  BEGIN
+			    sentences
+				RETURN IDENTIFIER SEMICOLON
+			  END IDENTIFIER SEMICOLON;
+
+procedureArguments::= IDENTIFIER COMMA procedureArguments | 
+					  IDENTIFIER COLON pritimiveTypes|
+					  IDENTIFIER COLON_EQUAL IDENTIFIER |
+					  IDENTIFIER COLON pritimiveTypes SEMICOLON|
+					  IDENTIFIER COLON pritimiveTypes SEMICOLON procedureArguments;
+
+sentences ::= sentence sentences|;
+sentence ::= assignation | for | IO | if | procedureCall | IDENTIFIER SEMICOLON;//IDENTIFIER -> PROCEDURE CALL JUST
+
+assignation ::= IDENTIFIER COLON_EQUAL expression SEMICOLON |
+			    IDENTIFIER LEFT_BRACK expression RIGHT_BRACK COLON_EQUAL expression SEMICOLON;
+
+expression ::=  vectorValue | arithmetic | boolean | procedureCall| IDENTIFIER | DIGITS;
+vectorValue ::= IDENTIFIER LEFT_BRACK expression RIGHT_BRACK;
+arithmeticValue ::= LEFT_PAREN arithmetic RIGHT_PAREN | arithmetic | DIGITS | IDENTIFIER;
+arithmetic ::= arithmeticValue MINUS arithmeticValue | arithmeticValue MULT arithmeticValue;
+boolean ::= LEFT_PAREN boolean RIGHT_PAREN | IDENTIFIER OR expression |	booleanExpression OR booleanExpression | NOT booleanExpression | booleanExpression;
+booleanExpression ::= booleanValue IDENTIFIER| booleanValue | arithmeticValue BIGGER_THAN arithmeticValue | arithmeticValue EQUALS arithmeticValue;
+
+procedureCall ::= IDENTIFIER LEFT_PAREN procedureCallArgs RIGHT_PAREN;
+procedureCallArgs ::= procedureArg COMMA procedureCallArgs | procedureArg |;
+procedureArg ::= arithmeticValue | boolean;
+
+booleanValue ::= TRUE | FALSE;
+pritimiveTypes ::= INTEGER | BOOLEAN;
+
+for ::= FOR IDENTIFIER COLON_EQUAL arithmeticValue TO arithmeticValue DO sentences END SEMICOLON;
+
+IO ::= writeString | WRITELN SEMICOLON | writeInt;
+writeString ::= WRITESTRING LEFT_PAREN LITERAL_STRING RIGHT_PAREN SEMICOLON;
+writeInt ::= WRITEINT LEFT_PAREN expression RIGHT_PAREN SEMICOLON;
+
+//if
+if ::= IF boolean THEN 
+			sentences
+	   END SEMICOLON|
+	   IF boolean THEN 
+			sentences
+	   ELSE
+	       sentences
+	   END SEMICOLON |
+	   IF procedureCall THEN 
+			sentences
+	   END SEMICOLON|
+	   IF procedureCall THEN 
+			sentences
+	   ELSE
+	       sentences
+	   END SEMICOLON;

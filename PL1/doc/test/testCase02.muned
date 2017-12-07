@@ -1,0 +1,9 @@
+MODULE dos;
+  BEGIN
+   
+    WRITESTRING("Hola");
+    WRITELN;    
+    WRITESTRING("Mundo!");
+    WRITELN;    
+
+  END dos;
