@@ -1,0 +1,2 @@
+hadoop fs -put /src/DataClean.txt /DataClean.txt
+hadoop jar /usr/lib/hadoop-mapreduce/hadoop-streaming.jar -file /src/Task2/maxavg.python -input /DataClean.txt  -output /maxavg.txt

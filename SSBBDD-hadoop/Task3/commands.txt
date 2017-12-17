@@ -1,0 +1,1 @@
+hadoop jar /usr/lib/hadoop-mapreduce/hadoop-streaming.jar -file /src/Task3/avggsd19025.python -input /DataClean.txt  -output /avggsd19025.txt

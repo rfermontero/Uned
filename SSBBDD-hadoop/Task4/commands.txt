@@ -1,0 +1,42 @@
+cd /src/Task1
+hadoop fs -put DataClean.txt 
+
+DROP TABLE IF EXISTS datacleantableexternal;
+CREATE EXTERNAL TABLE datacleantableexternal (
+  idref  STRING,   
+  ident  STRING, 
+  gsm19023 FLOAT,  
+  gsd19024 FLOAT, 
+  gsd19025 FLOAT,  
+  gsd19026 FLOAT, 
+  genetitle STRING,  
+  genesymbol STRING,
+  geneID SMALLINT,  
+  uniGenetitle STRING,
+  uniGenesymbol STRING, 
+  uniGeneID STRING,
+  NucleotideTitle STRING,
+  max  FLOAT,
+  min  FLOAT,
+  avg  FLOAT) 
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' LOCATION '/DataClean.txt';
+
+DROP TABLE IF EXISTS datacleantableinternal;
+CREATE TABLE datacleantableinternal (
+  idref  STRING,   
+  ident  STRING, 
+  gsm19023 FLOAT,  
+  gsd19024 FLOAT, 
+  gsd19025 FLOAT,  
+  gsd19026 FLOAT, 
+  genetitle STRING,  
+  genesymbol STRING,
+  geneID SMALLINT,  
+  uniGenetitle STRING,
+  uniGenesymbol STRING, 
+  uniGeneID STRING,
+  NucleotideTitle STRING,
+  max  FLOAT,
+  min  FLOAT,
+  avg  FLOAT) 
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'	LOCATION '/DataClean.txt';

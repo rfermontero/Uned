@@ -1,0 +1,23 @@
+#!/usr/bin/python
+# coding=utf-8
+
+from mrjob.job import MRJob
+from mrjob.protocol import RawValueProtocol
+
+class DataCleaner(MRJob):
+    
+    def getvalue(self, value):
+        if value.isdigit():
+            return float(value)
+        else:
+            return float(0)
+
+    def mapper(self, _, line):
+        values = line.strip().split("\t")
+        yield None, values[4]
+            
+    def reducer(self, _, values):
+        yield None, str(max(map(self.getvalue, values)) / len(list(values)))
+        
+if __name__ == '__main__':
+    DataCleaner.run()

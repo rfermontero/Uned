@@ -1,0 +1,66 @@
+#!/usr/bin/python
+# coding=utf-8
+
+from mrjob.job import MRJob
+from mrjob.protocol import RawValueProtocol
+
+class DataCleaner(MRJob):
+
+    OUTPUT_PROTOCOL=RawValueProtocol
+
+    def getvalue(self, value):
+        if value == 'null':
+            return float(0)
+        else:
+            return float(value)
+
+    def mapper(self, _, line):
+        values = line.strip().split("\t")
+        if len(values) == 26:
+            
+            idref = values[0]
+            ident = values[1]
+            gsm19023 = values[2] 
+            gsd19024 = values[3]
+            gsd19025 = values[4]
+            gsd19026 = values[5]
+            genetitle = values[6]
+            genesymbol = values[7] 
+            geneID = values[8] 
+            uniGenetitle = values[9]
+            uniGenesymbol = values[10] 
+            uniGeneID = values[1] 
+            NucleotideTitle = values[12]
+
+            yield None, "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}".\
+            format(idref, ident, gsm19023, gsd19024, gsd19025, gsd19026, genetitle, genesymbol, geneID, uniGenetitle, uniGenesymbol,
+            uniGeneID, NucleotideTitle, 
+            max([gsm19023, gsd19024, gsd19025, gsd19026]), 
+            min([gsm19023, gsd19024, gsd19025, gsd19026]),
+            str(sum(map(self.getvalue,[gsm19023, gsd19024, gsd19025, gsd19026])) / 4))
+
+    def reducer(self, _, values):
+        for value in values:
+            yield None,"{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}".\
+                    format(
+                        value.strip().split("\t")[0],
+                        str(value.strip().split("\t")[1]),
+                        str(value.strip().split("\t")[2]),
+                        str(value.strip().split("\t")[3]),
+                        str(value.strip().split("\t")[4]), 
+                        str(value.strip().split("\t")[5]),
+                        str(value.strip().split("\t")[6]), 
+                        str(value.strip().split("\t")[7]), 
+                        str(value.strip().split("\t")[8]),
+                        str(value.strip().split("\t")[9]), 
+                        str(value.strip().split("\t")[10]),
+                        str(value.strip().split("\t")[11]),
+                        str(value.strip().split("\t")[12]),
+                        str(value.strip().split("\t")[13]),
+                        str(value.strip().split("\t")[14]),
+                        str(value.strip().split("\t")[15])
+                    )
+           
+
+if __name__ == '__main__':
+    DataCleaner.run()

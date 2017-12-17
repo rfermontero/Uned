@@ -1,0 +1,5 @@
+select * from datacleantableinternal where gsm19023>=100 AND gsm19023<=1000 order by avg desc limit 1;
+select * from datacleantableexternal where gsm19023>=100 AND gsm19023<=1000 order by avg desc limit 1;
+
+select avg(gsd1925) from datacleantableinternal;
+select avg(gsd1925) from datacleantableexternal;

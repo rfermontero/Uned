@@ -37,7 +37,6 @@ eveything = .*
 
 %%
 
-
 <comment>"(*"               { commentCount++; }
 <comment>"*)"               { commentCount--; if(commentCount == 0) {yybegin(YYINITIAL);} }
 <comment>.|"\n"             { /* do nothing */ }

@@ -1,0 +1,2 @@
+hadoop fs -put GDS1001_full.soft.txt
+hadoop jar /usr/lib/hadoop-mapreduce/hadoop-streaming.jar -file /src/clean.python  -input GDS1001_full.soft.txt  -output /DataClean.txt
