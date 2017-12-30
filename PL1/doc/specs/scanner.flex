@@ -5,6 +5,7 @@ import compiler.lexical.Token;
 import es.uned.lsi.compiler.lexical.ScannerIF;
 import es.uned.lsi.compiler.lexical.LexicalError;
 import es.uned.lsi.compiler.lexical.LexicalErrorManager;
+import java_cup.runtime.Symbol;
 
 %%
  
@@ -37,19 +38,33 @@ eveything = .*
 
 %%
 
-<comment>"(*"               { commentCount++; }
-<comment>"*)"               { commentCount--; if(commentCount == 0) {yybegin(YYINITIAL);} }
-<comment>.|"\n"             { /* do nothing */ }
 
+<comment> "(*"               { commentCount++; }
+<comment> "*)"               { commentCount--; 
+                                if(commentCount == 0) {
+                                   yybegin(YYINITIAL); 
+                                }
+                             }
+<comment> .|"\n"             { /* do nothing */ }
+
+<<EOF>> {
+    if(commentCount!=0) {
+      LexicalError error = new LexicalError();
+      error.setLexema("Error in nested comments");
+      lexicalErrorManager.lexicalError(error);
+    }
+    return new Symbol(sym.EOF);
+  }
 
 <YYINITIAL> 
 {
-    {whiteSpace}	 {/* DO NOTHING */}
 
-    "(*"             { commentCount++; yybegin(comment); }
+    {whiteSpace}	   {/* DO NOTHING */}
+
+    "(*"             { yybegin(comment); }
    
                    
-    "-"             {
+    "-"              {
                         Token token = new Token(sym.MINUS);
                         token.setLine(yyline + 1);
                         token.setColumn(yycolumn + 1);
@@ -356,13 +371,15 @@ eveything = .*
                          token.setLexema(yytext());
                          return token;
                       }
-    {identifier}        {
+
+    {identifier}      {
                          Token token = new Token(sym.IDENTIFIER);
                          token.setLine(yyline + 1);
                          token.setColumn(yycolumn + 1);
                          token.setLexema(yytext());
                          return token;
-                        }               
+                      }   
+
     {literalString}   {
                          Token token = new Token(sym.LITERAL_STRING);
                          token.setLine(yyline + 1);
@@ -372,17 +389,18 @@ eveything = .*
                       }
 
     {error}
-                        {                                               
+                      {                                               
                           LexicalError error = new LexicalError ();
                           error.setLine(yyline + 1);
                           error.setColumn(yycolumn + 1);
                           error.setLexema(yytext());
                           lexicalErrorManager.lexicalError(error);
                         }
-    
+
 }
 
 
                          
+
 
 
