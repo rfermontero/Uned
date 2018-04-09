@@ -7,10 +7,10 @@ int matriz2[3][2];
 int matriz3[MAXROW][3];
 int a=1, b;
 
-void excribe (int x) {
+int excribe (int &x, int &y) {
 
 }
 
-void main() {
-
+void main(){
+    
 }

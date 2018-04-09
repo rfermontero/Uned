@@ -33,8 +33,7 @@ action code {:
     public void checkElementExists(String name){
     	    ScopeIF scope = scopeManager.getCurrentScope();
     	    SymbolTableIF symbolTable = scope.getSymbolTable();
-
-    	    if(symbolTable.containsSymbol(name)){
+    	    if (symbolTable.containsSymbol(name)) {
     	        semanticErrorManager.semanticFatalError(String.format("Element %s already exists in scope", name));
     	    }
     }
@@ -42,10 +41,38 @@ action code {:
      public void checkFunctionDoesNotExists(String name){
            ScopeIF scope = scopeManager.getCurrentScope();
            SymbolTableIF symbolTable = scope.getSymbolTable();
-           if(symbolTable.getSymbol(name) != null && symbolTable.getSymbol(name) instanceof SymbolFunction){
+           if (symbolTable.getSymbol(name) != null && symbolTable.getSymbol(name) instanceof SymbolFunction) {
                semanticErrorManager.semanticFatalError(String.format("Function %s already exists in scope", name));
            }
      }
+
+     public TypeIF getType(String name) {
+         if (!scopeManager.containsType(name)){
+               semanticErrorManager.semanticFatalError(String.format("Type %s does not exists", name));
+         }
+         return scopeManager.searchType(name);
+     }
+
+     public SymbolIF getSymbol(String name){
+         if (!scopeManager.containsSymbol(name)){
+                semanticErrorManager.semanticFatalError(String.format("Symbol %s does not exists", name));
+         }
+         return scopeManager.searchSymbol(name);
+     }
+
+    public boolean checkParamsAreNotDuplicated(String name, List<TemporalParam> params) {
+        boolean paramsDuplicated = params
+                .stream()
+                .collect(java.util.stream.Collectors.groupingBy(TemporalParam::getName))
+                .values()
+                .stream()
+                .anyMatch(temporalParams -> temporalParams.size() > 1);
+
+                if (paramsDuplicated) {
+                    semanticErrorManager.semanticFatalError(String.format("Function %s has multiple params with same name", name));
+                }
+        return false;        
+    }
 :}
 
 parser code {:
@@ -82,8 +109,8 @@ non terminal RangoMatrizDeclr rango_matriz_declar;
 non terminal  rango_matriz;
 non terminal GenericVariable lista_variables_enteras;
 non terminal  lista_variables_matriz;
-non terminal  declar_funcion;
-non terminal  tipo_parametros;
+non terminal SymbolFunction declar_funcion;
+non terminal TypeIF tipo_parametros;
 non terminal List<TemporalParam> declar_parametros;
 non terminal List<TemporalParam> lista_declar_parametros;
 non terminal  expresion;
@@ -133,7 +160,12 @@ program ::=
   		// en las llamadas a cupTest si el compilador no está completo. Esto es debido a que 
   		// aún no se tendrá implementada la generación de código intermedio ni final.
   		// Para la entrega final deberán descomentarse y usarse.
-  		
+        for(ScopeIF scope : CompilerContext.getScopeManager().getAllScopes()){
+                System.out.println(scope.toString());
+                System.out.println(scope.getSymbolTable().toString());
+                System.out.println(scope.getTypeTable().toString());
+        }
+
   		syntaxErrorManager.syntaxInfo("Parsing process ended.");
   :};
 
@@ -144,6 +176,7 @@ axiom ::= {:
 			TypeTableIF typeTable =	scope.getTypeTable();
 			typeTable.addType(new TypeSimple(scope, "void"));
 			typeTable.addType(new TypeSimple(scope, "int"));
+            typeTable.addType(new TypeSimple(scope, "array"));
 		  :}
 		  
 		  declar_consts;
@@ -157,8 +190,10 @@ declar_tipos_glo ::= declar_tipo declar_tipos_glo |
 declar_variables_glo ::= declar_variable declar_variables_glo | 
 						 	declar_funciones_glo;
 						 	
-declar_funciones_glo ::= declar_funcion declar_funciones_glo  | 
-						 declar_main ;
+declar_funciones_glo ::= declar_funcion declar_funciones_glo | 
+                        declar_main;
+
+declar_main ::= VOID MAIN PARIZQ PARDER bloque_sentencias;
 
 declar_const ::= DEFINE IDENTIFICADOR:name NUMERO:value PUNTOYCOMA
                 {:
@@ -178,18 +213,18 @@ declar_const ::= DEFINE IDENTIFICADOR:name NUMERO:value PUNTOYCOMA
                     }
                 :};
 
-declar_tipo ::= ENTERO IDENTIFICADOR:id rango_matriz_declar:rangeStart rango_matriz_declar:rangeEnd PUNTOYCOMA
+declar_tipo ::= ENTERO IDENTIFICADOR:name rango_matriz_declar:rangeStart rango_matriz_declar:rangeEnd PUNTOYCOMA
     {:
-        Array array = new Array(id.getLexema(), rangeStart.getValue(), rangeEnd.getValue());
+        Array array = new Array(name.getLexema(), rangeStart.getValue(), rangeEnd.getValue());
         ScopeIF scope = scopeManager.getCurrentScope();
         TypeTableIF typeTable = scope.getTypeTable();
-        TypeArray typeArray = new TypeArray(scope, id.getLexema(), rangeStart.getValue(), rangeEnd.getValue());
-        typeTable.addType(id.getLexema(), typeArray);
+        TypeArray typeArray = new TypeArray(scope, name.getLexema(), rangeStart.getValue(), rangeEnd.getValue());
+        typeTable.addType(name.getLexema(), typeArray);
         SymbolTableIF symbolTable =	scope.getSymbolTable();
         Map<String, ArrayList<Integer>> value = new HashMap();
-        checkElementExists(id.getLexema());
-        symbolTable.addSymbol(new SymbolVariable<Map<String, List<Integer>>>(scope, id.getLexema(), typeTable.getType(id.getLexema())));
-        System.out.println(String.format("Array declaration %s with size %dx%d", id.getLexema(),rangeStart.getValue(),rangeEnd.getValue()));
+        checkElementExists(name.getLexema());
+        symbolTable.addSymbol(new SymbolVariable<Map<String, List<Integer>>>(scope, name.getLexema(), typeTable.getType("array")));
+        System.out.println(String.format("Array declaration %s with size %dx%d", name.getLexema(),rangeStart.getValue(),rangeEnd.getValue()));
         RESULT=array;
     :};
 
@@ -217,132 +252,142 @@ declar_variable ::= lista_variables_enteras PUNTOYCOMA  |
 lista_variables_enteras ::= ENTERO IDENTIFICADOR:name
                               {:
                                 String varName = name.getLexema();
-                                GenericVariable var = new GenericVariable<Integer>(varName, "int");
+                                GenericVariable genericVariable = new GenericVariable<Integer>(varName, "int");
                                 ScopeIF scope = scopeManager.getCurrentScope();
                                 TypeTableIF typeTable = scope.getTypeTable();
                                 SymbolTableIF symbolTable = scope.getSymbolTable();
                                 checkElementExists(varName);
                                 symbolTable.addSymbol(new SymbolVariable<Integer>(scope, varName, typeTable.getType("int")));
                                 System.out.println(String.format("Integer var declaration %s", name.getLexema()));
-                                RESULT=var;
+                                RESULT=genericVariable;
                               :}|
 							ENTERO IDENTIFICADOR:name ASIGNACION NUMERO:value
 							  {:
                                 String varName = name.getLexema();
-                                GenericVariable<Integer> var = new GenericVariable<Integer>(varName, "int", Integer.parseInt(value.getLexema()));
-                                ScopeIF scope = scopeManager.getCurrentScope();
-                                TypeTableIF typeTable = scope.getTypeTable();
-                                SymbolTableIF symbolTable =	scope.getSymbolTable();
-                                checkElementExists(varName);
-                                symbolTable.addSymbol(new SymbolVariable<Integer>(scope, varName, typeTable.getType("int"), Integer.parseInt(value.getLexema())));
-                                System.out.println(String.format("Integer var declaration %s with value %", name.getLexema(), Integer.parseInt(value.getLexema())));
-                                RESULT=var;
-                               :}|
-							ENTERO IDENTIFICADOR:name ASIGNACION IDENTIFICADOR:id
-                               {:
-                                String varName = name.getLexema();
-                                GenericVariable<String> var = new GenericVariable<String>(varName, "int", id.getLexema());
-                                ScopeIF scope = scopeManager.getCurrentScope();
-                                TypeTableIF typeTable = scope.getTypeTable();
-                                SymbolTableIF symbolTable = scope.getSymbolTable();
-                                checkElementExists(varName);
-                                symbolTable.addSymbol(new SymbolVariable<String>(scope, varName, typeTable.getType("int"), id.getLexema()));
-                                System.out.println(String.format("Integer var declaration %s with reference value %d", name.getLexema(), id.getLexema()));
-                                RESULT=var;
-                                :}|
-							lista_variables_enteras COMA IDENTIFICADOR:name
-							   {:
-                                 String varName = name.getLexema();
-                                 GenericVariable var = new GenericVariable<Integer>(varName, "int");
-                                 ScopeIF scope = scopeManager.getCurrentScope();
-                                 TypeTableIF typeTable = scope.getTypeTable();
-                                 SymbolTableIF symbolTable = scope.getSymbolTable();
-                                 checkElementExists(varName);
-                                 symbolTable.addSymbol(new SymbolVariable<Integer>(scope, varName, typeTable.getType("int")));
-                                 System.out.println(String.format("Integer var declaration %s", name.getLexema()));
-                                 RESULT=var;
-                               :} |
-							lista_variables_enteras COMA IDENTIFICADOR:name ASIGNACION NUMERO:value
-							   {:
-                                String varName = name.getLexema();
-                                GenericVariable<Integer> var = new GenericVariable<Integer>(varName, "int", Integer.parseInt(value.getLexema()));
+                                GenericVariable<Integer> genericVariable = new GenericVariable<Integer>(varName, "int", Integer.parseInt(value.getLexema()));
                                 ScopeIF scope = scopeManager.getCurrentScope();
                                 TypeTableIF typeTable = scope.getTypeTable();
                                 SymbolTableIF symbolTable =	scope.getSymbolTable();
                                 checkElementExists(varName);
                                 symbolTable.addSymbol(new SymbolVariable<Integer>(scope, varName, typeTable.getType("int"), Integer.parseInt(value.getLexema())));
                                 System.out.println(String.format("Integer var declaration %s with value %d", name.getLexema(), Integer.parseInt(value.getLexema())));
-                                RESULT=var;
+                                RESULT=genericVariable;
+                               :}|
+							ENTERO IDENTIFICADOR:name ASIGNACION IDENTIFICADOR:id
+                               {:
+                                String varName = name.getLexema();
+                                GenericVariable<String> genericVariable = new GenericVariable<String>(varName, "int", id.getLexema());
+                                ScopeIF scope = scopeManager.getCurrentScope();
+                                TypeTableIF typeTable = scope.getTypeTable();
+                                SymbolTableIF symbolTable = scope.getSymbolTable();
+                                checkElementExists(varName);
+                                symbolTable.addSymbol(new SymbolVariable<String>(scope, varName, typeTable.getType("int"), id.getLexema()));
+                                System.out.println(String.format("Integer var declaration %s with reference value %d", name.getLexema(), id.getLexema()));
+                                RESULT=genericVariable;
+                                :}|
+							lista_variables_enteras COMA IDENTIFICADOR:name
+							   {:
+                                 String varName = name.getLexema();
+                                 GenericVariable genericVariable = new GenericVariable<Integer>(varName, "int");
+                                 ScopeIF scope = scopeManager.getCurrentScope();
+                                 TypeTableIF typeTable = scope.getTypeTable();
+                                 SymbolTableIF symbolTable = scope.getSymbolTable();
+                                 checkElementExists(varName);
+                                 symbolTable.addSymbol(new SymbolVariable<Integer>(scope, varName, typeTable.getType("int")));
+                                 System.out.println(String.format("Integer var declaration %s", name.getLexema()));
+                                 RESULT=genericVariable;
+                               :} |
+							lista_variables_enteras COMA IDENTIFICADOR:name ASIGNACION NUMERO:value
+							   {:
+                                String varName = name.getLexema();
+                                GenericVariable<Integer> genericVariable = new GenericVariable<Integer>(varName, "int", Integer.parseInt(value.getLexema()));
+                                ScopeIF scope = scopeManager.getCurrentScope();
+                                TypeTableIF typeTable = scope.getTypeTable();
+                                SymbolTableIF symbolTable =	scope.getSymbolTable();
+                                checkElementExists(varName);
+                                symbolTable.addSymbol(new SymbolVariable<Integer>(scope, varName, typeTable.getType("int"), Integer.parseInt(value.getLexema())));
+                                System.out.println(String.format("Integer var declaration %s with value %d", name.getLexema(), Integer.parseInt(value.getLexema())));
+                                RESULT=genericVariable;
                                :} |
 							lista_variables_enteras COMA IDENTIFICADOR:name ASIGNACION IDENTIFICADOR:id
 							    {:
                                    String varName = name.getLexema();
-                                   GenericVariable<String> var = new GenericVariable<String>(varName, "int", id.getLexema());
+                                   GenericVariable<String> genericVariable = new GenericVariable<String>(varName, "int", id.getLexema());
                                    ScopeIF scope = scopeManager.getCurrentScope();
                                    TypeTableIF typeTable = scope.getTypeTable();
                                    SymbolTableIF symbolTable = scope.getSymbolTable();
                                    checkElementExists(varName);
                                    symbolTable.addSymbol(new SymbolVariable<String>(scope, varName, typeTable.getType("int"), id.getLexema()));
                                    System.out.println(String.format("Integer var declaration %s with reference value %d", name.getLexema(), id.getLexema()));
-                                   RESULT=var;
+                                   RESULT=genericVariable;
                                 :};
 
 lista_variables_matriz ::= IDENTIFICADOR IDENTIFICADOR |							
 							lista_variables_matriz COMA IDENTIFICADOR;
 
-declar_funcion ::= ENTERO IDENTIFICADOR:id declar_parametros:params bloque_sentencias |
+declar_funcion ::= ENTERO IDENTIFICADOR:name declar_parametros:params bloque_sentencias 
                         {:
-                           checkFunctionDoesNotExists(id.getLexema);
+                           checkFunctionDoesNotExists(name.getLexema());
+                           checkParamsAreNotDuplicated(name.getLexema(), params);
 
-                           String functionName = id.getLexema();
+                           System.out.println(String.format("Function declared with name %s type int and params previous mentioned", name.getLexema()));
+
+                           String functionName = name.getLexema();
                            ScopeIF scope = scopeManager.getCurrentScope();
                            TypeTableIF typeTable = scope.getTypeTable();
                            SymbolTableIF symbolTable = scope.getSymbolTable();
                            TypeIF returnType = typeTable.getType("int");
                            TypeIF functionType = new TypeFunction(scope, "int");
-                           ScopeIF functionScope = scopeManager.openScope(id.getLexema());
-                           List<SymbolParameter> functionParams = new ArrayList();
-                           symbolTable.addSymbol(new SymbolFunction(scope, functionName, returnType, functionParams, functionType);
                            ScopeIF functionScope = scopeManager.openScope(functionName);
+                           List<SymbolParameter> functionParams = new ArrayList();
+                           
                            for (TemporalParam temporalParam : params) {
-                               functionParams.add(new SymbolParameter(functionScope, temporalParam.getName, temporalParam.getType())
+                               functionParams.add(new SymbolParameter(functionScope, temporalParam.getName(), temporalParam.getType()));
                            }
-                           System.out.println(String.format("Function declared with name %s type int and params previous mentioned", id.getLexema()));
-                           RESULT=var;
-                           System.out.println(String.format("Int return %s function declared", id:getLexma()));
-                         :}
-					VOID IDENTIFICADOR declar_parametros bloque_sentencias ;
+                           SymbolFunction symbolFunction = new SymbolFunction(scope, functionName, returnType, functionParams, functionType);
 
-declar_main ::= VOID MAIN PARIZQ PARDER bloque_sentencias;
+                           symbolTable.addSymbol(symbolFunction);
+                           scopeManager.closeScope();
+
+                           RESULT=symbolFunction;
+                         :} |
+					VOID IDENTIFICADOR:name declar_parametros:params bloque_sentencias ;
+
 
 declar_parametros ::= PARIZQ PARDER
                         {:
-                            RESULT = Collections.emptyList<TemporalParams>();
+                            RESULT = Collections.EMPTY_LIST;
                         :} |
 					  PARIZQ lista_declar_parametros:params PARDER
 					   {:
 					        RESULT = params;
 					   :};
 				
-lista_declar_parametros ::= tipo_parametros:type REFERENCIA IDENTIFICADOR:id
+lista_declar_parametros ::= tipo_parametros:paramType REFERENCIA IDENTIFICADOR:name
                                  {:
-                                    TypeIF type = getType(type.getLexema());
-                                    TemporalParam temporalParam = new TemporalParam(id.getLexema(), type);
-                                    System.out.println(String.format("Detected parameter for function with name %s and type %s", id:getLexma(), type.getLexema()));
-                                    List<TemporalParam> params = new ArrayList();
+                                    TypeIF paramsType = getType(paramType.getName());
+                                    TemporalParam temporalParam = new TemporalParam(name.getLexema(), paramsType);
+                                    System.out.println(String.format("Detected parameter for function with name %s and type %s", name.getLexema(), paramsType.getName()));
+                                    List<TemporalParam> params = new ArrayList<>();
                                     params.add(temporalParam);
                                     RESULT = params;
                                  :}|
-					 		lista_declar_parametros:params COMA tipo_parametros:type REFERENCIA IDENTIFICADOR:id
+					 		lista_declar_parametros:params COMA tipo_parametros:paramType REFERENCIA IDENTIFICADOR:name
 					 		     {:
-                                    TypeIF type = getType(type.getLexema());
-                                    TemporalParam temporalParam = new TemporalParam(id.getLexema(), type);
-                                    System.out.println(String.format("Detected parameter for function with name %s and type %s", id:getLexma(), type.getLexema()));
-                                    params.add(temporalParam);
+                                    TypeIF paramsType = getType(paramType.getName());
+                                    params.add(new TemporalParam(name.getLexema(), paramsType));
+                                    System.out.println(String.format("Detected parameter for function with name %s and type %s", name.getLexema(), paramsType.getName()));
                                     RESULT = params;
                                  :};
 					
-tipo_parametros ::= ENTERO | IDENTIFICADOR ;
+tipo_parametros ::= ENTERO {:
+                              TypeIF paramsType = getType("int");
+                              RESULT = paramsType;
+                           :} |
+                    IDENTIFICADOR:name {:
+                                SymbolIF symbol = getSymbol(name.getLexema());
+                                RESULT = symbol.getType();
+                            :};
 
 bloque_sentencias ::= LLAVEIZQ
                         {:
