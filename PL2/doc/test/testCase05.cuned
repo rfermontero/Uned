@@ -1,0 +1,24 @@
+/* if sin else, operadores relacionales <  != */
+
+void main() {
+
+      	int a;
+
+
+	printc("IF OPERADORES RELACIONALES");
+	
+	a=1;
+  
+        printc("true:");
+
+        if (a != 0) {
+                printc(" true");
+        }
+
+	printc("menor:");
+	if (0 < a) {
+		printc(" menor");
+	}
+        
+
+}

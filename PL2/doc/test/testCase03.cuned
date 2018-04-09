@@ -1,0 +1,14 @@
+/* constantes  */
+
+#define TRUE 1;
+#define FALSE 1;
+#define UNO 1;
+
+
+void main () {
+
+	printc("CONSTANTES");
+	printc("uno(1):");
+        printi(UNO);
+
+}

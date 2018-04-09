@@ -1,0 +1,28 @@
+/* if, operador logico and  */
+
+void main () {
+
+	int a;
+
+	printc("IF AND");
+
+        a=1 && 1;
+        printc("true:");
+
+        if (a && 1) {
+                printc(" true");
+	}
+        else {
+                printc(" false");
+	}
+        
+	a=1 && 0;
+        printc("false):");
+        if (a && 1) {
+                printc(" true");
+	}
+        else {
+                printc(" false");
+	}
+
+}

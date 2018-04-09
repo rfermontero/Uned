@@ -1,0 +1,12 @@
+/* variables y aritmetica simple  */
+
+void main(){
+
+	int a;
+
+	    printc ("VARIABLES Y ARITMETICA SIMPLE");
+        a = 1+1;
+        printc("a(2):");
+        printi(a);
+
+}

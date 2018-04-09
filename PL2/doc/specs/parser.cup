@@ -1,0 +1,435 @@
+package compiler.syntax;
+
+// Declaracion de importaciones 
+//(No modificar las proporcionadas. Se pueden agregar mas)
+
+import java_cup.runtime.Symbol;
+import java.util.*;
+
+import es.uned.lsi.compiler.lexical.*;
+import es.uned.lsi.compiler.code.*;
+import es.uned.lsi.compiler.intermediate.*;
+import es.uned.lsi.compiler.semantic.*;
+import es.uned.lsi.compiler.semantic.symbol.*;
+import es.uned.lsi.compiler.semantic.type.*;
+import es.uned.lsi.compiler.syntax.*;
+
+import compiler.CompilerContext;
+import compiler.lexical.*;
+import compiler.syntax.nonTerminal.*;
+import compiler.semantic.*;
+import compiler.semantic.symbol.*;
+import compiler.semantic.type.*;
+import compiler.intermediate.*;
+import compiler.code.*;
+
+action code {:
+	
+	SyntaxErrorManager        syntaxErrorManager   = CompilerContext.getSyntaxErrorManager();
+	SemanticErrorManager      semanticErrorManager = CompilerContext.getSemanticErrorManager();
+	ScopeManagerIF            scopeManager         = CompilerContext.getScopeManager();
+	FinalCodeFactoryIF        finalCodeFactory     = CompilerContext.getFinalCodeFactory();
+
+    public void checkElementExists(String name){
+    	    ScopeIF scope = scopeManager.getCurrentScope();
+    	    SymbolTableIF symbolTable = scope.getSymbolTable();
+
+    	    if(symbolTable.containsSymbol(name)){
+    	        semanticErrorManager.semanticFatalError(String.format("Element %s already exists in scope", name));
+    	    }
+    }
+
+     public void checkFunctionDoesNotExists(String name){
+           ScopeIF scope = scopeManager.getCurrentScope();
+           SymbolTableIF symbolTable = scope.getSymbolTable();
+           if(symbolTable.getSymbol(name) != null && symbolTable.getSymbol(name) instanceof SymbolFunction){
+               semanticErrorManager.semanticFatalError(String.format("Function %s already exists in scope", name));
+           }
+     }
+:}
+
+parser code {:
+	SyntaxErrorManager syntaxErrorManager = CompilerContext.getSyntaxErrorManager();
+	
+	public void syntax_error(Symbol symbol)
+	{
+	    Token token = (Token) symbol.value;
+	    syntaxErrorManager.syntaxError("Error sintactico", token);
+	}
+		
+	public void unrecovered_syntax_error(java_cup.runtime.Symbol symbol)
+	{	
+	    Token token = (Token) symbol.value;
+	    syntaxErrorManager.syntaxFatalError("Error fatal", token);
+	}
+:}
+
+terminal Token IDENTIFICADOR, DEFINE, IF, ELSE, ENTERO, MAIN, PRINTC, PRINTI, RETURN, VOID, WHILE, CADENA, NUMERO;
+terminal Token PARIZQ, PARDER, CORIZQ, CORDER, LLAVEIZQ, LLAVEDER, COMA, PUNTOYCOMA, MAS, MENOR, DISTINTO, AND, ASIGNACION, REFERENCIA;
+
+non terminal  program;
+non terminal Constant declar_consts;
+non terminal  declar_tipos_glo;
+non terminal  declar_variables_glo;
+non terminal  declar_funciones_glo;
+non terminal  declar_main;
+non terminal  declar_const;
+non terminal  declar_tipos;
+non terminal Array declar_tipo;
+non terminal  declar_variables;
+non terminal  declar_variable;
+non terminal RangoMatrizDeclr rango_matriz_declar;
+non terminal  rango_matriz;
+non terminal GenericVariable lista_variables_enteras;
+non terminal  lista_variables_matriz;
+non terminal  declar_funcion;
+non terminal  tipo_parametros;
+non terminal List<TemporalParam> declar_parametros;
+non terminal List<TemporalParam> lista_declar_parametros;
+non terminal  expresion;
+non terminal  asignacion;
+non terminal  expresion_sin_asign;
+non terminal  llamada_funcion;
+non terminal  lista_parametros;
+non terminal  parametros;
+non terminal  parametro;
+non terminal  retorno_funcion;
+non terminal  bloque_sentencias;
+non terminal  cuerpo_sentencias;
+non terminal  sentencias;
+non terminal  sentencia;
+non terminal  sentencia_if;
+non terminal  sentencia_while;
+non terminal  sentencia_printi;
+non terminal  sentencia_printc;
+non terminal Axiom axiom;
+		
+// Declaracion de relaciones de precedencia
+precedence right	ASIGNACION;
+precedence left		AND;
+precedence left		DISTINTO;
+precedence left 	MENOR;
+precedence left		MAS;
+precedence right	CORIZQ, CORDER;
+precedence left     PARIZQ, PARDER;
+precedence right 	ELSE;
+precedence left 	IF;
+
+// Declaracion de reglas de produccion
+start with program;
+
+program ::= 
+  {: syntaxErrorManager.syntaxInfo ("Starting parsing..."); 
+	
+	
+  :}
+  axiom:ax
+  {: 
+  		// No modificar esta estructura, aunque se pueden añadir más acciones semánticas
+  		
+  		//List intermediateCode = ax.getIntermediateCode ();
+  		//finalCodeFactory.create (intermediateCode);
+  		// En caso de no comentarse las sentencias anteriores puede generar una excepcion
+  		// en las llamadas a cupTest si el compilador no está completo. Esto es debido a que 
+  		// aún no se tendrá implementada la generación de código intermedio ni final.
+  		// Para la entrega final deberán descomentarse y usarse.
+  		
+  		syntaxErrorManager.syntaxInfo("Parsing process ended.");
+  :};
+
+axiom ::= {:
+			ScopeIF scope = scopeManager.openScope("global");
+			System.out.println("General scope opened " + scope);
+
+			TypeTableIF typeTable =	scope.getTypeTable();
+			typeTable.addType(new TypeSimple(scope, "void"));
+			typeTable.addType(new TypeSimple(scope, "int"));
+		  :}
+		  
+		  declar_consts;
+
+declar_consts ::= declar_const declar_consts | 
+		  declar_tipos_glo;
+					
+declar_tipos_glo ::= declar_tipo declar_tipos_glo | 
+		     declar_variables_glo;
+						
+declar_variables_glo ::= declar_variable declar_variables_glo | 
+						 	declar_funciones_glo;
+						 	
+declar_funciones_glo ::= declar_funcion declar_funciones_glo  | 
+						 declar_main ;
+
+declar_const ::= DEFINE IDENTIFICADOR:name NUMERO:value PUNTOYCOMA
+                {:
+                    try {
+                        String constantName = name.getLexema();
+                        int constantValue = Integer.parseInt(value.getLexema());
+                        Constant constant = new Constant<Integer>(constantName, "int", constantValue);
+                        ScopeIF scope = scopeManager.getCurrentScope();
+                        TypeTableIF typeTable = scope.getTypeTable();
+                        SymbolTableIF symbolTable =	scope.getSymbolTable();
+                        checkElementExists(constantName);
+                        symbolTable.addSymbol(new SymbolConstant<Integer>(scope, constantName,typeTable.getType("int"), constantValue));
+                        System.out.println(String.format("Constant declaration %s with value %s", name.getLexema(), value.getLexema()));
+                        RESULT=constant;
+                    } catch(NumberFormatException e){
+                        System.out.println(String.format("Error constant parsing %s with value %s", name.getLexema(), value.getLexema()));
+                    }
+                :};
+
+declar_tipo ::= ENTERO IDENTIFICADOR:id rango_matriz_declar:rangeStart rango_matriz_declar:rangeEnd PUNTOYCOMA
+    {:
+        Array array = new Array(id.getLexema(), rangeStart.getValue(), rangeEnd.getValue());
+        ScopeIF scope = scopeManager.getCurrentScope();
+        TypeTableIF typeTable = scope.getTypeTable();
+        TypeArray typeArray = new TypeArray(scope, id.getLexema(), rangeStart.getValue(), rangeEnd.getValue());
+        typeTable.addType(id.getLexema(), typeArray);
+        SymbolTableIF symbolTable =	scope.getSymbolTable();
+        Map<String, ArrayList<Integer>> value = new HashMap();
+        checkElementExists(id.getLexema());
+        symbolTable.addSymbol(new SymbolVariable<Map<String, List<Integer>>>(scope, id.getLexema(), typeTable.getType(id.getLexema())));
+        System.out.println(String.format("Array declaration %s with size %dx%d", id.getLexema(),rangeStart.getValue(),rangeEnd.getValue()));
+        RESULT=array;
+    :};
+
+rango_matriz_declar ::=
+    CORIZQ NUMERO:value CORDER {:
+        RangoMatrizDeclr arrayRange = new RangoMatrizDeclr(Integer.parseInt(value.getLexema()));
+        RESULT=arrayRange;
+    :} |
+    CORIZQ IDENTIFICADOR:id CORDER {:
+            SymbolIF symbol = scopeManager.searchSymbol(id.getLexema());
+            if(symbol!=null && symbol instanceof SymbolConstant){
+                SymbolConstant constant = (SymbolConstant) symbol;
+                RangoMatrizDeclr arrayRange = new RangoMatrizDeclr((Integer) constant.getValue());
+                RESULT=arrayRange;
+            } else {
+                System.out.println(String.format("Integer var declaration %s", id.getLexema()));
+            }
+     :};
+
+rango_matriz ::= CORIZQ expresion CORDER;
+
+declar_variable ::= lista_variables_enteras PUNTOYCOMA  |	
+					lista_variables_matriz PUNTOYCOMA ;
+
+lista_variables_enteras ::= ENTERO IDENTIFICADOR:name
+                              {:
+                                String varName = name.getLexema();
+                                GenericVariable var = new GenericVariable<Integer>(varName, "int");
+                                ScopeIF scope = scopeManager.getCurrentScope();
+                                TypeTableIF typeTable = scope.getTypeTable();
+                                SymbolTableIF symbolTable = scope.getSymbolTable();
+                                checkElementExists(varName);
+                                symbolTable.addSymbol(new SymbolVariable<Integer>(scope, varName, typeTable.getType("int")));
+                                System.out.println(String.format("Integer var declaration %s", name.getLexema()));
+                                RESULT=var;
+                              :}|
+							ENTERO IDENTIFICADOR:name ASIGNACION NUMERO:value
+							  {:
+                                String varName = name.getLexema();
+                                GenericVariable<Integer> var = new GenericVariable<Integer>(varName, "int", Integer.parseInt(value.getLexema()));
+                                ScopeIF scope = scopeManager.getCurrentScope();
+                                TypeTableIF typeTable = scope.getTypeTable();
+                                SymbolTableIF symbolTable =	scope.getSymbolTable();
+                                checkElementExists(varName);
+                                symbolTable.addSymbol(new SymbolVariable<Integer>(scope, varName, typeTable.getType("int"), Integer.parseInt(value.getLexema())));
+                                System.out.println(String.format("Integer var declaration %s with value %", name.getLexema(), Integer.parseInt(value.getLexema())));
+                                RESULT=var;
+                               :}|
+							ENTERO IDENTIFICADOR:name ASIGNACION IDENTIFICADOR:id
+                               {:
+                                String varName = name.getLexema();
+                                GenericVariable<String> var = new GenericVariable<String>(varName, "int", id.getLexema());
+                                ScopeIF scope = scopeManager.getCurrentScope();
+                                TypeTableIF typeTable = scope.getTypeTable();
+                                SymbolTableIF symbolTable = scope.getSymbolTable();
+                                checkElementExists(varName);
+                                symbolTable.addSymbol(new SymbolVariable<String>(scope, varName, typeTable.getType("int"), id.getLexema()));
+                                System.out.println(String.format("Integer var declaration %s with reference value %d", name.getLexema(), id.getLexema()));
+                                RESULT=var;
+                                :}|
+							lista_variables_enteras COMA IDENTIFICADOR:name
+							   {:
+                                 String varName = name.getLexema();
+                                 GenericVariable var = new GenericVariable<Integer>(varName, "int");
+                                 ScopeIF scope = scopeManager.getCurrentScope();
+                                 TypeTableIF typeTable = scope.getTypeTable();
+                                 SymbolTableIF symbolTable = scope.getSymbolTable();
+                                 checkElementExists(varName);
+                                 symbolTable.addSymbol(new SymbolVariable<Integer>(scope, varName, typeTable.getType("int")));
+                                 System.out.println(String.format("Integer var declaration %s", name.getLexema()));
+                                 RESULT=var;
+                               :} |
+							lista_variables_enteras COMA IDENTIFICADOR:name ASIGNACION NUMERO:value
+							   {:
+                                String varName = name.getLexema();
+                                GenericVariable<Integer> var = new GenericVariable<Integer>(varName, "int", Integer.parseInt(value.getLexema()));
+                                ScopeIF scope = scopeManager.getCurrentScope();
+                                TypeTableIF typeTable = scope.getTypeTable();
+                                SymbolTableIF symbolTable =	scope.getSymbolTable();
+                                checkElementExists(varName);
+                                symbolTable.addSymbol(new SymbolVariable<Integer>(scope, varName, typeTable.getType("int"), Integer.parseInt(value.getLexema())));
+                                System.out.println(String.format("Integer var declaration %s with value %d", name.getLexema(), Integer.parseInt(value.getLexema())));
+                                RESULT=var;
+                               :} |
+							lista_variables_enteras COMA IDENTIFICADOR:name ASIGNACION IDENTIFICADOR:id
+							    {:
+                                   String varName = name.getLexema();
+                                   GenericVariable<String> var = new GenericVariable<String>(varName, "int", id.getLexema());
+                                   ScopeIF scope = scopeManager.getCurrentScope();
+                                   TypeTableIF typeTable = scope.getTypeTable();
+                                   SymbolTableIF symbolTable = scope.getSymbolTable();
+                                   checkElementExists(varName);
+                                   symbolTable.addSymbol(new SymbolVariable<String>(scope, varName, typeTable.getType("int"), id.getLexema()));
+                                   System.out.println(String.format("Integer var declaration %s with reference value %d", name.getLexema(), id.getLexema()));
+                                   RESULT=var;
+                                :};
+
+lista_variables_matriz ::= IDENTIFICADOR IDENTIFICADOR |							
+							lista_variables_matriz COMA IDENTIFICADOR;
+
+declar_funcion ::= ENTERO IDENTIFICADOR:id declar_parametros:params bloque_sentencias |
+                        {:
+                           checkFunctionDoesNotExists(id.getLexema);
+
+                           String functionName = id.getLexema();
+                           ScopeIF scope = scopeManager.getCurrentScope();
+                           TypeTableIF typeTable = scope.getTypeTable();
+                           SymbolTableIF symbolTable = scope.getSymbolTable();
+                           TypeIF returnType = typeTable.getType("int");
+                           TypeIF functionType = new TypeFunction(scope, "int");
+                           ScopeIF functionScope = scopeManager.openScope(id.getLexema());
+                           List<SymbolParameter> functionParams = new ArrayList();
+                           symbolTable.addSymbol(new SymbolFunction(scope, functionName, returnType, functionParams, functionType);
+                           ScopeIF functionScope = scopeManager.openScope(functionName);
+                           for (TemporalParam temporalParam : params) {
+                               functionParams.add(new SymbolParameter(functionScope, temporalParam.getName, temporalParam.getType())
+                           }
+                           System.out.println(String.format("Function declared with name %s type int and params previous mentioned", id.getLexema()));
+                           RESULT=var;
+                           System.out.println(String.format("Int return %s function declared", id:getLexma()));
+                         :}
+					VOID IDENTIFICADOR declar_parametros bloque_sentencias ;
+
+declar_main ::= VOID MAIN PARIZQ PARDER bloque_sentencias;
+
+declar_parametros ::= PARIZQ PARDER
+                        {:
+                            RESULT = Collections.emptyList<TemporalParams>();
+                        :} |
+					  PARIZQ lista_declar_parametros:params PARDER
+					   {:
+					        RESULT = params;
+					   :};
+				
+lista_declar_parametros ::= tipo_parametros:type REFERENCIA IDENTIFICADOR:id
+                                 {:
+                                    TypeIF type = getType(type.getLexema());
+                                    TemporalParam temporalParam = new TemporalParam(id.getLexema(), type);
+                                    System.out.println(String.format("Detected parameter for function with name %s and type %s", id:getLexma(), type.getLexema()));
+                                    List<TemporalParam> params = new ArrayList();
+                                    params.add(temporalParam);
+                                    RESULT = params;
+                                 :}|
+					 		lista_declar_parametros:params COMA tipo_parametros:type REFERENCIA IDENTIFICADOR:id
+					 		     {:
+                                    TypeIF type = getType(type.getLexema());
+                                    TemporalParam temporalParam = new TemporalParam(id.getLexema(), type);
+                                    System.out.println(String.format("Detected parameter for function with name %s and type %s", id:getLexma(), type.getLexema()));
+                                    params.add(temporalParam);
+                                    RESULT = params;
+                                 :};
+					
+tipo_parametros ::= ENTERO | IDENTIFICADOR ;
+
+bloque_sentencias ::= LLAVEIZQ
+                        {:
+                            ScopeIF ambito = scopeManager.openScope();
+                            System.out.println("Tras abrir bloque vacio"+ ambito);
+                            scopeManager.closeScope();
+                            ambito = scopeManager.getCurrentScope();
+                            System.out.println("Tras cerrar bloque vacio"+ ambito);
+                        :} LLAVEDER  |
+	                  LLAVEIZQ
+	                    {:
+	                        ScopeIF ambito = scopeManager.openScope();
+	                        System.out.println("Tras abrir bloque NO vacio"+ ambito);
+	                    :} cuerpo_sentencias LLAVEDER {:
+	                        scopeManager.closeScope();
+	                        ScopeIF ambito = scopeManager.getCurrentScope();
+	                        System.out.println("Tras cerrar bloque NO vacio"+ ambito);
+	                    :};
+						
+cuerpo_sentencias ::= declar_tipos ;	
+
+declar_tipos ::= declar_tipo declar_tipos  | 
+					declar_tipo |
+					declar_variables ;
+					
+declar_variables ::= declar_variable declar_variables  | 
+						declar_variable |
+						sentencias ;
+
+sentencias ::= bloque_sentencias |
+			bloque_sentencias sentencias |
+			sentencia  |
+			sentencia sentencias ;
+						
+sentencia ::= sentencia_if  |
+			sentencia_while  |
+			sentencia_printi  |
+			sentencia_printc  |
+			asignacion PUNTOYCOMA  |
+			llamada_funcion PUNTOYCOMA  |
+			retorno_funcion  ;
+			
+			
+asignacion ::= IDENTIFICADOR ASIGNACION expresion_sin_asign |
+ 					IDENTIFICADOR rango_matriz rango_matriz ASIGNACION expresion_sin_asign:exp;
+
+expresion_sin_asign ::= NUMERO |
+						IDENTIFICADOR |
+						IDENTIFICADOR rango_matriz rango_matriz  |
+						llamada_funcion |
+						expresion_sin_asign MAS expresion_sin_asign  |
+						expresion_sin_asign MENOR expresion_sin_asign |
+						expresion_sin_asign DISTINTO expresion_sin_asign  |
+						expresion_sin_asign AND expresion_sin_asign |
+						PARIZQ expresion PARDER ;					
+
+expresion ::= expresion_sin_asign |
+				asignacion ;
+				
+llamada_funcion ::= IDENTIFICADOR lista_parametros ;
+
+
+lista_parametros ::= PARIZQ PARDER  |
+					 PARIZQ parametros PARDER;
+					 
+parametros ::= parametro |
+				parametros COMA parametro;
+				
+parametro ::= IDENTIFICADOR  |
+				IDENTIFICADOR rango_matriz rango_matriz ;
+
+sentencia_if ::= IF PARIZQ expresion PARDER sentencia  |
+					IF PARIZQ expresion PARDER bloque_sentencias  |
+					IF PARIZQ expresion PARDER sentencia ELSE sentencia  |
+					IF PARIZQ expresion PARDER sentencia ELSE bloque_sentencias  |
+					IF PARIZQ expresion PARDER bloque_sentencias ELSE sentencia  |
+					IF PARIZQ expresion PARDER bloque_sentencias ELSE bloque_sentencias;
+
+sentencia_while ::= WHILE PARIZQ expresion PARDER sentencia |			
+					WHILE PARIZQ expresion PARDER bloque_sentencias;
+					
+sentencia_printi ::= PRINTI PARIZQ expresion PARDER PUNTOYCOMA |
+						PRINTI PARIZQ PARDER PUNTOYCOMA;
+
+sentencia_printc ::= PRINTC PARIZQ CADENA PARDER PUNTOYCOMA;
+
+retorno_funcion ::= RETURN expresion PUNTOYCOMA  |
+					RETURN PUNTOYCOMA;
+					
+					
