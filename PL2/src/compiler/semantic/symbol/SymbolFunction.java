@@ -1,5 +1,6 @@
 package compiler.semantic.symbol;
 
+import compiler.syntax.nonTerminal.AbstractSentence;
 import es.uned.lsi.compiler.semantic.ScopeIF;
 import es.uned.lsi.compiler.semantic.type.TypeIF;
 
@@ -10,15 +11,17 @@ public class SymbolFunction extends SymbolProcedure {
 
     private final List<SymbolParameter> parameters;
     private final TypeIF returnType;
+    private final List<AbstractSentence> sentences;
 
     public SymbolFunction(ScopeIF scope,
                           String name,
                           TypeIF returnType,
                           List<SymbolParameter> parameters,
-                          TypeIF type) {
-        super(scope, name, type);
+                          List<AbstractSentence> sentences) {
+        super(scope, name, returnType);
         this.parameters = parameters;
         this.returnType = returnType;
+        this.sentences = sentences;
     }
 
     public TypeIF getReturnType() {
@@ -27,5 +30,9 @@ public class SymbolFunction extends SymbolProcedure {
 
     public List<SymbolParameter> getParameters() {
         return parameters;
+    }
+
+    public List<AbstractSentence> getSentences() {
+        return sentences;
     }
 }

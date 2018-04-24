@@ -1,16 +1,25 @@
-/* vacio  */
+#define TRUE 1;
 
-#define MAXROW 7;
-#define MAXCOL 7;
-int matriz1[MAXROW][MAXCOL];
-int matriz2[3][2];
-int matriz3[MAXROW][3];
-int a=1, b;
-
-int excribe (int &x, int &y) {
-
+void nada() {
+ printc("mundo");
 }
 
-void main(){
-    
+void nada2 () {
+ printc("mundo");
+}
+
+int sumar (int &x, int &y) {
+ printc("mundo");
+ return x + y;
+}
+
+int sumara(int &x, int &y){
+ printc("mundoa");
+ return x + y;
+}
+
+void main () {
+ printc("hola");
+ printc("mundo");
+
 }

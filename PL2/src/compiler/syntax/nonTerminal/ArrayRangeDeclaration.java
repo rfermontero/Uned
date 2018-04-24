@@ -1,10 +1,10 @@
 package compiler.syntax.nonTerminal;
 
-public class RangoMatrizDeclr extends NonTerminal {
+public class ArrayRangeDeclaration extends NonTerminal {
 
     private final int value;
 
-    public RangoMatrizDeclr(int value) {
+    public ArrayRangeDeclaration(int value) {
         this.value = value;
     }
 

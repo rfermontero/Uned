@@ -1,33 +1,32 @@
 package compiler.syntax.nonTerminal;
 
 
-/**
- * Constant class definition:
- * Uses name and value (only integer)
- */
-public class GenericVariable<T> extends NonTerminal {
+public class GenericVariable extends NonTerminal {
 
     private final String name;
     private final String type;
-    private T value;
+    private final String identifier;
+    private final Integer value;
 
     public GenericVariable(String name, String type) {
         this.name = name;
         this.type = type;
+        this.identifier = null;
+        this.value = null;
     }
 
-    public GenericVariable(String name, String type, T value) {
+    public GenericVariable(String name, String type, String identifier) {
+        this.name = name;
+        this.type = type;
+        this.identifier = identifier;
+        this.value = null;
+    }
+
+    public GenericVariable(String name, String type, Integer value) {
         this.name = name;
         this.type = type;
         this.value = value;
-    }
-
-    public void setValue(T value){
-        this.value = value;
-    }
-
-    public T getValue() {
-        return value;
+        this.identifier = null;
     }
 
     public String getName() {
