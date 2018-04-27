@@ -42,13 +42,12 @@ action code {:
            semanticErrorManager.semanticFatalError(String.format("Call to %s does not match params size", functionName));
          }
        }
-       //TODO else semantic fatal error
     }
 
     public void checkSymbolDoesNotExists(String name){
        ScopeIF scope = scopeManager.getCurrentScope();
        SymbolTableIF symbolTable = scope.getSymbolTable();
-       if (symbolTable.containsSymbol(name)) {
+       if(symbolTable.containsSymbol(name)) {
          semanticErrorManager.semanticFatalError(String.format("Element %s already exists in scope", name));
        }
     }
@@ -56,7 +55,7 @@ action code {:
     public void checkSymbolExists(String name){
       ScopeIF scope = scopeManager.getCurrentScope();
       SymbolTableIF symbolTable = scope.getSymbolTable();
-      if (!symbolTable.containsSymbol(name)) {
+      if(!symbolTable.containsSymbol(name)) {
         semanticErrorManager.semanticFatalError(String.format("Element %s does not exist in scope", name));
         }
     }
@@ -64,8 +63,16 @@ action code {:
     public void checkFunctionExists(String name){
        ScopeIF scope = scopeManager.getCurrentScope();
        SymbolTableIF symbolTable = scope.getSymbolTable();
-       if (!symbolTable.containsSymbol(name)) {
+       if(!symbolTable.containsSymbol(name)) {
         semanticErrorManager.semanticFatalError(String.format("Element %s does not exists in scope, cannot be called", name));
+       }
+
+       SymbolIF functionSymbol = scopeManager.searchSymbol(name);
+       if (!(functionSymbol instanceof SymbolFunction)) {
+         SymbolFunction functionSymbolCasted = (SymbolFunction) functionSymbol;
+         if (functionSymbolCasted.getParameters().size() != size){
+            semanticErrorManager.semanticFatalError(String.format("%s is not a function", functionName));
+         }
        }
     }
 
@@ -114,13 +121,13 @@ parser code {:
 	{
 
 	    Token token = (Token) symbol.value;
-	    syntaxErrorManager.syntaxError ("Error sintactico", token);
+	    syntaxErrorManager.syntaxError("Error sintactico", token);
 	}
 
 	public void unrecovered_syntax_error(java_cup.runtime.Symbol symbol)
 	{
 	    Token token = (Token) symbol.value;
-	    syntaxErrorManager.syntaxFatalError ("Error fatal", token);
+	    syntaxErrorManager.syntaxFatalError("Error fatal", token);
 
 	}
 :}
@@ -644,17 +651,23 @@ sentencia ::= sentencia_if
             :};
 
 
-asignacion ::= IDENTIFICADOR:name ASIGNACION expresion_sin_asign:valueToAsign
+asignacion ::= IDENTIFICADOR:name ASIGNACION expresion_sin_asign:valueToAssign
                 {:
+
+                    if (valueToAssign.checkResultValueIsNotArray(scopeManager)){
+                        semanticErrorManager.semanticFatalError(String.format("Cannot assign to an array reference", name));
+                    }
+
                     checkSymbolDoesNotExists(name.getLexema());
 
-                    RESULT = new Assignation();
+                    RESULT = new Assignation(valueToAssign);
                 :}|
- 				IDENTIFICADOR:name rango_matriz rango_matriz ASIGNACION expresion_sin_asign:exp
+ 				IDENTIFICADOR:name rango_matriz rango_matriz ASIGNACION expresion_sin_asign:valueToAssign
  				{:
+ 				     checkResultValueIsNotArray(valueToAssign);
  				     checkSymbolDoesNotExists(name.getLexema());
 
- 				     RESULT = new Assignation();
+ 				     RESULT = new Assignation(valueToAssign);
  				:};
 
 expresion_sin_asign ::= NUMERO:number
@@ -665,7 +678,7 @@ expresion_sin_asign ::= NUMERO:number
 						{:
 						    ScopeIF scope = scopeManager.getCurrentScope();
 						    getSymbol(name.getLexema());
-                            RESULT = new ExpressionWithoutAssignation();
+                            RESULT = new ExpressionWithoutAssignation(name.getLexema());
                         :} |
 						IDENTIFICADOR:name rango_matriz:from rango_matriz:to
 						{:
@@ -676,7 +689,7 @@ expresion_sin_asign ::= NUMERO:number
 						 {:
 						    checkSymbolExists(functionCall.getName());
 
-                            RESULT = new ExpressionWithoutAssignation();
+                            RESULT = new ExpressionWithoutAssignation(functionCall);
                          :} |
 						expresion_sin_asign:leftExpr MAS expresion_sin_asign:rightExpr
 						{:
@@ -688,23 +701,48 @@ expresion_sin_asign ::= NUMERO:number
                             	checkSymbolExists(leftExpr.getIdentifier());
                             }
 
-                            RESULT = new ExpressionWithoutAssignation();
-                        :} |
-						expresion_sin_asign MENOR expresion_sin_asign
+                             RESULT = new ExpressionWithoutAssignation(leftExpr, rightExpr);
+                        :}|
+						expresion_sin_asign:leftExpr MENOR expresion_sin_asign:rightExpr
 						{:
-                          RESULT = new ExpressionWithoutAssignation();
+                          if (leftExpr.getIdentifier() != null){
+                            checkSymbolExists(leftExpr.getIdentifier());
+                          }
+
+                          if (rightExpr.getIdentifier() != null){
+                            checkSymbolExists(leftExpr.getIdentifier());
+                          }
+
+                          RESULT = new ExpressionWithoutAssignation(leftExpr, rightExpr);
                         :} |
-						expresion_sin_asign DISTINTO expresion_sin_asign
+						expresion_sin_asign:leftExpr DISTINTO expresion_sin_asign:rightExpr
 						{:
-                          RESULT = new ExpressionWithoutAssignation();
+                         if (leftExpr.getIdentifier() != null){
+                            checkSymbolExists(leftExpr.getIdentifier());
+                         }
+
+                         if (rightExpr.getIdentifier() != null){
+                           checkSymbolExists(leftExpr.getIdentifier());
+                         }
+
+                         RESULT = new ExpressionWithoutAssignation(leftExpr, rightExpr);
                         :} |
-						expresion_sin_asign AND expresion_sin_asign
+						expresion_sin_asign:leftExpr AND expresion_sin_asign:rightExpr
 						{:
-                            RESULT = new ExpressionWithoutAssignation();
+
+						    if (leftExpr.getIdentifier() != null){
+                                checkSymbolExists(leftExpr.getIdentifier());
+                            }
+
+                            if (rightExpr.getIdentifier() != null){
+                                checkSymbolExists(leftExpr.getIdentifier());
+                            }
+
+                            RESULT = new ExpressionWithoutAssignation(leftExpr, rightExpr);
                         :} |
-						PARIZQ expresion PARDER
+						PARIZQ expresion:expr PARDER
 						 {:
-                             RESULT = new ExpressionWithoutAssignation();
+                             RESULT = new ExpressionWithoutAssignation(expr);
                          :};
 
 expresion ::= expresion_sin_asign |
@@ -764,7 +802,7 @@ sentencia_while ::= WHILE PARIZQ expresion PARDER sentencia |
 
 sentencia_printi ::= PRINTI PARIZQ expresion:expr PARDER PUNTOYCOMA
                         {:
-                           System.out.println("Printi " + expr.toString());
+                            System.out.println("Printi " + expr.toString());
  						    RESULT = new PrintISentence(expr);
  						:}|
 						PRINTI PARIZQ PARDER PUNTOYCOMA

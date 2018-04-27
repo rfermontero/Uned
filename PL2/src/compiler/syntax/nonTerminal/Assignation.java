@@ -1,7 +1,15 @@
 package compiler.syntax.nonTerminal;
 
 public class Assignation extends AbstractSentence {
-    public Assignation() {
-        super();
-    }
+
+	private final Expression expression;
+
+	public Assignation(Expression expression) {
+		super();
+		this.expression = expression;
+	}
+
+	public Expression getExpression() {
+		return expression;
+	}
 }
