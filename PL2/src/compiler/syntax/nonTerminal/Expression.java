@@ -5,7 +5,7 @@ import es.uned.lsi.compiler.semantic.type.TypeIF;
 public class Expression extends NonTerminal {
 
     private TypeIF returnType;
-    private int value;
+    private int value = -1;
     private ArrayRange from;
     private ArrayRange to;
     private String identifier;
@@ -63,22 +63,82 @@ public class Expression extends NonTerminal {
     }
 
     public String getIdentifier() {
-        return identifier;
+        if (identifier != null) {
+            return identifier;
+        }
+
+        if (getLeftExpression() != null) {
+            return getLeftExpression().getIdentifier();
+        }
+
+        if (getRightExpression() != null) {
+            return getRightExpression().getIdentifier();
+        }
+
+        if (getSingleExpression() != null) {
+            return getSingleExpression().getIdentifier();
+        }
+        return null;
     }
 
     public ArrayRange getTo() {
-        return to;
+        if (to != null) {
+            return to;
+        }
+
+        if (getLeftExpression() != null) {
+            return getLeftExpression().getTo();
+        }
+
+        if (getRightExpression() != null) {
+            return getRightExpression().getTo();
+        }
+
+        if (getSingleExpression() != null) {
+            return getSingleExpression().getTo();
+        }
+        return null;
     }
 
     public ArrayRange getFrom() {
-        return from;
+        if (from != null) {
+            return from;
+        }
+
+        if (getLeftExpression() != null) {
+            return getLeftExpression().getFrom();
+        }
+
+        if (getRightExpression() != null) {
+            return getRightExpression().getFrom();
+        }
+
+        if (getSingleExpression() != null) {
+            return getSingleExpression().getFrom();
+        }
+        return null;
     }
 
     public int getValue() {
-        return value;
+        if (value != -1) {
+            return value;
+        }
+
+        if (getLeftExpression() != null) {
+            return getLeftExpression().getValue();
+        }
+
+        if (getRightExpression() != null) {
+            return getRightExpression().getValue();
+        }
+
+        if (getSingleExpression() != null) {
+            return getSingleExpression().getValue();
+        }
+        return -1;
     }
 
-    public Expression getLeftExpresion() {
+    public Expression getLeftExpression() {
         return leftExpresion;
     }
 
@@ -94,7 +154,7 @@ public class Expression extends NonTerminal {
         return returnType;
     }
 
-    public boolean isAsignation() {
+    public boolean isAssignation() {
         return isAssignation;
     }
 }

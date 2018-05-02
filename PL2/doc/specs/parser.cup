@@ -23,7 +23,7 @@ import compiler.semantic.type.*;
 import compiler.intermediate.*;
 import compiler.code.*;
 
-// Declaracion del codigo de usuario
+// Declaracion del codigo de usuariom
 
 action code {:
 
@@ -41,8 +41,9 @@ action code {:
          if (functionSymbolCasted.getParameters().size() != size){
            semanticErrorManager.semanticFatalError(String.format("Call to %s does not match params size", functionName));
          }
+       } else {
+         semanticErrorManager.semanticFatalError(String.format("%s is not a function", functionName));
        }
-       //TODO else semantic fatal error
     }
 
     public void checkSymbolDoesNotExists(String name){
@@ -54,11 +55,12 @@ action code {:
     }
 
     public void checkSymbolExists(String name){
-      ScopeIF scope = scopeManager.getCurrentScope();
-      SymbolTableIF symbolTable = scope.getSymbolTable();
-      if (!symbolTable.containsSymbol(name)) {
+      boolean found = scopeManager.getCurrentScope().getSymbolTable().containsSymbol(name) ||
+       scopeManager.searchSymbol(name).getScope().getName().equals("global");
+
+      if (!found) {
         semanticErrorManager.semanticFatalError(String.format("Element %s does not exist in scope", name));
-        }
+      }
     }
 
     public void checkFunctionExists(String name){
@@ -104,11 +106,26 @@ action code {:
                 }
         return false;
     }
+
+    public boolean checkSymbolIsNotArray(String name){
+        ScopeIF scope = scopeManager.getCurrentScope();
+        SymbolTableIF symbolTable = scope.getSymbolTable();
+        if (symbolTable.getSymbol(name) == null) {
+           semanticErrorManager.semanticFatalError(String.format("Symbol %s does not exists", name));
+        }
+
+        SymbolVariable variable = (SymbolVariable) symbolTable.getSymbol(name);
+        TypeIF variableType = variable.getType();
+        if (variableType.getName().equals("array")){
+           semanticErrorManager.semanticFatalError(String.format("Cannot assign variable to array", name));
+        }
+        return true;
+    }
 :}
 
 parser code {:
-	SyntaxErrorManager        syntaxErrorManager   = CompilerContext.getSyntaxErrorManager();
 
+	SyntaxErrorManager syntaxErrorManager = CompilerContext.getSyntaxErrorManager();
 
 	public void syntax_error(Symbol symbol)
 	{
@@ -155,7 +172,7 @@ non terminal List<TemporalParam> declar_parametros;
 non terminal List<TemporalParam> lista_declar_parametros;
 non terminal Expression expresion;
 non terminal Assignation asignacion;
-non terminal ExpressionWithoutAssignation expresion_sin_asign;
+non terminal Expression expresion_sin_asign;
 non terminal CallFunction llamada_funcion;
 non terminal ParametersList lista_parametros;
 non terminal List<Parameter> parametros;
@@ -186,9 +203,8 @@ precedence left 	IF;
 start with program;
 
 program ::=
-  {: syntaxErrorManager.syntaxInfo ("Starting parsing...");
-
-
+  {:
+    syntaxErrorManager.syntaxInfo ("Starting parsing...");
   :}
   axiom:ax
   {:
@@ -215,7 +231,7 @@ axiom ::= {:
 			typeTable.addType(new TypeSimple(scope, "void"));
 			typeTable.addType(new TypeSimple(scope, "int"));
             typeTable.addType(new TypeSimple(scope, "array"));
-
+            typeTable.addType(new TypeSimple(scope, "boolean"));
           :}
 
 		  declar_consts;
@@ -229,7 +245,7 @@ declar_tipos_glo ::= declar_tipo declar_tipos_glo |
 declar_variables_glo ::= declar_variable declar_variables_glo |
 						 	declar_funciones_glo;
 
-declar_funciones_glo ::= declar_funcion declar_funciones_glo  |
+declar_funciones_glo ::= declar_funcion:symbolFunction declar_funciones_glo|
 						 declar_main ;
 
 declar_const ::= DEFINE IDENTIFICADOR:name NUMERO:value PUNTOYCOMA
@@ -264,7 +280,7 @@ declar_tipo ::= ENTERO IDENTIFICADOR:name rango_matriz_declar:rangeStart rango_m
 rango_matriz_declar ::=
     CORIZQ NUMERO:value CORDER
     {:
-       ArrayRangeDeclaration arrayRange = new ArrayRangeDeclaration(Integer.parseInt(value.getLexema()));
+        ArrayRangeDeclaration arrayRange = new ArrayRangeDeclaration(Integer.parseInt(value.getLexema()));
         RESULT=arrayRange;
     :} |
     CORIZQ IDENTIFICADOR:id CORDER
@@ -332,6 +348,7 @@ lista_variables_enteras ::= ENTERO IDENTIFICADOR:name
                                 TypeTableIF typeTable = scope.getTypeTable();
                                 SymbolTableIF symbolTable = scope.getSymbolTable();
                                 checkSymbolDoesNotExists(varName);
+                                checkSymbolIsNotArray(id.getLexema());
                                 symbolTable.addSymbol(new SymbolVariable<String>(scope, varName, typeTable.getType("int"), id.getLexema()));
                                 System.out.println(String.format("Integer var declaration %s with reference value %d", name.getLexema(), id.getLexema()));
                                 List<GenericVariable> vars = new ArrayList<GenericVariable>();
@@ -372,6 +389,7 @@ lista_variables_enteras ::= ENTERO IDENTIFICADOR:name
                                    TypeTableIF typeTable = scope.getTypeTable();
                                    SymbolTableIF symbolTable = scope.getSymbolTable();
                                    checkSymbolDoesNotExists(varName);
+                                   checkSymbolIsNotArray(id.getLexema());
                                    symbolTable.addSymbol(new SymbolVariable<String>(scope, varName, typeTable.getType("int"), id.getLexema()));
                                    System.out.println(String.format("Integer var declaration %s with reference value %d", name.getLexema(), id.getLexema()));
                                    vars.add(genericVariable);
@@ -406,90 +424,78 @@ lista_variables_matriz ::= IDENTIFICADOR:type IDENTIFICADOR:name
                                 RESULT=vars;
                              :};
 
-declar_funcion ::= ENTERO IDENTIFICADOR:name declar_parametros:params bloque_sentencias:sentencesBlock
+declar_funcion ::= ENTERO IDENTIFICADOR:name {:
+                                               checkFunctionDoesNotExists(name.getLexema());
+                                               String functionName = name.getLexema();
+                                               ScopeIF functionScope = scopeManager.openScope(functionName);
+                                             :}
+                    declar_parametros:params
+                    {:
+                        checkParamsAreNotDuplicated(name.getLexema(), params);
+                        ScopeIF functionScope = scopeManager.searchScope(name.getLexema());
+                        System.out.print(String.format("Function declared with name %s return type %s and params:", name.getLexema(), "int"));
+                        for (TemporalParam temporalParam : params) {
+                            System.out.print(temporalParam.getName());
+                            System.out.print(",");
+                        }
+                        System.out.println();
+                        SymbolTableIF functionSymbolTable = functionScope.getSymbolTable();
+                        for (TemporalParam temporalParam : params) {
+                            functionSymbolTable.addSymbol(new SymbolVariable<String>(functionScope, temporalParam.getName(), temporalParam.getType()));
+                        }
+                    :}
+                    bloque_sentencias:sentencesBlock
                         {:
                            //params is List<TemporalParam>
                            //sentencesBlock is BlockSentences
 
-                           checkFunctionDoesNotExists(name.getLexema());
-                           checkParamsAreNotDuplicated(name.getLexema(), params);
-
-                           String functionName = name.getLexema();
-                           ScopeIF scope = scopeManager.getCurrentScope();
-                           TypeTableIF typeTable = scope.getTypeTable();
-                           SymbolTableIF symbolTable = scope.getSymbolTable();
-
-                           String returnType = "int";
-                           TypeIF returnTypeIF = getType(returnType);
-
-                           System.out.print(String.format("Function declared with name %s return type %s and params:", name.getLexema(), returnType));
-
-                           for(TemporalParam temporalParam : params) {
-                             System.out.print(" ");
-                             System.out.print(temporalParam.getName());
-                           }
-
-                           System.out.println(" ");
-                           TypeIF functionType = new TypeFunction(scope, returnType);
-                           ScopeIF functionScope = scopeManager.openScope(functionName);
-                           SymbolTableIF functionSymbolTable = functionScope.getSymbolTable();
-                           System.out.println(functionScope);
-
-                           List<SymbolParameter> functionParams = new ArrayList();
-
-                           for (TemporalParam temporalParam : params) {
-                               functionParams.add(new SymbolParameter(functionScope, temporalParam.getName(), temporalParam.getType()));
-                               //Add symbol to function symbol table
-                               functionSymbolTable.addSymbol(new SymbolVariable<String>(functionScope, temporalParam.getName(), temporalParam.getType()));
-                           }
-
-                           SymbolFunction symbolFunction = new SymbolFunction(scope, functionName, returnTypeIF, functionParams, null);
-
-                           symbolTable.addSymbol(symbolFunction);
                            scopeManager.closeScope();
+                           ScopeIF globalScope = scopeManager.getCurrentScope();
+                           SymbolTableIF globalSymbolTable =  globalScope.getSymbolTable();
+                           List<SymbolParameter> functionParams = new ArrayList();
+                           for (TemporalParam temporalParam : params) {
+                             functionParams.add(new SymbolParameter(scopeManager.getCurrentScope(), temporalParam.getName(), temporalParam.getType()));
+                           }
+                           SymbolFunction symbolFunction = new SymbolFunction(globalScope, name.getLexema(), getType("int"), functionParams, sentencesBlock);
+                           globalSymbolTable.addSymbol(symbolFunction);
                            RESULT=symbolFunction;
                          :} |
-					VOID IDENTIFICADOR:name declar_parametros:params bloque_sentencias:sentencesBlock
-					 {:
-					        //params is List<TemporalParam>
-                            //sentencesBlock is BlockSentences
+					VOID IDENTIFICADOR:name {:
+                                       checkFunctionDoesNotExists(name.getLexema());
+                                       String functionName = name.getLexema();
+                                       ScopeIF functionScope = scopeManager.openScope(functionName);
+                                       :}
+                    declar_parametros:params
+                                        {:
+                                            checkParamsAreNotDuplicated(name.getLexema(), params);
+                                            ScopeIF functionScope = scopeManager.searchScope(name.getLexema());
+                                            System.out.print(String.format("Function declared with name %s return type %s and params:", name.getLexema(), "void"));
+                                            for (TemporalParam temporalParam : params) {
+                                                System.out.print(temporalParam.getName());
+                                                System.out.print(",");
+                                            }
+                                            System.out.println();
+                                            SymbolTableIF functionSymbolTable = functionScope.getSymbolTable();
+                                            for (TemporalParam temporalParam : params) {
+                                                functionSymbolTable.addSymbol(new SymbolVariable<String>(functionScope, temporalParam.getName(), temporalParam.getType()));
+                                            }
+                                        :}
+                                        bloque_sentencias:sentencesBlock
+                                            {:
+                                               //params is List<TemporalParam>
+                                               //sentencesBlock is BlockSentences
 
-                            checkFunctionDoesNotExists(name.getLexema());
-                            checkParamsAreNotDuplicated(name.getLexema(), params);
-                            String functionName = name.getLexema();
-                            ScopeIF scope = scopeManager.getCurrentScope();
-                            TypeTableIF typeTable = scope.getTypeTable();
-                            SymbolTableIF symbolTable = scope.getSymbolTable();
-
-                            String returnType = "void";
-                            TypeIF returnTypeIF = getType(returnType);
-
-                            System.out.print(String.format("Function declared with name %s return type %s and params:", name.getLexema(), returnType));
-
-                            for (TemporalParam temporalParam : params) {
-                               System.out.print(" ");
-                               System.out.print(temporalParam.getName());
-                            }
-
-                            System.out.println(" ");
-
-                            TypeIF functionType = new TypeFunction(scope, returnType);
-                            ScopeIF functionScope = scopeManager.openScope(functionName);
-                            SymbolTableIF functionSymbolTable = functionScope.getSymbolTable();
-                            List<SymbolParameter> functionParams = new ArrayList();
-
-                            for (TemporalParam temporalParam : params) {
-                               functionParams.add(new SymbolParameter(functionScope, temporalParam.getName(), temporalParam.getType()));
-                               //Add symbol to function symbol table
-                               functionSymbolTable.addSymbol(new SymbolVariable<String>(functionScope, temporalParam.getName(), temporalParam.getType()));
-                            }
-
-                             SymbolFunction symbolFunction = new SymbolFunction(scope, functionName, returnTypeIF, functionParams, null);
-
-                             symbolTable.addSymbol(symbolFunction);
-                             scopeManager.closeScope();
-                             RESULT=symbolFunction;
-					 :};
+                                               scopeManager.closeScope();
+                                               ScopeIF globalScope = scopeManager.getCurrentScope();
+                                               SymbolTableIF globalSymbolTable =  globalScope.getSymbolTable();
+                                               List<SymbolParameter> functionParams = new ArrayList();
+                                               for (TemporalParam temporalParam : params) {
+                                                 functionParams.add(new SymbolParameter(scopeManager.getCurrentScope(), temporalParam.getName(), temporalParam.getType()));
+                                               }
+                                               SymbolFunction symbolFunction = new SymbolFunction(globalScope, name.getLexema(), getType("void"), functionParams, sentencesBlock);
+                                               globalSymbolTable.addSymbol(symbolFunction);
+                                               RESULT=symbolFunction;
+                                        :} ;
 
 
 declar_main ::= VOID MAIN PARIZQ PARDER bloque_sentencias:sentencesBlock
@@ -628,7 +634,7 @@ sentencia ::= sentencia_if
             :} |
 			asignacion:asig PUNTOYCOMA 
             {:
-                RESULT = asig;
+                RESULT=asig;
             :} |
 			llamada_funcion:callFunction PUNTOYCOMA
 			{:
@@ -647,68 +653,124 @@ sentencia ::= sentencia_if
 asignacion ::= IDENTIFICADOR:name ASIGNACION expresion_sin_asign:valueToAsign
                 {:
                     checkSymbolDoesNotExists(name.getLexema());
-
-                    RESULT = new Assignation();
+                    if(valueToAsign.getIdentifier()!=null){
+                      SymbolIF symbol = getSymbol(valueToAsign.getIdentifier());
+                    }
+                    RESULT = new Assignation(name.getLexema(), valueToAsign);
                 :}|
- 				IDENTIFICADOR:name rango_matriz rango_matriz ASIGNACION expresion_sin_asign:exp
+ 				IDENTIFICADOR:name rango_matriz:leftRange rango_matriz:rightRange ASIGNACION expresion_sin_asign:valueToAsign
  				{:
  				     checkSymbolDoesNotExists(name.getLexema());
-
- 				     RESULT = new Assignation();
+ 				     RESULT = new Assignation(name.getLexema(),leftRange,rightRange, valueToAsign);
  				:};
 
 expresion_sin_asign ::= NUMERO:number
                         {:
-                            RESULT = new ExpressionWithoutAssignation(Integer.parseInt(number.getLexema()));
+                            RESULT = new Expression(Integer.parseInt(number.getLexema()), getType("int"));
                         :} |
 						IDENTIFICADOR:name
 						{:
-						    ScopeIF scope = scopeManager.getCurrentScope();
-						    getSymbol(name.getLexema());
-                            RESULT = new ExpressionWithoutAssignation();
+                            RESULT = new Expression(name.getLexema(), getType("int"));
                         :} |
 						IDENTIFICADOR:name rango_matriz:from rango_matriz:to
 						{:
-						    checkSymbolExists(name.getLexema());
-                            RESULT = new ExpressionWithoutAssignation(name.getLexema(), from, to);
+                            RESULT = new Expression(name.getLexema(), from, to, getType("int"));
                         :} |
 						llamada_funcion:functionCall
 						 {:
-						    checkSymbolExists(functionCall.getName());
-
-                            RESULT = new ExpressionWithoutAssignation();
+						    SymbolFunction functionSymbol = (SymbolFunction) getSymbol(functionCall.getName());
+                            RESULT = new Expression(functionCall, functionSymbol.getReturnType());
                          :} |
 						expresion_sin_asign:leftExpr MAS expresion_sin_asign:rightExpr
 						{:
-						    if (leftExpr.getIdentifier() != null){
-						        checkSymbolExists(leftExpr.getIdentifier());
+						    if(leftExpr.getIdentifier()!=null){
+						    	checkSymbolExists(leftExpr.getIdentifier());
 						    }
+						    if(rightExpr.getIdentifier()!=null){
+                                checkSymbolExists(rightExpr.getIdentifier());
+                            }
+                           if(!leftExpr.getReturnType().getName().equals("int")){
+                             semanticErrorManager.semanticFatalError("LeftExpresion should be an int");
+                           }
 
-						    if (rightExpr.getIdentifier() != null){
-                            	checkSymbolExists(leftExpr.getIdentifier());
+                           if(!rightExpr.getReturnType().getName().equals("int")){
+                            semanticErrorManager.semanticFatalError("LeftExpresion should be an int");
+                           }
+
+                            RESULT = new Expression(leftExpr, rightExpr, getType("int"));
+                        :} |
+						expresion_sin_asign:leftExpr MENOR expresion_sin_asign:rightExpr
+						{:
+						    if(leftExpr.getIdentifier()!=null){
+                        	    checkSymbolExists(leftExpr.getIdentifier());
+                            }
+                        	if(rightExpr.getIdentifier()!=null){
+                                checkSymbolExists(rightExpr.getIdentifier());
+                            }
+                           if(!leftExpr.getReturnType().getName().equals("int")){
+                             semanticErrorManager.semanticFatalError("LeftExpresion should be a int");
+                           }
+
+                           if(!rightExpr.getReturnType().getName().equals("int")){
+                            semanticErrorManager.semanticFatalError("LeftExpresion should be a int");
+                           }
+
+                            RESULT = new Expression(leftExpr, rightExpr, getType("boolean"));
+                        :} |
+						expresion_sin_asign:leftExpr DISTINTO expresion_sin_asign:rightExpr
+						{:
+						   if(leftExpr.getIdentifier()!=null){
+                                checkSymbolExists(leftExpr.getIdentifier());
+                           }
+                           if(rightExpr.getIdentifier()!=null){
+                                checkSymbolExists(rightExpr.getIdentifier());
+                           }
+
+                           if(!leftExpr.getReturnType().getName().equals("int")){
+                             semanticErrorManager.semanticFatalError("LeftExpresion should be an int");
+                           }
+
+                           if(!rightExpr.getReturnType().getName().equals("int")){
+                            semanticErrorManager.semanticFatalError("LeftExpresion should be an int");
+                           }
+
+                            RESULT = new Expression(leftExpr, rightExpr, getType("boolean"));
+                         :} |
+						expresion_sin_asign:leftExpr AND expresion_sin_asign:rightExpr
+						{:
+						    if(leftExpr.getIdentifier()!=null){
+                                checkSymbolExists(leftExpr.getIdentifier());
+                            }
+                            if(rightExpr.getIdentifier()!=null){
+                                checkSymbolExists(rightExpr.getIdentifier());
                             }
 
-                            RESULT = new ExpressionWithoutAssignation();
+                            if(!leftExpr.getReturnType().getName().equals("boolean")){
+                             semanticErrorManager.semanticFatalError("LeftExpresion should be a boolean");
+                            }
+                            if(!rightExpr.getReturnType().getName().equals("boolean")){
+                             semanticErrorManager.semanticFatalError("LeftExpresion should be a boolean");
+                            }
+
+                          RESULT = new Expression(leftExpr, rightExpr, getType("boolean"));
                         :} |
-						expresion_sin_asign MENOR expresion_sin_asign
-						{:
-                          RESULT = new ExpressionWithoutAssignation();
-                        :} |
-						expresion_sin_asign DISTINTO expresion_sin_asign
-						{:
-                          RESULT = new ExpressionWithoutAssignation();
-                        :} |
-						expresion_sin_asign AND expresion_sin_asign
-						{:
-                            RESULT = new ExpressionWithoutAssignation();
-                        :} |
-						PARIZQ expresion PARDER
+						PARIZQ expresion:expr PARDER
 						 {:
-                             RESULT = new ExpressionWithoutAssignation();
+						     checkSymbolExists(expr.getIdentifier());
+						     if(expr.isAssignation()){
+						       semanticErrorManager.semanticFatalError("Assisgnation are not allowed here");
+						     }
+                             RESULT = new Expression(expr, expr.getReturnType());
                          :};
 
-expresion ::= expresion_sin_asign |
-				asignacion ;
+expresion ::= expresion_sin_asign:expr
+                {:
+                    RESULT = expr;
+                :} |
+				asignacion:asig
+				{:
+                RESULT = new Expression(asig, asig.getReturnType());
+				:};
 
 llamada_funcion ::= IDENTIFICADOR:name lista_parametros:params
                     {:
@@ -749,23 +811,130 @@ parametro ::= IDENTIFICADOR:name
                 :} |
 				IDENTIFICADOR:name rango_matriz:startRange rango_matriz:endRange
 				{:
-                    RESULT = new Parameter(null, startRange, endRange);
+                    RESULT = new Parameter(name.getLexema(), startRange, endRange);
                 :};
 
-sentencia_if ::= IF PARIZQ expresion PARDER sentencia  |
-					IF PARIZQ expresion PARDER bloque_sentencias  |
-					IF PARIZQ expresion PARDER sentencia ELSE sentencia  |
-					IF PARIZQ expresion PARDER sentencia ELSE bloque_sentencias  |
-					IF PARIZQ expresion PARDER bloque_sentencias ELSE sentencia  |
-					IF PARIZQ expresion PARDER bloque_sentencias ELSE bloque_sentencias;
+sentencia_if ::= IF PARIZQ expresion:expr PARDER sentencia
+                    {:
+                        if(!expr.getReturnType().getName().equals("boolean")){
+                          semanticErrorManager.semanticFatalError("Cannot use array here");
+                        }
 
-sentencia_while ::= WHILE PARIZQ expresion PARDER sentencia |
-					WHILE PARIZQ expresion PARDER bloque_sentencias;
+                        if(expr.getIdentifier()!=null){
+                          SymbolIF symbol = getSymbol(expr.getIdentifier());
+                          if(symbol.getType().getName().equals("array")){
+                              if(expr.getTo()==null||expr.getFrom()==null){
+                                semanticErrorManager.semanticFatalError("If should use boolean expresion not arrays");
+                              }
+                          }
+                        }
+
+  					:}|
+					IF PARIZQ expresion:expr PARDER bloque_sentencias
+					{:
+                      if(!expr.getReturnType().getName().equals("boolean")){
+                        semanticErrorManager.semanticFatalError("Expresion should be boolean");
+                      }
+
+                      if(expr.getIdentifier()!=null){
+                        SymbolIF symbol = getSymbol(expr.getIdentifier());
+                        if(symbol.getType().getName().equals("array")){
+                            if(expr.getTo()==null||expr.getFrom()==null){
+                              semanticErrorManager.semanticFatalError("If should use boolean expresion not arrays");
+                            }
+                        }
+                      }
+
+					:}  |
+					IF PARIZQ expresion:expr PARDER sentencia ELSE sentencia
+					  {:
+					  if(!expr.getReturnType().getName().equals("boolean")){
+                        semanticErrorManager.semanticFatalError("Expresion should be boolean");
+                      }
+                      if(expr.getIdentifier()!=null){
+                        SymbolIF symbol = getSymbol(expr.getIdentifier());
+                        if(symbol.getType().getName().equals("array")){
+                            if(expr.getTo()==null||expr.getFrom()==null){
+                              semanticErrorManager.semanticFatalError("If should use boolean expresion not arrays");
+                            }
+                        }
+                      }
+					  :}|
+					IF PARIZQ expresion:expr PARDER sentencia ELSE bloque_sentencias
+					{:
+					if(!expr.getReturnType().getName().equals("boolean")){
+                        semanticErrorManager.semanticFatalError("Expresion should be boolean");
+                    }
+                      if(expr.getIdentifier()!=null){
+                        SymbolIF symbol = getSymbol(expr.getIdentifier());
+                        if(symbol.getType().getName().equals("array")){
+                            if(expr.getTo()==null||expr.getFrom()==null){
+                              semanticErrorManager.semanticFatalError("If should use boolean expresion not arrays");
+                            }
+                        }
+                      }
+					:}  |
+					IF PARIZQ expresion:expr PARDER bloque_sentencias ELSE sentencia
+					  {:
+					  if(!expr.getReturnType().getName().equals("boolean")){
+                        semanticErrorManager.semanticFatalError("Expresion should be boolean");
+                      }
+                      if(expr.getIdentifier()!=null){
+                        SymbolIF symbol = getSymbol(expr.getIdentifier());
+                        if(symbol.getType().getName().equals("array")){
+                            if(expr.getTo()==null||expr.getFrom()==null){
+                              semanticErrorManager.semanticFatalError("If should use boolean expresion not arrays");
+                            }
+                        }
+                      }
+					  :}|
+					IF PARIZQ expresion:expr PARDER bloque_sentencias ELSE bloque_sentencias
+					{:
+                    if(!expr.getReturnType().getName().equals("boolean")){
+                        semanticErrorManager.semanticFatalError("Expresion should be boolean");
+                    }
+                       if(expr.getIdentifier()!=null){
+                         SymbolIF symbol = getSymbol(expr.getIdentifier());
+                         if(symbol.getType().getName().equals("array")){
+                             if(expr.getTo()==null||expr.getFrom()==null){
+                               semanticErrorManager.semanticFatalError("If should use boolean expresion not arrays");
+                             }
+                         }
+                       }
+                    :};
+
+sentencia_while ::= WHILE PARIZQ expresion:expr PARDER sentencia
+                    {:
+                      if(!expr.getReturnType().getName().equals("boolean")){
+                            semanticErrorManager.semanticFatalError("While expresion should be boolean");
+                      }
+                       if(expr.getIdentifier()!=null){
+                         SymbolIF symbol = getSymbol(expr.getIdentifier());
+                         if(symbol.getType().getName().equals("array")){
+                             if(expr.getTo()==null||expr.getFrom()==null){
+                               semanticErrorManager.semanticFatalError("While should use boolean expresion not arrays");
+                             }
+                         }
+                       }
+                    :} |
+					WHILE PARIZQ expresion:expr PARDER bloque_sentencias
+					{:
+                      if(!expr.getReturnType().getName().equals("boolean")){
+                            semanticErrorManager.semanticFatalError("While expresion should be boolean");
+                      }
+                       if(expr.getIdentifier()!=null){
+                         SymbolIF symbol = getSymbol(expr.getIdentifier());
+                         if(symbol.getType().getName().equals("array")){
+                             if(expr.getTo()==null||expr.getFrom()==null){
+                               semanticErrorManager.semanticFatalError("While should use boolean expresion not arrays");
+                             }
+                         }
+                       }
+                    :};
 
 sentencia_printi ::= PRINTI PARIZQ expresion:expr PARDER PUNTOYCOMA
                         {:
-                           System.out.println("Printi " + expr.toString());
- 						    RESULT = new PrintISentence(expr);
+ 						   RESULT = new PrintISentence(expr);
  						:}|
 						PRINTI PARIZQ PARDER PUNTOYCOMA
 						{:
@@ -774,7 +943,6 @@ sentencia_printi ::= PRINTI PARIZQ expresion:expr PARDER PUNTOYCOMA
 
 sentencia_printc ::= PRINTC PARIZQ CADENA:sentence PARDER PUNTOYCOMA
                         {:
-                            System.out.println("Printc " + sentence.getLexema());
                             RESULT = new PrintCSentence(sentence.getLexema());
                         :};
 retorno_funcion ::= RETURN expresion:expr PUNTOYCOMA

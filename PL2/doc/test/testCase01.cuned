@@ -1,10 +1,14 @@
 #define TRUE 1;
 int array[0][3];
 
-
 int sumar (int &x, int &y) {
+ while (array[1][2] != 0) {
+  printc(" true");
+ }
  return x + y;
 }
-
 void main () {
+ printc("hola");
+ printc("mundo");
+
 }

@@ -1,6 +1,6 @@
 package compiler.semantic.symbol;
 
-import compiler.syntax.nonTerminal.AbstractSentence;
+import compiler.syntax.nonTerminal.BlockSentences;
 import es.uned.lsi.compiler.semantic.ScopeIF;
 import es.uned.lsi.compiler.semantic.type.TypeIF;
 
@@ -11,13 +11,13 @@ public class SymbolFunction extends SymbolProcedure {
 
     private final List<SymbolParameter> parameters;
     private final TypeIF returnType;
-    private final List<AbstractSentence> sentences;
+    private final BlockSentences sentences;
 
     public SymbolFunction(ScopeIF scope,
                           String name,
                           TypeIF returnType,
                           List<SymbolParameter> parameters,
-                          List<AbstractSentence> sentences) {
+                          BlockSentences sentences) {
         super(scope, name, returnType);
         this.parameters = parameters;
         this.returnType = returnType;
@@ -32,7 +32,7 @@ public class SymbolFunction extends SymbolProcedure {
         return parameters;
     }
 
-    public List<AbstractSentence> getSentences() {
+    public BlockSentences getSentences() {
         return sentences;
     }
 }
