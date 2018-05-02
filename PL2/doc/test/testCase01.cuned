@@ -1,25 +1,10 @@
 #define TRUE 1;
+int array[0][3];
 
-void nada() {
- printc("mundo");
-}
-
-void nada2 () {
- printc("mundo");
-}
 
 int sumar (int &x, int &y) {
- printc("mundo");
- return x + y;
-}
-
-int sumara(int &x, int &y){
- printc("mundoa");
  return x + y;
 }
 
 void main () {
- printc("hola");
- printc("mundo");
-
 }
