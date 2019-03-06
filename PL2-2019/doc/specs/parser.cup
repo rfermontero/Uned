@@ -113,7 +113,7 @@ non terminal   Sentencia         sentencia;
 
 non terminal   Expresion         expresion;
 non terminal   ExpArit           exprArit;
-non terminal   ExptLogica        exprLogica;
+non terminal   ExprLogica        exprLogica;
 non terminal   Variables         variables;
 
 non terminal   SentProcedure     sentProcedure;
@@ -132,7 +132,7 @@ non terminal   SWriteLn          sWriteLn;
 
 non terminal   IdArray           idArray;
 non terminal   IntOBool          intOBool;
-non terminal   EndIId            entOid;
+non terminal   EndOId            entOid;
 non terminal   VBooleano         vBooleano;
 
 // Declaración de relaciones de precedencia
@@ -191,23 +191,41 @@ cuerpo        ::= stmConstantes stmTipos stmVar stmSubprogram BEGIN sentencias E
                       ;
 
 // Reglas de producción para constantes
-stmConstantes ::= CONST sentConst
-                      
+stmConstantes ::= CONST sentConst:sentConst
+                  {:
+                   RESULT = new StmConstantes(sentConst);
+                  :}
                 | // epsilon
-                | CONST error 
-                      ;
-sentConst     ::= sentConst expConst
-                      
-                | expConst
-                      ;
-expConst      ::= IDENTIFICADOR IGUAL valorConst PUNTOYCOMA
-                      
-                | IDENTIFICADOR error PUNTOYCOMA 
-                      ;
-valorConst    ::= ENTERO
-                      
-                | vBooleano
-                      ;
+                | CONST error;
+
+sentConst     ::= sentConst:sentConst expConst:expConst
+                  {:
+                    sentConst.addExpConst(expConst);
+                    RESULT = sentConst;
+                  :}
+                | expConst:expConst //Solo una
+                  {:
+                     RESULT = new SentConst(expConst);
+                  :};
+
+expConst      ::= IDENTIFICADOR:identificador IGUAL valorConst:valorConst PUNTOYCOMA
+                  {:
+                   String expConstIdentificador = identificador.getLexema();
+                   ExpConst expConst = new ExpConst(expConstIdentificador, valorConst);
+                   RESULT = expConst;
+                  :}
+                 | IDENTIFICADOR error PUNTOYCOMA;
+
+valorConst    ::= ENTERO:valor
+                  {:
+                   ValorConst valorConst = new ValorConst(Integer.parseInt(valor.getLexema()));
+                   RESULT = valorConst;
+                  :}
+                | vBooleano:vBooleano
+                  {:
+                   ValorConst valorConst = new ValorConst(vBooleano.getValue());
+                   RESULT = valorConst;
+                  :};
 
 // Reglas de producción para Tipos
 stmTipos      ::= TYPE sentTipo
@@ -430,6 +448,10 @@ entOid        ::= ENTERO
 
 // Constantes Booleanas.
 vBooleano     ::= TRUE
-                      
-                | FALSE
-                      ;
+                  {:
+                   RESULT =new VBooleano(true);
+                  :}
+                  | FALSE
+                  {:
+                   RESULT =new VBooleano(false);
+                  :};

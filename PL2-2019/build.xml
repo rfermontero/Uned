@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
-<project name="compiler" default="build" basedir="../..">
+<project name="compiler" default="build" basedir="">
 	<!-- basedir la raiz de la estructura de directorios -->
 
 	<!-- Relatice paths -->

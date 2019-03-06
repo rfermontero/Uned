@@ -1,6 +1,12 @@
 package compiler.syntax.nonTerminal;
 
 
+import es.uned.lsi.compiler.intermediate.QuadrupleIF;
+import es.uned.lsi.compiler.syntax.nonTerminal.NonTerminalIF;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Abstract class for non terminals.
  */
@@ -13,7 +19,7 @@ public abstract class NonTerminal implements NonTerminalIF {
      */
     public NonTerminal() {
         super();
-        this.intermediateCode = new ArrayList<QuadrupleIF>();
+        this.intermediateCode = new ArrayList<>();
     }
 
     /**
