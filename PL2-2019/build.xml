@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project name="compiler" default="build" basedir="../..">
+	<!-- basedir la raiz de la estructura de directorios -->
+
+	<!-- Relatice paths -->
+	<!-- modificar esta entrada poniendo en location el nombre del archivo fuente que 
+		se quiera compilar
+	-->
+	
+	<property name="test-file-name" value="testCase01.muned"/>
+	
+	<property name="lib" location="lib"/>
+	<property name="test" location="doc/test"/>
+	<property name="specs" location="doc/specs"/>
+	<property name="sourceBase" location="src"/>
+	<property name="classes" location="classes"/>
+		
+	<property name="test-file" value="${test}/${test-file-name}"/>
+
+	<property name="compilerSource" location="${sourceBase}/compiler"/>
+	<property name="scannerSource" location="${compilerSource}/lexical"/>
+	<property name="parserSource" location="${compilerSource}/syntax"/>
+
+
+	<!-- Files -->
+	<property name="flexFile" value="scanner.flex"/>
+	<property name="cupFile" value="parser.cup"/>
+	<property name="compiler" value="Compiler"/>
+	
+	<!-- Classpath -->
+	<path id="class-path">
+		<fileset dir="${lib}">
+			<include name="*.jar"/>
+		</fileset>
+		<pathelement location="${classes}"/>
+	</path>
+	<property name="classpath" refid="class-path"/>
+	
+	<!-- External Taks -->
+	<taskdef name="jflex" classname="JFlex.anttask.JFlexTask" classpathref="class-path"/>
+	<taskdef name="cup" classname="java_cup.anttask.CUPTask" classpathref="class-path"/>
+	
+	<!-- Clear Task -->
+	<target name="clear">
+		<description> Removes all generated resources. </description>
+		<delete dir="${classes}"/>
+		<mkdir dir="${classes}"/>
+		<delete file="${scannerSource}/Scanner.java"/>
+		<delete file="${parserSource}/sym.java"/>
+		<delete file="${parserSource}/parser.java"/>
+	</target>
+	
+	<!-- JFlex Task -->
+	<!--
+		Crea la clase Scanner.java a partir de scanner.flex
+	-->
+	<target name="jflex">
+		<description> Starts JFlex </description>
+		<echo message="Starting Flex..."/>
+		<jflex file="${specs}/${flexFile}" destdir="${sourceBase}"/>
+	</target>
+	
+	<!-- Cup Task -->
+	<!--
+		Crea las clases Parser.java y Symbol.java a partir de parser.cup
+	-->
+	<target name="cup">
+		<description> Starts Cup </description>
+		<echo message="Starting Cup..."/>
+		<cup srcfile="${specs}/${cupFile}" destdir="${sourceBase}" interface="true" progress="true"/>
+	</target>
+	
+	<!-- Build Task -->
+	<!-- 
+		Compila todo el proyecto, incluyendo las tareas jflex y cup. 
+		Si hay un error en scanner.flex o parser.cup es posible que 
+		el resto de las clases creadas no compilen bien	
+	-->
+	<target name="build" depends="clear, jflex, cup">
+		<description> Builds compiler </description>
+		<echo message="Building compiler..."/>
+		<javac classpath="${classpath}" srcdir="${sourceBase}" destdir="${classes}" encoding="ISO-8859-1" fork="yes"/>
+	</target>
+
+	<!-- Flex Test -->
+	<target name="flexTest" depends="build">
+		<java classpath="${classpath}" classname="compiler.test.LexicalTestCase" fork="true">
+			<arg file="${test-file}"/>
+		</java>
+	</target>
+	
+	<!-- Syntax Test -->
+	<target name="cupTest" depends="build">
+		<java classpath="${classpath}" classname="compiler.test.SyntaxTestCase" fork="true">
+			<arg file="${test-file}"/>
+		</java>
+	</target>
+	
+	<!-- Final Test -->
+	<target name="finalTest" depends="build"> 		
+		<java classpath="${classpath}" classname="compiler.test.FinalTestCase" fork="true">			
+			<arg file="${test-file}"/>			
+		</java>		
+	</target>  
+
+</project>

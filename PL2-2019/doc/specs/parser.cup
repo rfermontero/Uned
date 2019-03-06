@@ -1,0 +1,435 @@
+package compiler.syntax;
+
+// Declaración de importaciones 
+//(No modificar las proporcionadas. Se pueden agregar mas)
+
+import java_cup.runtime.Symbol;
+import java.util.*;
+
+import es.uned.lsi.compiler.lexical.*;
+import es.uned.lsi.compiler.code.*;
+import es.uned.lsi.compiler.intermediate.*;
+import es.uned.lsi.compiler.semantic.*;
+import es.uned.lsi.compiler.semantic.symbol.*;
+import es.uned.lsi.compiler.semantic.type.*;
+import es.uned.lsi.compiler.syntax.*;
+
+import compiler.CompilerContext;
+import compiler.lexical.*;
+import compiler.syntax.nonTerminal.*;
+import compiler.semantic.*;
+import compiler.semantic.symbol.*;
+import compiler.semantic.type.*;
+import compiler.intermediate.*;
+import compiler.code.*;
+
+
+
+// Declaración del código de usuario
+
+action code   {:
+	
+	SyntaxErrorManager   syntaxErrorManager   = CompilerContext.getSyntaxErrorManager();
+	SemanticErrorManager semanticErrorManager = CompilerContext.getSemanticErrorManager ();
+	ScopeManagerIF       scopeManager         = CompilerContext.getScopeManager ();
+	FinalCodeFactoryIF   finalCodeFactory     = CompilerContext.getFinalCodeFactory ();
+
+:}	
+
+parser code {:
+	SyntaxErrorManager syntaxErrorManager = CompilerContext.getSyntaxErrorManager();
+	
+	public void syntax_error(Symbol symbol)
+	{ 
+	    Token token = (Token) symbol.value;
+	    syntaxErrorManager.syntaxError ("Error sintactico", token);	    
+	}
+		
+	public void unrecovered_syntax_error(java_cup.runtime.Symbol symbol)
+	{	
+	    Token token = (Token) symbol.value;
+	    syntaxErrorManager.syntaxFatalError ("Error fatal", token);
+	}
+:}
+
+
+//
+// Declaración de terminales
+
+//
+terminal Token IDENTIFICADOR;
+terminal Token INTEGER, BOOLEAN, STRING;
+terminal Token ARRAY, OF;
+terminal Token MODULE, BEGIN, END, PROCEDURE, RETURN;
+terminal Token OR, NOT;
+terminal Token CONST, TYPE, VAR;
+terminal Token IF, ELSE, THEN, DO, FOR, TO;
+terminal Token WRITESTRING, WRITEINT, WRITELN;
+
+terminal Token PARENIZQ, PARENDER, CORCHIZQ, CORCHDER;
+terminal Token PUNTOPUNTO, COMA, PUNTOYCOMA, DOSPUNTOS, IGUAL;
+terminal Token MINUS, PRODUCTO, MAYOR;
+terminal Token DOSPUNTOSIGUAL;
+
+terminal Token ENTERO;
+terminal Token TRUE, FALSE;
+
+
+//
+// Declaración de no terminales
+//
+non terminal                     program;
+non terminal   Axiom		   axiom;
+
+non terminal   CabModule         cabModule;
+non terminal   Cuerpo            cuerpo;
+
+non terminal   StmConstantes     stmConstantes;
+non terminal   StmTipos          stmTipos;
+non terminal   StmVar            stmVar;
+non terminal   StmSubprogram     stmSubprogram;
+
+non terminal   SentConst         sentConst;
+non terminal   ExpConst          expConst;
+non terminal   ValorConst        valorConst;
+
+non terminal   SentTipo          sentTipo;
+non terminal   ExpTipo           expTipo;
+
+non terminal   SentVar           sentVar;
+non terminal   ExpVar            expVar;
+non terminal   CadIdVar          cadIdVar;
+non terminal   TipoVar           tipoVar;
+
+non terminal   CabProcedure      cabProcedure;
+non terminal   TipoRetorno       tipoRetorno;
+non terminal   ProcParenParam    procParenParam;
+non terminal   ProcListParam     procListParam;
+non terminal   ProcParam         procParam;
+
+non terminal   Sentencias        sentencias;
+non terminal   ListSentencia     listSentencia;
+non terminal   Sentencia         sentencia;
+
+non terminal   Expresion         expresion;
+non terminal   ExpArit           exprArit;
+non terminal   ExptLogica        exprLogica;
+non terminal   Variables         variables;
+
+non terminal   SentProcedure     sentProcedure;
+non terminal   ParFuncion        parFuncion;
+non terminal   Parametros        parametros;
+
+non terminal   SentAsign         sentAsign;
+non terminal   SentReturn        sentReturn;
+non terminal   SentIf            sentIf;
+non terminal   SentElse          sentElse;
+non terminal   SentFor           sentFor;
+
+non terminal   SWriteString      sWriteString;
+non terminal   SWriteInt         sWriteInt;
+non terminal   SWriteLn          sWriteLn;
+
+non terminal   IdArray           idArray;
+non terminal   IntOBool          intOBool;
+non terminal   EndIId            entOid;
+non terminal   VBooleano         vBooleano;
+
+// Declaración de relaciones de precedencia
+precedence nonassoc MAYOR, IGUAL;
+precedence left     MINUS, OR;
+precedence left     PRODUCTO;
+precedence right    NOT;
+
+precedence left     PARENIZQ, PARENDER, CORCHIZQ, CORCHDER;
+
+//
+// Declaración de reglas de producción
+
+start with program;
+
+program ::= 
+  {: syntaxErrorManager.syntaxInfo ("Starting parsing..."); 
+	
+	
+  :}
+  axiom:ax
+  {: 
+  		// No modificar esta estructura, aunque se pueden añadir más acciones semánticas
+  		
+  		//List intermediateCode = ax.getIntermediateCode ();
+  		//finalCodeFactory.create (intermediateCode);
+
+  		// En caso de no comentarse las dos sentencias anteriores puede generar una excepcion
+  		// en las llamadas a cupTest si el compilador no está completo. Esto es debido a que 
+  		// aún no se tendrá implementada la generación de código intermedio ni final.
+  		// Para la entrega final deberán descomentarse y usarse.
+  		
+  		syntaxErrorManager.syntaxInfo ("Parsing process ended.");
+  :};
+
+
+axiom ::= cabModule
+                      
+                    cuerpo
+                      
+                | cabModule error   ;
+
+
+// Cabecera de los modulos
+cabModule     ::= MODULE IDENTIFICADOR PUNTOYCOMA
+                      
+                | MODULE error
+                      ;
+
+// Cuerpo de los modulos y comun para procedimientos y funciones
+cuerpo        ::= stmConstantes stmTipos stmVar stmSubprogram BEGIN sentencias END IDENTIFICADOR PUNTOYCOMA
+                      
+                | stmConstantes stmTipos stmVar stmSubprogram BEGIN sentencias END error
+                      
+                | stmConstantes stmTipos stmVar stmSubprogram BEGIN error
+                      ;
+
+// Reglas de producción para constantes
+stmConstantes ::= CONST sentConst
+                      
+                | // epsilon
+                | CONST error 
+                      ;
+sentConst     ::= sentConst expConst
+                      
+                | expConst
+                      ;
+expConst      ::= IDENTIFICADOR IGUAL valorConst PUNTOYCOMA
+                      
+                | IDENTIFICADOR error PUNTOYCOMA 
+                      ;
+valorConst    ::= ENTERO
+                      
+                | vBooleano
+                      ;
+
+// Reglas de producción para Tipos
+stmTipos      ::= TYPE sentTipo
+                       
+                | // epsilon
+                | TYPE error
+                      ;
+sentTipo      ::= sentTipo expTipo
+                      
+                | expTipo
+                      ;
+expTipo       ::= IDENTIFICADOR IGUAL ARRAY CORCHIZQ entOid PUNTOPUNTO entOid CORCHDER OF intOBool PUNTOYCOMA
+                       
+                | IDENTIFICADOR error PUNTOYCOMA
+                      ;
+
+// Reglas de producción para Variables
+stmVar        ::= VAR sentVar
+                       
+                | // epsilon
+                | VAR error
+                      ;
+sentVar       ::= sentVar expVar
+                      
+                | expVar
+                      ;
+expVar        ::= cadIdVar DOSPUNTOS tipoVar PUNTOYCOMA
+                      
+                | cadIdVar error PUNTOYCOMA
+                      ;
+cadIdVar      ::= IDENTIFICADOR COMA cadIdVar
+                      
+                | IDENTIFICADOR
+                      ;
+tipoVar       ::= intOBool
+                       
+                | IDENTIFICADOR
+                      ;
+
+// Reglas de producción para Procedimientos y funciones
+stmSubprogram  ::= cabProcedure
+                      
+                    cuerpo
+                      
+                    stmSubprogram
+                      
+                | // epsilon
+                      ;
+cabProcedure   ::= PROCEDURE IDENTIFICADOR procParenParam tipoRetorno PUNTOYCOMA
+                      
+                |  PROCEDURE IDENTIFICADOR error 
+                      
+                |  PROCEDURE error
+                      ;
+procParenParam ::= PARENIZQ procListParam PARENDER
+                      
+                | // epsilon
+                      ;  // epsilon
+procListParam  ::= procParam PUNTOYCOMA procListParam
+                      
+                |  procParam
+                      
+                |  // epsilon
+                      ;  // epsilon
+procParam      ::= cadIdVar DOSPUNTOS tipoVar
+                      
+                |  cadIdVar error PUNTOYCOMA  
+                      ;
+
+tipoRetorno    ::= DOSPUNTOS intOBool
+                      
+                |  // epsilon
+                        // epsilon
+                |  DOSPUNTOS error PUNTOYCOMA 
+                      ;
+
+// expresion logicas y aritmeticas.
+expresion     ::= exprArit
+                      
+                | exprLogica
+                      
+                | PARENIZQ expresion PARENDER
+                      
+                | variables
+                      ;
+
+// Reglas de produccion para expresiones aritmeticas.
+exprArit      ::= expresion MINUS expresion
+                      
+                | expresion PRODUCTO expresion
+                      
+                | ENTERO
+                      ;
+
+// Reglas de produccion para expresiones logicas.
+exprLogica    ::= expresion MAYOR expresion
+                      
+                | expresion IGUAL expresion
+                      
+                | expresion OR expresion
+                      
+                | NOT expresion
+                      
+                | vBooleano
+                      ;
+
+// Reglas para sentencias.
+sentencias    ::= listSentencia PUNTOYCOMA
+                      
+                | listSentencia
+                       
+                |  // epsilon
+                      ;  // epsilon
+
+listSentencia ::= listSentencia PUNTOYCOMA sentencia
+                      
+                | sentencia
+                      ;
+
+sentencia     ::= sentAsign
+                      
+                | sentIf
+                      
+                | sentFor
+                      
+                | sentReturn
+                      
+                | sWriteString
+                      
+                | sWriteInt
+                      
+                | sWriteLn
+                      
+                | sentProcedure
+                      ;
+
+// Sentencias Return
+sentReturn     ::= RETURN expresion
+                      
+                |  RETURN error PUNTOYCOMA  
+                      ;
+
+// Sentencias de Asignacion
+sentAsign     ::= variables DOSPUNTOSIGUAL expresion
+                      
+                | variables error PUNTOYCOMA 
+                      ;
+                      
+// Sentencia IF-ELSE
+sentIf        ::= IF expresion THEN sentencias sentElse END
+                      
+                | IF expresion error
+                      
+                | IF error PUNTOYCOMA
+		;
+                      
+sentElse      ::= ELSE sentencias
+                      
+                |  // epsilon
+                      ;
+
+// Sentencia FOR
+sentFor       ::= FOR IDENTIFICADOR DOSPUNTOSIGUAL expresion TO expresion DO sentencias END
+                      
+                | FOR IDENTIFICADOR DOSPUNTOSIGUAL expresion TO expresion error PUNTOYCOMA 
+                      
+                | FOR error PUNTOYCOMA
+                      ;
+
+// Sentencia llamada Funcion o Procedimiento
+sentProcedure ::= IDENTIFICADOR
+                      
+                | IDENTIFICADOR parFuncion
+                      ;
+                  
+// Parametros de llamada a función
+parFuncion    ::= PARENIZQ parametros PARENDER
+                      
+                | PARENIZQ PARENDER
+                      
+                | PARENIZQ error 
+                      ;
+parametros    ::= parametros COMA expresion
+                      
+                | expresion
+                      ;
+
+// Sentencias de Salida.
+sWriteString  ::= WRITESTRING PARENIZQ STRING PARENDER
+                      
+                | WRITESTRING error PUNTOYCOMA   
+                      ;
+sWriteInt     ::= WRITEINT PARENIZQ expresion PARENDER
+                      
+                | WRITEINT error PUNTOYCOMA
+                      ;
+sWriteLn      ::= WRITELN
+                      ;
+
+// Tipos Basicos
+variables     ::= IDENTIFICADOR
+                      
+                | IDENTIFICADOR idArray
+                      
+                | IDENTIFICADOR parFuncion
+                      ;
+
+idArray       ::= CORCHIZQ expresion CORCHDER
+                      ;
+
+intOBool      ::= INTEGER
+                       
+                | BOOLEAN
+                      ;
+
+entOid        ::= ENTERO
+                       
+                | IDENTIFICADOR
+                      ;
+
+// Constantes Booleanas.
+vBooleano     ::= TRUE
+                      
+                | FALSE
+                      ;
