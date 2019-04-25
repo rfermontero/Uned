@@ -1,0 +1,7 @@
+MODULE tres;
+(* salida por pantalla resta de enteros*)
+(* se tiene que imprimir -1*)
+
+  BEGIN
+    WRITEINT(2-3);
+  END tres;

@@ -30,9 +30,9 @@ import compiler.code.*;
 action code   {:
 	
 	SyntaxErrorManager   syntaxErrorManager   = CompilerContext.getSyntaxErrorManager();
-	SemanticErrorManager semanticErrorManager = CompilerContext.getSemanticErrorManager ();
-	ScopeManagerIF       scopeManager         = CompilerContext.getScopeManager ();
-	FinalCodeFactoryIF   finalCodeFactory     = CompilerContext.getFinalCodeFactory ();
+	SemanticErrorManager semanticErrorManager = CompilerContext.getSemanticErrorManager();
+	ScopeManagerIF       scopeManager         = CompilerContext.getScopeManager();
+	FinalCodeFactoryIF   finalCodeFactory     = CompilerContext.getFinalCodeFactory();
 
 :}	
 
@@ -74,12 +74,11 @@ terminal Token DOSPUNTOSIGUAL;
 terminal Token ENTERO;
 terminal Token TRUE, FALSE;
 
-
 //
 // Declaración de no terminales
 //
 non terminal                     program;
-non terminal   Axiom		   axiom;
+non terminal   Axiom		     axiom;
 
 non terminal   CabModule         cabModule;
 non terminal   Cuerpo            cuerpo;
@@ -132,7 +131,7 @@ non terminal   SWriteLn          sWriteLn;
 
 non terminal   IdArray           idArray;
 non terminal   IntOBool          intOBool;
-non terminal   EndOId            entOid;
+non terminal   EntOId            entOid;
 non terminal   VBooleano         vBooleano;
 
 // Declaración de relaciones de precedencia
@@ -149,9 +148,9 @@ precedence left     PARENIZQ, PARENDER, CORCHIZQ, CORCHDER;
 start with program;
 
 program ::= 
-  {: syntaxErrorManager.syntaxInfo ("Starting parsing..."); 
-	
-	
+  {: 
+      syntaxErrorManager.syntaxInfo("Starting parsing...");
+      scopeManager.openScope();
   :}
   axiom:ax
   {: 
@@ -164,31 +163,31 @@ program ::=
   		// en las llamadas a cupTest si el compilador no está completo. Esto es debido a que 
   		// aún no se tendrá implementada la generación de código intermedio ni final.
   		// Para la entrega final deberán descomentarse y usarse.
-  		
-  		syntaxErrorManager.syntaxInfo ("Parsing process ended.");
+  		syntaxErrorManager.syntaxInfo("Parsing process ended.");
   :};
 
 
-axiom ::= cabModule
-                      
-                    cuerpo
-                      
-                | cabModule error   ;
-
+axiom ::= cabModule:cabModule
+          cuerpo:cuerpo
+          {:
+            RESULT = new Axiom(cabModule, cuerpo);
+          :}
+          | cabModule error;
 
 // Cabecera de los modulos
-cabModule     ::= MODULE IDENTIFICADOR PUNTOYCOMA
-                      
-                | MODULE error
-                      ;
+cabModule     ::= MODULE IDENTIFICADOR:identificador PUNTOYCOMA
+                  {:
+                    RESULT = new CabModule(identificador.getLexema());
+                  :}
+                | MODULE error;
 
 // Cuerpo de los modulos y comun para procedimientos y funciones
-cuerpo        ::= stmConstantes stmTipos stmVar stmSubprogram BEGIN sentencias END IDENTIFICADOR PUNTOYCOMA
-                      
+cuerpo        ::= stmConstantes:stmConstantes stmTipos:stmTipos stmVar:stmVar stmSubprogram:stmSubprogram BEGIN sentencias:sentencias END IDENTIFICADOR PUNTOYCOMA
+                {:
+                   RESULT = new Cuerpo(stmConstantes, stmTipos, stmVar, stmSubprogram, sentencias);
+                :}
                 | stmConstantes stmTipos stmVar stmSubprogram BEGIN sentencias END error
-                      
-                | stmConstantes stmTipos stmVar stmSubprogram BEGIN error
-                      ;
+                | stmConstantes stmTipos stmVar stmSubprogram BEGIN error;
 
 // Reglas de producción para constantes
 stmConstantes ::= CONST sentConst:sentConst
@@ -228,87 +227,116 @@ valorConst    ::= ENTERO:valor
                   :};
 
 // Reglas de producción para Tipos
-stmTipos      ::= TYPE sentTipo
-                       
+stmTipos      ::= TYPE sentTipo:sentTipo
+                {:
+                  RESULT = new StmTipos(sentTipo);
+                :}
                 | // epsilon
-                | TYPE error
-                      ;
+                | TYPE error;
+
 sentTipo      ::= sentTipo expTipo
-                      
-                | expTipo
-                      ;
+                | expTipo;
+
 expTipo       ::= IDENTIFICADOR IGUAL ARRAY CORCHIZQ entOid PUNTOPUNTO entOid CORCHDER OF intOBool PUNTOYCOMA
-                       
-                | IDENTIFICADOR error PUNTOYCOMA
-                      ;
+                | IDENTIFICADOR error PUNTOYCOMA;
 
 // Reglas de producción para Variables
-stmVar        ::= VAR sentVar
-                       
+stmVar        ::= VAR sentVar:sentVar
+                  {:
+                    RESULT = new StmVar(sentVar);
+                  :}
                 | // epsilon
-                | VAR error
-                      ;
-sentVar       ::= sentVar expVar
-                      
-                | expVar
-                      ;
-expVar        ::= cadIdVar DOSPUNTOS tipoVar PUNTOYCOMA
-                      
-                | cadIdVar error PUNTOYCOMA
-                      ;
-cadIdVar      ::= IDENTIFICADOR COMA cadIdVar
-                      
-                | IDENTIFICADOR
-                      ;
-tipoVar       ::= intOBool
-                       
-                | IDENTIFICADOR
-                      ;
+                | VAR error;
+
+sentVar       ::= sentVar:sentVar expVar:expVar
+                  {:
+                     sentVar.addExpVar(expVar);
+                     RESULT = sentVar;
+                  :}
+                  | expVar:expVar
+                  {:
+                    RESULT = new SentVar(expVar);
+                  :};
+
+expVar        ::= cadIdVar:cadIdVar DOSPUNTOS tipoVar:tipoVar PUNTOYCOMA
+                  {:
+                   RESULT = new ExpVar(cadIdVar, tipoVar);
+                  :}
+                | cadIdVar error PUNTOYCOMA;
+
+cadIdVar      ::= IDENTIFICADOR:identificador COMA cadIdVar:cadIdVar
+                 {:
+                  cadIdVar.addIdentificador(identificador.getLexema());
+                  RESULT = cadIdVar;
+                 :}
+                | IDENTIFICADOR:identificador
+                {:
+                  RESULT =  new CadIdVar(identificador.getLexema());
+                :};
+
+tipoVar       ::= intOBool:intOBool
+                  {:
+                    RESULT = new TipoVar(intOBool);
+                  :}
+                | IDENTIFICADOR:identificador
+                  {:
+                    RESULT = new TipoVar(identificador.getLexema());
+                  :};
 
 // Reglas de producción para Procedimientos y funciones
-stmSubprogram  ::= cabProcedure
-                      
-                    cuerpo
-                      
-                    stmSubprogram
-                      
+stmSubprogram  ::= cabProcedure:cabProcedure
+                   cuerpo:cuerpo
+                   stmSubprogram:stmSubprogram
+                {:
+                  stmSubprogram.addCuerpoAndProcedure(cuerpo, cabProcedure);
+                  RESULT = stmSubprogram;
+                :}
                 | // epsilon
-                      ;
-cabProcedure   ::= PROCEDURE IDENTIFICADOR procParenParam tipoRetorno PUNTOYCOMA
-                      
+                ;
+                
+cabProcedure   ::= PROCEDURE IDENTIFICADOR:identificador procParenParam:procParenParam tipoRetorno:tipoRetorno PUNTOYCOMA
+                  {:
+                   RESULT = new CabProcedure(identificador.getLexema(), procParenParam, tipoRetorno);
+                  :}
                 |  PROCEDURE IDENTIFICADOR error 
-                      
-                |  PROCEDURE error
-                      ;
-procParenParam ::= PARENIZQ procListParam PARENDER
-                      
-                | // epsilon
-                      ;  // epsilon
-procListParam  ::= procParam PUNTOYCOMA procListParam
-                      
-                |  procParam
-                      
-                |  // epsilon
-                      ;  // epsilon
-procParam      ::= cadIdVar DOSPUNTOS tipoVar
-                      
-                |  cadIdVar error PUNTOYCOMA  
-                      ;
+                |  PROCEDURE error;
 
-tipoRetorno    ::= DOSPUNTOS intOBool
-                      
+procParenParam ::= PARENIZQ procListParam:procListParam PARENDER
+                {:
+                 RESULT = new ProcParenParam(procListParam);
+                :}
+                | // epsilon
+                ;
+
+procListParam  ::= procParam:procParam PUNTOYCOMA procListParam:procListParam
+                {:
+                 procListParam.addProcParam(procParam);
+                 RESULT = procListParam;
+                :}
+                |  procParam:procParam 
+                {:
+                 RESULT = new ProcListParam(procParam);
+                :}
                 |  // epsilon
-                        // epsilon
-                |  DOSPUNTOS error PUNTOYCOMA 
-                      ;
+                ;
+
+procParam      ::= cadIdVar:cadIdVar DOSPUNTOS tipoVar:tipoVar
+                {:
+                  RESULT = new ProcParam(cadIdVar, tipoVar);
+                :}
+                |  cadIdVar error PUNTOYCOMA;
+
+tipoRetorno    ::= DOSPUNTOS intOBool:intOBool
+                  {:
+                    RESULT = new TipoRetorno(intOBool);
+                  :}
+                |  // epsilon
+                |  DOSPUNTOS error PUNTOYCOMA;
 
 // expresion logicas y aritmeticas.
 expresion     ::= exprArit
-                      
                 | exprLogica
-                      
                 | PARENIZQ expresion PARENDER
-                      
                 | variables
                       ;
 
@@ -379,8 +407,7 @@ sentIf        ::= IF expresion THEN sentencias sentElse END
                       
                 | IF expresion error
                       
-                | IF error PUNTOYCOMA
-		;
+                | IF error PUNTOYCOMA;
                       
 sentElse      ::= ELSE sentencias
                       
@@ -392,66 +419,77 @@ sentFor       ::= FOR IDENTIFICADOR DOSPUNTOSIGUAL expresion TO expresion DO sen
                       
                 | FOR IDENTIFICADOR DOSPUNTOSIGUAL expresion TO expresion error PUNTOYCOMA 
                       
-                | FOR error PUNTOYCOMA
-                      ;
+                | FOR error PUNTOYCOMA;
 
 // Sentencia llamada Funcion o Procedimiento
 sentProcedure ::= IDENTIFICADOR
                       
-                | IDENTIFICADOR parFuncion
-                      ;
+                | IDENTIFICADOR parFuncion;
                   
 // Parametros de llamada a función
 parFuncion    ::= PARENIZQ parametros PARENDER
                       
                 | PARENIZQ PARENDER
                       
-                | PARENIZQ error 
-                      ;
+                | PARENIZQ error;
+
 parametros    ::= parametros COMA expresion
                       
-                | expresion
-                      ;
+                | expresion;
 
 // Sentencias de Salida.
 sWriteString  ::= WRITESTRING PARENIZQ STRING PARENDER
-                      
-                | WRITESTRING error PUNTOYCOMA   
-                      ;
+                | WRITESTRING error PUNTOYCOMA;
+
 sWriteInt     ::= WRITEINT PARENIZQ expresion PARENDER
                       
-                | WRITEINT error PUNTOYCOMA
-                      ;
-sWriteLn      ::= WRITELN
-                      ;
+                | WRITEINT error PUNTOYCOMA;
+
+sWriteLn      ::= WRITELN;
 
 // Tipos Basicos
-variables     ::= IDENTIFICADOR
-                      
-                | IDENTIFICADOR idArray
-                      
-                | IDENTIFICADOR parFuncion
-                      ;
+variables     ::= IDENTIFICADOR:identificador
+                {:
+                    RESULT = new Variables(identificador.getLexema());
+                :}
+                | IDENTIFICADOR idArray:idArray
+                {:
+                    RESULT = new Variables(idArray);
+                :}
+                | IDENTIFICADOR parFuncion:parFuncion
+                 {:
+                    RESULT = new Variables(parFuncion);
+                 :};
 
-idArray       ::= CORCHIZQ expresion CORCHDER
-                      ;
+idArray       ::= CORCHIZQ expresion:expresion CORCHDER
+                {:
+                    RESULT = new IdArray(expresion);
+                :};
 
-intOBool      ::= INTEGER
-                       
+intOBool      ::= INTEGER     
+                  {:
+                    RESULT =  new IntOBool("INTEGER");
+                  :} 
                 | BOOLEAN
-                      ;
+                  {:
+                    RESULT =  new IntOBool("BOOL");
+                  :};
 
-entOid        ::= ENTERO
-                       
-                | IDENTIFICADOR
-                      ;
+entOid        ::= ENTERO:entero
+                {:
+                    RESULT = new EntOId(Integer.parseInt(entero.getLexema()));
+                :}
+                | IDENTIFICADOR:identificador
+                {:
+                    RESULT = new EntOId(identificador.getLexema());
+                :};
 
 // Constantes Booleanas.
 vBooleano     ::= TRUE
                   {:
-                   RESULT =new VBooleano(true);
+                   RESULT = new VBooleano(true);
                   :}
                   | FALSE
                   {:
-                   RESULT =new VBooleano(false);
+                   RESULT = new VBooleano(false);
                   :};

@@ -1,0 +1,29 @@
+MODULE errorSemanticoDos;
+
+  (* pruebas con operaciones *)
+(* se tiene que detectar error semántico al intentar usar la variable mult sin haberla  declarado*)
+  CONST A = 10;
+	B = 20;
+
+  VAR 
+	a1:INTEGER;
+	b1:INTEGER;
+	bol1 : BOOLEAN;
+	bol2 : BOOLEAN;
+	bol3 : BOOLEAN;
+  BEGIN
+
+    a1:=A;
+    b1:=2;
+
+    (*a continuación se tiene que detectar el error semántico*)
+    mult:=a1*b1;
+
+   
+    
+    bol1:=TRUE;
+    bol2:=FALSE;
+	
+	
+	    
+  END errorSemanticoDos;

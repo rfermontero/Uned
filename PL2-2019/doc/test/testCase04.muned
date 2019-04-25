@@ -1,0 +1,28 @@
+MODULE cuatro;
+
+  (* pruebas con operaciones *)
+(* se tiene que imprimir 20*)
+
+  CONST A = 10;
+	B = 20;
+
+  VAR mult : INTEGER;
+	a1:INTEGER;
+	b1:INTEGER;
+	bol1 : BOOLEAN;
+	bol2 : BOOLEAN;
+	bol3 : BOOLEAN;
+  BEGIN
+
+    a1:=A;
+    b1:=2;
+
+    mult:=a1*b1;
+
+    WRITEINT(mult);
+    
+	bol1:=TRUE;
+	bol2:=FALSE;
+	bol3:=(bol1 OR bol2);
+	    
+  END cuatro;

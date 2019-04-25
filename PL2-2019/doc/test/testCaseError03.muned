@@ -1,0 +1,28 @@
+
+(*funciones*)
+
+(* se tiene que detectar error semántico al llamar a la función (aunque no se haya implementado el código final de subprogramas) usando más parámetros de los necesarios.*)
+
+MODULE errorSemanticoTres;
+
+  VAR resta : INTEGER;
+  		a1:INTEGER;
+  		b1:INTEGER;
+		c1:INTEGER;
+  
+  PROCEDURE Restar (a,b: INTEGER) : INTEGER;
+  	VAR s: INTEGER;
+ 	BEGIN
+ 		s := a-b;
+ 		RETURN s; 	
+ 	END Restar; 	
+  
+  BEGIN
+    a1:=10;
+    b1:=5;
+    
+    resta := Restar(a1,b1,c1);
+    WRITESTRING("Restar:");
+    WRITEINT(resta);
+    
+  END errorSemanticoTres;

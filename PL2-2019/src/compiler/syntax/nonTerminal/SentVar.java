@@ -1,8 +1,23 @@
 package compiler.syntax.nonTerminal;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SentVar extends NonTerminal {
 
-    public SentVar() {
+    private final List<ExpVar> expVars;
+
+    public SentVar(ExpVar expVar) {
         super();
+        this.expVars = new ArrayList<>();
+        expVars.add(expVar);
+    }
+
+    public void addExpVar(ExpVar expVar){
+        this.expVars.add(expVar);
+    }
+
+    public List<ExpVar> getExpVars(){
+        return this.expVars;
     }
 }

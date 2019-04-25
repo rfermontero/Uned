@@ -2,7 +2,10 @@ package compiler.syntax.nonTerminal;
 
 public class StmTipos extends NonTerminal {
 
-    public StmTipos() {
+    private final SentTipo sentTipo;
+    
+    public StmTipos(SentTipo sentTipo) {
         super();
+        this.sentTipo = sentTipo;
     }
 }

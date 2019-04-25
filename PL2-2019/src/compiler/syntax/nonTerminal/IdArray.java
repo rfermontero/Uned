@@ -2,7 +2,10 @@ package compiler.syntax.nonTerminal;
 
 public class IdArray extends NonTerminal {
 
-    public IdArray() {
+    private final Expresion expresion;
+
+    public IdArray(Expresion expresion) {
         super();
+        this.expresion = expresion;
     }
 }

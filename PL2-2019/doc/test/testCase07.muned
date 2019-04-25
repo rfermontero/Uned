@@ -1,0 +1,24 @@
+(* condiciona if*)
+(* se tienen que imprimir las siguientes líneas:*)
+(*resta (5):*)
+(*5*)
+
+MODULE siete;
+    
+  VAR 	resta : INTEGER;
+  		a1:INTEGER;
+  		b1:INTEGER;
+  
+  BEGIN
+    a1:=10;
+    b1:=5;
+    
+	IF a1>b1 THEN
+		resta:=a1-b1;
+	ELSE
+		resta:=20;
+	END;    
+    WRITESTRING("resta (5):");
+    WRITEINT(resta);
+	    
+  END siete;

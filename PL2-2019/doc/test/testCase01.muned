@@ -1,0 +1,10 @@
+MODULE uno;
+(* programa vacio*)
+(* no se debe de imprimir nada*)
+
+  CONST A = 10;
+	B = 20;
+
+  BEGIN
+
+  END uno;

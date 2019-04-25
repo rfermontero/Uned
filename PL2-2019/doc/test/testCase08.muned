@@ -1,0 +1,25 @@
+(* bucle for*)
+(* se tienen que imprimir las siguientes líneas:*)
+(*1*)
+(*2*)
+(*3*)
+(*4*)
+(*5*)
+(*6*)
+(*7*)
+(*8*)
+(*9*)
+
+MODULE ocho;
+    
+  VAR a1:INTEGER;
+  
+  
+  BEGIN
+    
+	FOR a1:=1 TO 9 DO
+		WRITEINT(a1);
+	END;    
+
+	    
+  END ocho;

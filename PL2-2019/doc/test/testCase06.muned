@@ -1,0 +1,29 @@
+
+(*funciones*)
+
+(* Para aquellos que implementen código final de subprogramas se tiene que imprimir:*)
+(*Restar:*)
+(*5*)
+
+MODULE seis;
+
+  VAR resta : INTEGER;
+  		a1:INTEGER;
+  		b1:INTEGER;
+  
+  PROCEDURE Restar (a,b: INTEGER) : INTEGER;
+  	VAR s: INTEGER;
+ 	BEGIN
+ 		s := a-b;
+ 		RETURN s; 	
+ 	END Restar; 	
+  
+  BEGIN
+    a1:=10;
+    b1:=5;
+    
+    resta := Restar(a1,b1);
+    WRITESTRING("Restar:");
+    WRITEINT(resta);
+    
+  END seis;
