@@ -1,17 +1,15 @@
 package compiler.syntax.nonTerminal;
 
-import compiler.syntax.nonTerminal.NonTerminal;
-
 public class CabModule extends NonTerminal {
 
-    private final String identifier;
+	private final String identifier;
 
-    public CabModule(String identifier) {
-        super();
-        this.identifier = identifier;
-    }
+	public CabModule(String identifier) {
+		super();
+		this.identifier = identifier;
+	}
 
-    public String getIdentifier() {
-        return this.identifier;
-    }
+	public String getIdentifier() {
+		return this.identifier;
+	}
 }

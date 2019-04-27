@@ -12,31 +12,31 @@ import java.util.List;
  */
 public abstract class NonTerminal implements NonTerminalIF {
 
-    private List<QuadrupleIF> intermediateCode;
+	private List<QuadrupleIF> intermediateCode;
 
-    /**
-     * Constructor for NonTerminal.
-     */
-    public NonTerminal() {
-        super();
-        this.intermediateCode = new ArrayList<>();
-    }
+	/**
+	 * Constructor for NonTerminal.
+	 */
+	public NonTerminal() {
+		super();
+		this.intermediateCode = new ArrayList<>();
+	}
 
-    /**
-     * Returns the intermediateCode.
-     * 
-     * @return Returns the intermediateCode.
-     */
-    public List<QuadrupleIF> getIntermediateCode() {
-        return intermediateCode;
-    }
+	/**
+	 * Returns the intermediateCode.
+	 *
+	 * @return Returns the intermediateCode.
+	 */
+	public List<QuadrupleIF> getIntermediateCode() {
+		return intermediateCode;
+	}
 
-    /**
-     * Sets The intermediateCode.
-     * 
-     * @param intermediateCode The intermediateCode to set.
-     */
-    public void setIntermediateCode(List<QuadrupleIF> intermediateCode) {
-        this.intermediateCode = intermediateCode;
-    }
+	/**
+	 * Sets The intermediateCode.
+	 *
+	 * @param intermediateCode The intermediateCode to set.
+	 */
+	public void setIntermediateCode(List<QuadrupleIF> intermediateCode) {
+		this.intermediateCode = intermediateCode;
+	}
 }

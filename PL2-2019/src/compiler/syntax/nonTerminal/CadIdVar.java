@@ -5,19 +5,19 @@ import java.util.List;
 
 public class CadIdVar extends NonTerminal {
 
-    private final List<String> identificadores;
+	private final List<String> identificadores;
 
-    public CadIdVar(String identificador) {
-        super();
-        this.identificadores = new ArrayList<>();
-        this.identificadores.add(identificador);
-    }
+	public CadIdVar(String identificador) {
+		super();
+		this.identificadores = new ArrayList<>();
+		this.identificadores.add(identificador);
+	}
 
-    public List<String> getIdentificadores(){
-        return this.identificadores;
-    }
+	public List<String> getIdentificadores() {
+		return this.identificadores;
+	}
 
-    public void addIdentificador(String identificador){
-        this.identificadores.add(identificador);
-    }
+	public void addIdentificador(String identificador) {
+		this.identificadores.add(identificador);
+	}
 }

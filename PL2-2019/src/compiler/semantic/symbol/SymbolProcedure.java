@@ -12,19 +12,18 @@ import es.uned.lsi.compiler.semantic.type.TypeIF;
 //       Include properties to characterize procedure calls
 
 public class SymbolProcedure
-    extends SymbolBase
-{
-   
-    /**
-     * Constructor for SymbolProcedure.
-     * @param scope The declaration scope.
-     * @param name The symbol name.
-     * @param type The symbol type.
-     */
-    public SymbolProcedure (ScopeIF scope, 
-                            String name,
-                            TypeIF type)
-    {
-        super (scope, name, type);
-    } 
+		extends SymbolBase {
+
+	/**
+	 * Constructor for SymbolProcedure.
+	 *
+	 * @param scope The declaration scope.
+	 * @param name  The symbol name.
+	 * @param type  The symbol type.
+	 */
+	public SymbolProcedure(ScopeIF scope,
+	                       String name,
+	                       TypeIF type) {
+		super(scope, name, type);
+	}
 }

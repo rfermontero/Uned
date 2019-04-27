@@ -7,7 +7,7 @@
 
 MODULE seis;
 
-  VAR resta : INTEGER;
+  VAR   resta : INTEGER;
   		a1:INTEGER;
   		b1:INTEGER;
   
@@ -16,7 +16,7 @@ MODULE seis;
  	BEGIN
  		s := a-b;
  		RETURN s; 	
- 	END Restar; 	
+  END Restar;
   
   BEGIN
     a1:=10;

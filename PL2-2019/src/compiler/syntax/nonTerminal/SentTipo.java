@@ -1,8 +1,23 @@
 package compiler.syntax.nonTerminal;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SentTipo extends NonTerminal {
 
-    public SentTipo() {
-        super();
-    }
+	private final List<ExpTipo> expTipos;
+
+	public SentTipo(ExpTipo expTipo) {
+		super();
+		this.expTipos = new ArrayList<ExpTipo>();
+		expTipos.add(expTipo);
+	}
+
+	public void addExpTipo(ExpTipo expTipo) {
+		expTipos.add(expTipo);
+	}
+
+	public List<ExpTipo> getExpTipos() {
+		return expTipos;
+	}
 }

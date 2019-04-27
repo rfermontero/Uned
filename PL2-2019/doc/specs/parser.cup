@@ -34,6 +34,36 @@ action code   {:
 	ScopeManagerIF       scopeManager         = CompilerContext.getScopeManager();
 	FinalCodeFactoryIF   finalCodeFactory     = CompilerContext.getFinalCodeFactory();
 
+	public void openScope(String scopeName) {
+	    ScopeIF scope = scopeManager.openScope(scopeName);
+        syntaxErrorManager.syntaxInfo("ClOpense " + scope);
+	}
+
+    public ScopeIF getCurrentScope(){
+        return scopeManager.getCurrentScope();
+    }
+
+	public void closeCurrentScope() {
+	    ScopeIF scope = scopeManager.getCurrentScope();
+        scopeManager.closeScope();
+        syntaxErrorManager.syntaxInfo("Close " + scope);
+	}
+
+	public void checkSymbolDoesNotExists(String identifier){
+		ScopeIF scope = scopeManager.getCurrentScope();
+		SymbolTableIF symbolTable = scope.getSymbolTable();
+	    if(symbolTable.containsSymbol(identifier)){
+            syntaxErrorManager.syntaxError("Identificador ya utilizado");
+		}
+	}
+
+	public void addSymbol(String identifier, SymbolIF symbol){
+	    ScopeIF scope = scopeManager.getCurrentScope();
+        SymbolTableIF symbolTable = scope.getSymbolTable();
+        symbolTable.addSymbol(identifier, symbol);
+        syntaxErrorManager.syntaxInfo("Added symbol " + identifier);
+	}
+
 :}	
 
 parser code {:
@@ -150,10 +180,10 @@ start with program;
 program ::= 
   {: 
       syntaxErrorManager.syntaxInfo("Starting parsing...");
-      scopeManager.openScope();
+
   :}
   axiom:ax
-  {: 
+  {:
   		// No modificar esta estructura, aunque se pueden añadir más acciones semánticas
   		
   		//List intermediateCode = ax.getIntermediateCode ();
@@ -163,28 +193,42 @@ program ::=
   		// en las llamadas a cupTest si el compilador no está completo. Esto es debido a que 
   		// aún no se tendrá implementada la generación de código intermedio ni final.
   		// Para la entrega final deberán descomentarse y usarse.
+
   		syntaxErrorManager.syntaxInfo("Parsing process ended.");
   :};
 
 
 axiom ::= cabModule:cabModule
           cuerpo:cuerpo
-          {:
-            RESULT = new Axiom(cabModule, cuerpo);
-          :}
           | cabModule error;
 
 // Cabecera de los modulos
 cabModule     ::= MODULE IDENTIFICADOR:identificador PUNTOYCOMA
                   {:
-                    RESULT = new CabModule(identificador.getLexema());
+                   openScope("MODULE_" + identificador.getLexema());
+                   RESULT = new CabModule(identificador.getLexema());
                   :}
                 | MODULE error;
 
 // Cuerpo de los modulos y comun para procedimientos y funciones
 cuerpo        ::= stmConstantes:stmConstantes stmTipos:stmTipos stmVar:stmVar stmSubprogram:stmSubprogram BEGIN sentencias:sentencias END IDENTIFICADOR PUNTOYCOMA
                 {:
+                  //Constants
+                  for(ExpConst constant: stmConstantes.getSentConst().getExpConstList()){
+                    checkSymbolDoesNotExists(constant.getIdentificador());
+                    SymbolConstant symbolConstant = new SymbolConstant(getCurrentScope(), constant.getIdentificador(), new TypeSimple(getCurrentScope()));
+                    addSymbol(constant.getIdentificador(), symbolConstant);
+                  }
+
+                  //Types TODO CONTINUAR
+                  for(ExpConst constant: stmTipos.getSentTipo.getExpTipos()){
+                    checkSymbolDoesNotExists(constant.getIdentificador());
+                    SymbolTypoe symbolConstant = new SymbolConstant(getCurrentScope(), constant.getIdentificador(), new TypeSimple(getCurrentScope()));
+                    addSymbol(constant.getIdentificador(), symbolConstant);
+                  }
+
                    RESULT = new Cuerpo(stmConstantes, stmTipos, stmVar, stmSubprogram, sentencias);
+                   closeCurrentScope();
                 :}
                 | stmConstantes stmTipos stmVar stmSubprogram BEGIN sentencias END error
                 | stmConstantes stmTipos stmVar stmSubprogram BEGIN error;
@@ -202,7 +246,7 @@ sentConst     ::= sentConst:sentConst expConst:expConst
                     sentConst.addExpConst(expConst);
                     RESULT = sentConst;
                   :}
-                | expConst:expConst //Solo una
+                | expConst:expConst
                   {:
                      RESULT = new SentConst(expConst);
                   :};
@@ -234,10 +278,21 @@ stmTipos      ::= TYPE sentTipo:sentTipo
                 | // epsilon
                 | TYPE error;
 
-sentTipo      ::= sentTipo expTipo
-                | expTipo;
+sentTipo      ::= sentTipo:sentTipo expTipo:expTipo
+                {:
+                    sentTipo.add(expTipo);
+                    RESULT = sentTipo;
+                :}
+                | expTipo
+                 {:
+                    sentTipo.add(expTipo);
+                    RESULT = new SentTipo(expTipo);
+                 :};
 
-expTipo       ::= IDENTIFICADOR IGUAL ARRAY CORCHIZQ entOid PUNTOPUNTO entOid CORCHDER OF intOBool PUNTOYCOMA
+expTipo       ::= IDENTIFICADOR:identificador IGUAL ARRAY CORCHIZQ entOid:endOidI PUNTOPUNTO entOid:endOidd CORCHDER OF intOBool:intOBool PUNTOYCOMA
+                    {:
+                        RESULT = new ExpTipo(identificador.getLexema(), endOidI, endOidd, intOBool);
+                    :}
                 | IDENTIFICADOR error PUNTOYCOMA;
 
 // Reglas de producción para Variables
@@ -296,6 +351,7 @@ stmSubprogram  ::= cabProcedure:cabProcedure
                 
 cabProcedure   ::= PROCEDURE IDENTIFICADOR:identificador procParenParam:procParenParam tipoRetorno:tipoRetorno PUNTOYCOMA
                   {:
+                   openScope("PROCEDURE_"+identificador.getLexema());
                    RESULT = new CabProcedure(identificador.getLexema(), procParenParam, tipoRetorno);
                   :}
                 |  PROCEDURE IDENTIFICADOR error 
