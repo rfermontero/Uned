@@ -2,7 +2,11 @@ package compiler.syntax.nonTerminal;
 
 public class StmConstantes extends NonTerminal {
 
-	private final SentConst sentConst;
+	private SentConst sentConst;
+
+	public StmConstantes() {
+		super();
+	}
 
 	public StmConstantes(SentConst sentConst) {
 		super();

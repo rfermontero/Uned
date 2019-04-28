@@ -9,7 +9,7 @@ public class SentTipo extends NonTerminal {
 
 	public SentTipo(ExpTipo expTipo) {
 		super();
-		this.expTipos = new ArrayList<ExpTipo>();
+		expTipos = new ArrayList<>();
 		expTipos.add(expTipo);
 	}
 

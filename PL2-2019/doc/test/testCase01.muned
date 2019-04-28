@@ -3,7 +3,9 @@ MODULE uno;
 (* no se debe de imprimir nada*)
 
   CONST A = 10;
-	B = 20;
+        B = 20;
+  TYPE TVector = ARRAY [1..3] OF INTEGER;
+       TVector2 = ARRAY [1..3] OF INTEGER;
 
   BEGIN
 

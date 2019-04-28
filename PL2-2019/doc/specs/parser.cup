@@ -36,7 +36,7 @@ action code   {:
 
 	public void openScope(String scopeName) {
 	    ScopeIF scope = scopeManager.openScope(scopeName);
-        syntaxErrorManager.syntaxInfo("ClOpense " + scope);
+        semanticErrorManager.semanticInfo("Opened " + scope);
 	}
 
     public ScopeIF getCurrentScope(){
@@ -46,15 +46,31 @@ action code   {:
 	public void closeCurrentScope() {
 	    ScopeIF scope = scopeManager.getCurrentScope();
         scopeManager.closeScope();
-        syntaxErrorManager.syntaxInfo("Close " + scope);
+        semanticErrorManager.semanticInfo("Close " + scope);
 	}
 
 	public void checkSymbolDoesNotExists(String identifier){
 		ScopeIF scope = scopeManager.getCurrentScope();
 		SymbolTableIF symbolTable = scope.getSymbolTable();
 	    if(symbolTable.containsSymbol(identifier)){
-            syntaxErrorManager.syntaxError("Identificador ya utilizado");
+            semanticErrorManager.semanticFatalError("Identificador ya utilizado");
 		}
+	}
+
+	public void checkTypeDoesNotExists(String identifier){
+	    ScopeIF scope = scopeManager.getCurrentScope();
+        TypeTableIF typeTable = scope.getTypeTable();
+        if(typeTable.containsType(identifier)){
+            semanticErrorManager.semanticFatalError("Tipo ya utilizado");
+        }
+
+        while(scope.getParentScope() != null){
+           ScopeIF parentScope = scope.getParentScope();
+           TypeTableIF parentTypeTable = parentScope.getTypeTable();
+           if(typeTable.containsType(identifier)){
+             semanticErrorManager.semanticFatalError("Tipo ya utilizado");
+           }
+        }
 	}
 
 	public void addSymbol(String identifier, SymbolIF symbol){
@@ -64,21 +80,28 @@ action code   {:
         syntaxErrorManager.syntaxInfo("Added symbol " + identifier);
 	}
 
-:}	
+	public void addType(String identifier, TypeIF type){
+	    ScopeIF scope = scopeManager.getCurrentScope();
+        TypeTableIF typeTable = scope.getTypeTable();
+        typeTable.addType(identifier, type);
+        syntaxErrorManager.syntaxInfo("Added type " + identifier);
+	}
+
+:}
 
 parser code {:
 	SyntaxErrorManager syntaxErrorManager = CompilerContext.getSyntaxErrorManager();
-	
+
 	public void syntax_error(Symbol symbol)
-	{ 
+	{
 	    Token token = (Token) symbol.value;
-	    syntaxErrorManager.syntaxError ("Error sintactico", token);	    
+	    syntaxErrorManager.syntaxError("Error sintactico", token);
 	}
-		
+
 	public void unrecovered_syntax_error(java_cup.runtime.Symbol symbol)
-	{	
+	{
 	    Token token = (Token) symbol.value;
-	    syntaxErrorManager.syntaxFatalError ("Error fatal", token);
+	    syntaxErrorManager.syntaxFatalError("Error fatal", token);
 	}
 :}
 
@@ -177,20 +200,20 @@ precedence left     PARENIZQ, PARENDER, CORCHIZQ, CORCHDER;
 
 start with program;
 
-program ::= 
-  {: 
+program ::=
+  {:
       syntaxErrorManager.syntaxInfo("Starting parsing...");
 
   :}
   axiom:ax
   {:
   		// No modificar esta estructura, aunque se pueden añadir más acciones semánticas
-  		
+
   		//List intermediateCode = ax.getIntermediateCode ();
   		//finalCodeFactory.create (intermediateCode);
 
   		// En caso de no comentarse las dos sentencias anteriores puede generar una excepcion
-  		// en las llamadas a cupTest si el compilador no está completo. Esto es debido a que 
+  		// en las llamadas a cupTest si el compilador no está completo. Esto es debido a que
   		// aún no se tendrá implementada la generación de código intermedio ni final.
   		// Para la entrega final deberán descomentarse y usarse.
 
@@ -214,17 +237,21 @@ cabModule     ::= MODULE IDENTIFICADOR:identificador PUNTOYCOMA
 cuerpo        ::= stmConstantes:stmConstantes stmTipos:stmTipos stmVar:stmVar stmSubprogram:stmSubprogram BEGIN sentencias:sentencias END IDENTIFICADOR PUNTOYCOMA
                 {:
                   //Constants
-                  for(ExpConst constant: stmConstantes.getSentConst().getExpConstList()){
-                    checkSymbolDoesNotExists(constant.getIdentificador());
-                    SymbolConstant symbolConstant = new SymbolConstant(getCurrentScope(), constant.getIdentificador(), new TypeSimple(getCurrentScope()));
-                    addSymbol(constant.getIdentificador(), symbolConstant);
+                  if(stmConstantes.getSentConst()!=null){
+                      for(ExpConst constant: stmConstantes.getSentConst().getExpConstList()){
+                        checkSymbolDoesNotExists(constant.getIdentificador());
+                        SymbolConstant symbolConstant = new SymbolConstant(getCurrentScope(), constant.getIdentificador(), new TypeSimple(getCurrentScope()));
+                        addSymbol(constant.getIdentificador(), symbolConstant);
+                      }
                   }
 
-                  //Types TODO CONTINUAR
-                  for(ExpConst constant: stmTipos.getSentTipo.getExpTipos()){
-                    checkSymbolDoesNotExists(constant.getIdentificador());
-                    SymbolTypoe symbolConstant = new SymbolConstant(getCurrentScope(), constant.getIdentificador(), new TypeSimple(getCurrentScope()));
-                    addSymbol(constant.getIdentificador(), symbolConstant);
+                  //Types
+                  if(stmTipos.getSentTipo()!=null){
+                    for(ExpTipo expTipo: stmTipos.getSentTipo().getExpTipos()){
+                       checkTypeDoesNotExists(expTipo.getIdentificador());
+                       TypeIF type = new TypeArray(getCurrentScope(), expTipo.getIdentificador());
+                       addType(expTipo.getIdentificador(), type);
+                    }
                   }
 
                    RESULT = new Cuerpo(stmConstantes, stmTipos, stmVar, stmSubprogram, sentencias);
@@ -238,7 +265,10 @@ stmConstantes ::= CONST sentConst:sentConst
                   {:
                    RESULT = new StmConstantes(sentConst);
                   :}
-                | // epsilon
+                |
+                   {:
+                      RESULT = new StmConstantes();
+                   :}
                 | CONST error;
 
 sentConst     ::= sentConst:sentConst expConst:expConst
@@ -275,17 +305,19 @@ stmTipos      ::= TYPE sentTipo:sentTipo
                 {:
                   RESULT = new StmTipos(sentTipo);
                 :}
-                | // epsilon
+                |
+                {:
+                    RESULT = new StmTipos();
+                :}
                 | TYPE error;
 
 sentTipo      ::= sentTipo:sentTipo expTipo:expTipo
                 {:
-                    sentTipo.add(expTipo);
+                    sentTipo.addExpTipo(expTipo);
                     RESULT = sentTipo;
                 :}
-                | expTipo
+                | expTipo:expTipo
                  {:
-                    sentTipo.add(expTipo);
                     RESULT = new SentTipo(expTipo);
                  :};
 
