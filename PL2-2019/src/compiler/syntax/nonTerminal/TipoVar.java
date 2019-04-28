@@ -20,7 +20,15 @@ public class TipoVar extends NonTerminal {
 	}
 
 	public String getIdentificadorTipo() {
-		return this.identificador;
+		if (esTipoCustom()) {
+			return identificador;
+		} else {
+			if (intOBool.isBool()) {
+				return "boolean";
+			} else {
+				return "int";
+			}
+		}
 	}
 
 	public boolean esTipoCustom() {

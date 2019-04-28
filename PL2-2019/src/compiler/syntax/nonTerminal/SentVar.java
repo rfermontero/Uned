@@ -9,7 +9,7 @@ public class SentVar extends NonTerminal {
 
 	public SentVar(ExpVar expVar) {
 		super();
-		this.expVars = new ArrayList<>();
+		expVars = new ArrayList<>();
 		expVars.add(expVar);
 	}
 
@@ -18,6 +18,6 @@ public class SentVar extends NonTerminal {
 	}
 
 	public List<ExpVar> getExpVars() {
-		return this.expVars;
+		return expVars;
 	}
 }

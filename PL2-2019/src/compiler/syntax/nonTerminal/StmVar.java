@@ -2,7 +2,11 @@ package compiler.syntax.nonTerminal;
 
 public class StmVar extends NonTerminal {
 
-	private final SentVar sentVar;
+	private SentVar sentVar;
+
+	public StmVar() {
+		super();
+	}
 
 	public StmVar(SentVar sentVar) {
 		super();

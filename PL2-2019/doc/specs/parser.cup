@@ -73,6 +73,25 @@ action code   {:
         }
 	}
 
+    public TypeIF getType(String identifier){
+        	    ScopeIF scope = scopeManager.getCurrentScope();
+                TypeTableIF typeTable = scope.getTypeTable();
+                if(typeTable.containsType(identifier)) {
+                    return typeTable.getType(identifier);
+                }
+
+                while(scope.getParentScope() != null){
+                   ScopeIF parentScope = scope.getParentScope();
+                   TypeTableIF parentTypeTable = parentScope.getTypeTable();
+                   if(typeTable.containsType(identifier)) {
+                    return typeTable.getType(identifier);
+                   }
+                }
+
+                semanticErrorManager.semanticFatalError("Tipo no declarado");
+                return null;
+        }
+
 	public void addSymbol(String identifier, SymbolIF symbol){
 	    ScopeIF scope = scopeManager.getCurrentScope();
         SymbolTableIF symbolTable = scope.getSymbolTable();
@@ -228,7 +247,13 @@ axiom ::= cabModule:cabModule
 // Cabecera de los modulos
 cabModule     ::= MODULE IDENTIFICADOR:identificador PUNTOYCOMA
                   {:
+
                    openScope("MODULE_" + identificador.getLexema());
+
+                   //Add simple types
+                   addType("boolean", new TypeSimple(getCurrentScope()));
+                   addType("int", new TypeSimple(getCurrentScope()));
+
                    RESULT = new CabModule(identificador.getLexema());
                   :}
                 | MODULE error;
@@ -237,20 +262,40 @@ cabModule     ::= MODULE IDENTIFICADOR:identificador PUNTOYCOMA
 cuerpo        ::= stmConstantes:stmConstantes stmTipos:stmTipos stmVar:stmVar stmSubprogram:stmSubprogram BEGIN sentencias:sentencias END IDENTIFICADOR PUNTOYCOMA
                 {:
                   //Constants
-                  if(stmConstantes.getSentConst()!=null){
+                  if(stmConstantes.getSentConst() != null){
                       for(ExpConst constant: stmConstantes.getSentConst().getExpConstList()){
                         checkSymbolDoesNotExists(constant.getIdentificador());
-                        SymbolConstant symbolConstant = new SymbolConstant(getCurrentScope(), constant.getIdentificador(), new TypeSimple(getCurrentScope()));
+                        ValorConst valorConst = constant.getValorConst();
+                        SymbolConstant symbolConstant = null;
+                        if(valorConst.isBoolean()) {
+                           symbolConstant = new SymbolConstant(getCurrentScope(), constant.getIdentificador(), valorConst.getBoolean(), getType("boolean"));
+                        } else {
+                           symbolConstant = new SymbolConstant(getCurrentScope(), constant.getIdentificador(), valorConst.getValue(), getType("int"));
+                        }
                         addSymbol(constant.getIdentificador(), symbolConstant);
                       }
                   }
 
                   //Types
-                  if(stmTipos.getSentTipo()!=null){
+                  if(stmTipos.getSentTipo() != null){
                     for(ExpTipo expTipo: stmTipos.getSentTipo().getExpTipos()){
                        checkTypeDoesNotExists(expTipo.getIdentificador());
                        TypeIF type = new TypeArray(getCurrentScope(), expTipo.getIdentificador());
                        addType(expTipo.getIdentificador(), type);
+                    }
+                  }
+
+                  //Variables TODO pending add value
+                  if(stmVar.getSentVar() != null){
+                    for(ExpVar expVar: stmVar.getSentVar().getExpVars()){
+                        //Check names are not duplicated and type exists
+                        CadIdVar cadIdVar = expVar.getCadIdVar();
+                        for(String identificadorVariable : cadIdVar.getIdentificadores()){
+                             checkSymbolDoesNotExists(identificadorVariable);
+                             SymbolIF symbolVariable = new SymbolVariable(getCurrentScope(),
+                                identificadorVariable, getType(expVar.getTipoVar().getIdentificadorTipo()));
+                             addSymbol(identificadorVariable, symbolVariable);
+                        }
                     }
                   }
 
@@ -332,7 +377,10 @@ stmVar        ::= VAR sentVar:sentVar
                   {:
                     RESULT = new StmVar(sentVar);
                   :}
-                | // epsilon
+                |
+                  {:
+                    RESULT = new StmVar();
+                  :}
                 | VAR error;
 
 sentVar       ::= sentVar:sentVar expVar:expVar
