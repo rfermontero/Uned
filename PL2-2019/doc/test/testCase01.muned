@@ -4,6 +4,7 @@ MODULE uno;
 
   CONST A = 10;
         B = 20;
+
   TYPE TVector = ARRAY [1..3] OF INTEGER;
        TVector2 = ARRAY [1..3] OF INTEGER;
 
@@ -13,6 +14,13 @@ MODULE uno;
    	bol1 : BOOLEAN;
    	bol2 : BOOLEAN;
    	bol3 : TVector;
+
+   PROCEDURE Restar (a,b: INTEGER) : INTEGER;
+    	VAR s: INTEGER;
+   	BEGIN
+   		s := a-b;
+   		RETURN s;
+    END Restar;
 
   BEGIN
 

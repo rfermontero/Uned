@@ -9,11 +9,7 @@ import es.uned.lsi.compiler.semantic.type.TypeBase;
  * Class for TypeSimple.
  */
 
-// TODO: Student work
-//       Include properties to characterize simple types
-
-public class TypeSimple
-		extends TypeBase {
+public class TypeSimple extends TypeBase {
 
 	/**
 	 * Constructor for TypeSimple.
@@ -25,10 +21,19 @@ public class TypeSimple
 	}
 
 	/**
-	 * Returns the size of the type.
+	 * Constructor for TypeSimple.
 	 *
-	 * @return the size of the type.
+	 * @param scope The declaration scope.
 	 */
+	public TypeSimple(ScopeIF scope, String identifier) {
+		super(scope, identifier);
+	}
+
+		/**
+		 * Returns the size of the type.
+		 *
+		 * @return the size of the type.
+		 */
 	@Override
 	public int getSize() {
 		ExecutionEnvironmentIF environment = CompilerContext.getExecutionEnvironment();

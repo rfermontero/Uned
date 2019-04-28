@@ -3,7 +3,11 @@ package compiler.syntax.nonTerminal;
 
 public class ProcParenParam extends NonTerminal {
 
-	private final ProcListParam procListParam;
+	private ProcListParam procListParam;
+
+	public ProcParenParam() {
+		super();
+	}
 
 	public ProcParenParam(ProcListParam procListParam) {
 		super();

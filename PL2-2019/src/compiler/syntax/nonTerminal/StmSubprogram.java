@@ -13,4 +13,13 @@ public class StmSubprogram extends NonTerminal {
 		this.cabProcedure = cabProcedure;
 		this.cuerpo = cuerpo;
 	}
+
+
+	public Cuerpo getCuerpo() {
+		return cuerpo;
+	}
+
+	public CabProcedure getCabProcedure() {
+		return cabProcedure;
+	}
 }

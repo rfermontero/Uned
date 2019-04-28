@@ -73,37 +73,40 @@ action code   {:
         }
 	}
 
-    public TypeIF getType(String identifier){
+    public TypeIF getType(String identifier) {
         	    ScopeIF scope = scopeManager.getCurrentScope();
                 TypeTableIF typeTable = scope.getTypeTable();
-                if(typeTable.containsType(identifier)) {
-                    return typeTable.getType(identifier);
-                }
+                System.out.println("Searching type " + identifier + " in table " + typeTable);
+                TypeIF type = typeTable.getType(identifier);
 
-                while(scope.getParentScope() != null){
-                   ScopeIF parentScope = scope.getParentScope();
-                   TypeTableIF parentTypeTable = parentScope.getTypeTable();
-                   if(typeTable.containsType(identifier)) {
-                    return typeTable.getType(identifier);
-                   }
-                }
+                 if(type==null) {
+                    while(scope.getParentScope() != null){
+                          scope = scope.getParentScope();
+                          typeTable = scope.getTypeTable();
+                          type = typeTable.getType(identifier);
+                          System.out.println("Searching type " + identifier + " in table " + typeTable);
+                          if(type == null){
+                            semanticErrorManager.semanticFatalError("Tipo no encontrado");
+                          }
+                    }
+                 }
 
-                semanticErrorManager.semanticFatalError("Tipo no declarado");
-                return null;
+
+                return type;
         }
 
 	public void addSymbol(String identifier, SymbolIF symbol){
 	    ScopeIF scope = scopeManager.getCurrentScope();
         SymbolTableIF symbolTable = scope.getSymbolTable();
         symbolTable.addSymbol(identifier, symbol);
-        syntaxErrorManager.syntaxInfo("Added symbol " + identifier);
+        syntaxErrorManager.syntaxInfo("Added symbol " + identifier + " in " + scope + " and table " + symbolTable);
 	}
 
 	public void addType(String identifier, TypeIF type){
 	    ScopeIF scope = scopeManager.getCurrentScope();
         TypeTableIF typeTable = scope.getTypeTable();
         typeTable.addType(identifier, type);
-        syntaxErrorManager.syntaxInfo("Added type " + identifier);
+        syntaxErrorManager.syntaxInfo("Added type " + identifier + " in " + scope + " and table " + typeTable);
 	}
 
 :}
@@ -251,8 +254,8 @@ cabModule     ::= MODULE IDENTIFICADOR:identificador PUNTOYCOMA
                    openScope("MODULE_" + identificador.getLexema());
 
                    //Add simple types
-                   addType("boolean", new TypeSimple(getCurrentScope()));
-                   addType("int", new TypeSimple(getCurrentScope()));
+                   addType("boolean", new TypeSimple(getCurrentScope(), "boolean"));
+                   addType("int", new TypeSimple(getCurrentScope(), "int"));
 
                    RESULT = new CabModule(identificador.getLexema());
                   :}
@@ -285,8 +288,9 @@ cuerpo        ::= stmConstantes:stmConstantes stmTipos:stmTipos stmVar:stmVar st
                     }
                   }
 
+
                   //Variables TODO pending add value
-                  if(stmVar.getSentVar() != null){
+                  if(stmVar.getSentVar() != null) {
                     for(ExpVar expVar: stmVar.getSentVar().getExpVars()){
                         //Check names are not duplicated and type exists
                         CadIdVar cadIdVar = expVar.getCadIdVar();
@@ -297,6 +301,12 @@ cuerpo        ::= stmConstantes:stmConstantes stmTipos:stmTipos stmVar:stmVar st
                              addSymbol(identificadorVariable, symbolVariable);
                         }
                     }
+                  }
+
+
+                  //Subprograms
+                  if(stmSubprogram.getCuerpo()!=null && stmSubprogram.getCabProcedure()!=null){
+                    checkSymbolDoesNotExists(stmSubprogram.getCabProcedure().getIdentificador());
                   }
 
                    RESULT = new Cuerpo(stmConstantes, stmTipos, stmVar, stmSubprogram, sentencias);
@@ -426,8 +436,10 @@ stmSubprogram  ::= cabProcedure:cabProcedure
                   stmSubprogram.addCuerpoAndProcedure(cuerpo, cabProcedure);
                   RESULT = stmSubprogram;
                 :}
-                | // epsilon
-                ;
+                |
+                {:
+                   RESULT = new StmSubprogram();
+                :};
                 
 cabProcedure   ::= PROCEDURE IDENTIFICADOR:identificador procParenParam:procParenParam tipoRetorno:tipoRetorno PUNTOYCOMA
                   {:
@@ -441,8 +453,10 @@ procParenParam ::= PARENIZQ procListParam:procListParam PARENDER
                 {:
                  RESULT = new ProcParenParam(procListParam);
                 :}
-                | // epsilon
-                ;
+                |
+                {:
+                 RESULT = new ProcParenParam();
+                :};
 
 procListParam  ::= procParam:procParam PUNTOYCOMA procListParam:procListParam
                 {:
@@ -466,7 +480,10 @@ tipoRetorno    ::= DOSPUNTOS intOBool:intOBool
                   {:
                     RESULT = new TipoRetorno(intOBool);
                   :}
-                |  // epsilon
+                |
+                 {:
+                   RESULT = new TipoRetorno();
+                 :}
                 |  DOSPUNTOS error PUNTOYCOMA;
 
 // expresion logicas y aritmeticas.

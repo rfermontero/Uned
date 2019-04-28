@@ -2,7 +2,11 @@ package compiler.syntax.nonTerminal;
 
 public class TipoRetorno extends NonTerminal {
 
-	private final IntOBool intOBool;
+	private IntOBool intOBool;
+
+	public TipoRetorno() {
+		super();
+	}
 
 	public TipoRetorno(IntOBool intOBool) {
 		super();
