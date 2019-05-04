@@ -76,7 +76,7 @@ action code   {:
     public TypeIF getType(String identifier) {
         	    ScopeIF scope = scopeManager.getCurrentScope();
                 TypeTableIF typeTable = scope.getTypeTable();
-                System.out.println("Searching type " + identifier + " in table " + typeTable);
+                System.out.println("Searching type " + identifier);
                 TypeIF type = typeTable.getType(identifier);
 
                  if(type==null) {
@@ -84,7 +84,7 @@ action code   {:
                           scope = scope.getParentScope();
                           typeTable = scope.getTypeTable();
                           type = typeTable.getType(identifier);
-                          System.out.println("Searching type " + identifier + " in table " + typeTable);
+                          System.out.println("Searching type " + identifier);
                           if(type == null){
                             semanticErrorManager.semanticFatalError("Tipo no encontrado");
                           }
@@ -99,14 +99,14 @@ action code   {:
 	    ScopeIF scope = scopeManager.getCurrentScope();
         SymbolTableIF symbolTable = scope.getSymbolTable();
         symbolTable.addSymbol(identifier, symbol);
-        syntaxErrorManager.syntaxInfo("Added symbol " + identifier + " in " + scope + " and table " + symbolTable);
+        semanticErrorManager.semanticInfo("Added symbol " + identifier + " in " + scope);
 	}
 
 	public void addType(String identifier, TypeIF type){
 	    ScopeIF scope = scopeManager.getCurrentScope();
         TypeTableIF typeTable = scope.getTypeTable();
         typeTable.addType(identifier, type);
-        syntaxErrorManager.syntaxInfo("Added type " + identifier + " in " + scope + " and table " + typeTable);
+        semanticErrorManager.semanticInfo("Added type " + identifier + " in " + scope);
 	}
 
 :}
@@ -305,8 +305,21 @@ cuerpo        ::= stmConstantes:stmConstantes stmTipos:stmTipos stmVar:stmVar st
 
 
                   //Subprograms
-                  if(stmSubprogram.getCuerpo()!=null && stmSubprogram.getCabProcedure()!=null){
+
+                  if(stmSubprogram.getCuerpo()!=null && stmSubprogram.getCabProcedure()!=null) {
                     checkSymbolDoesNotExists(stmSubprogram.getCabProcedure().getIdentificador());
+                    SymbolIF symbol  = null;
+
+                    if(stmSubprogram.getCabProcedure().getTipoRetorno().getIntOBool() == null) {//Is function
+                        symbol = new SymbolFunction(getCurrentScope(), stmSubprogram.getCabProcedure().getIdentificador(),
+                            stmSubprogram, new TypeFunction(getCurrentScope()));
+                    } else {
+                        symbol = new SymbolProcedure(getCurrentScope(), stmSubprogram.getCabProcedure().getIdentificador(),
+                            stmSubprogram, new TypeFunction(getCurrentScope()));
+                    }
+
+                     addSymbol(stmSubprogram.getCabProcedure().getIdentificador(), symbol);
+
                   }
 
                    RESULT = new Cuerpo(stmConstantes, stmTipos, stmVar, stmSubprogram, sentencias);
@@ -321,9 +334,9 @@ stmConstantes ::= CONST sentConst:sentConst
                    RESULT = new StmConstantes(sentConst);
                   :}
                 |
-                   {:
-                      RESULT = new StmConstantes();
-                   :}
+                  {:
+                   RESULT = new StmConstantes();
+                  :}
                 | CONST error;
 
 sentConst     ::= sentConst:sentConst expConst:expConst
@@ -433,7 +446,10 @@ stmSubprogram  ::= cabProcedure:cabProcedure
                    cuerpo:cuerpo
                    stmSubprogram:stmSubprogram
                 {:
-                  stmSubprogram.addCuerpoAndProcedure(cuerpo, cabProcedure);
+                    System.out.println(stmSubprogram);
+                  stmSubprogram = stmSubprogram.addCuerpoAndProcedure(cuerpo, cabProcedure);
+                                      System.out.println(stmSubprogram);
+
                   RESULT = stmSubprogram;
                 :}
                 |
@@ -467,7 +483,10 @@ procListParam  ::= procParam:procParam PUNTOYCOMA procListParam:procListParam
                 {:
                  RESULT = new ProcListParam(procParam);
                 :}
-                |  // epsilon
+                |
+                    {:
+                        RESULT = new ProcListParam();
+                    :}
                 ;
 
 procParam      ::= cadIdVar:cadIdVar DOSPUNTOS tipoVar:tipoVar
@@ -576,7 +595,7 @@ sentFor       ::= FOR IDENTIFICADOR DOSPUNTOSIGUAL expresion TO expresion DO sen
 
 // Sentencia llamada Funcion o Procedimiento
 sentProcedure ::= IDENTIFICADOR
-                      
+
                 | IDENTIFICADOR parFuncion;
                   
 // Parametros de llamada a función
@@ -602,22 +621,22 @@ sWriteLn      ::= WRITELN;
 
 // Tipos Basicos
 variables     ::= IDENTIFICADOR:identificador
-                {:
+                  {:
                     RESULT = new Variables(identificador.getLexema());
-                :}
+                  :}
                 | IDENTIFICADOR idArray:idArray
-                {:
+                  {:
                     RESULT = new Variables(idArray);
-                :}
+                  :}
                 | IDENTIFICADOR parFuncion:parFuncion
                  {:
                     RESULT = new Variables(parFuncion);
                  :};
 
 idArray       ::= CORCHIZQ expresion:expresion CORCHDER
-                {:
+                  {:
                     RESULT = new IdArray(expresion);
-                :};
+                  :};
 
 intOBool      ::= INTEGER     
                   {:
@@ -629,13 +648,13 @@ intOBool      ::= INTEGER
                   :};
 
 entOid        ::= ENTERO:entero
-                {:
+                  {:
                     RESULT = new EntOId(Integer.parseInt(entero.getLexema()));
-                :}
+                  :}
                 | IDENTIFICADOR:identificador
-                {:
+                  {:
                     RESULT = new EntOId(identificador.getLexema());
-                :};
+                  :};
 
 // Constantes Booleanas.
 vBooleano     ::= TRUE

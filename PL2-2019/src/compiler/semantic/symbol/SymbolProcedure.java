@@ -1,5 +1,6 @@
 package compiler.semantic.symbol;
 
+import compiler.syntax.nonTerminal.StmSubprogram;
 import es.uned.lsi.compiler.semantic.ScopeIF;
 import es.uned.lsi.compiler.semantic.symbol.SymbolBase;
 import es.uned.lsi.compiler.semantic.type.TypeIF;
@@ -14,6 +15,8 @@ import es.uned.lsi.compiler.semantic.type.TypeIF;
 public class SymbolProcedure
 		extends SymbolBase {
 
+	private final StmSubprogram stmSubprogram;
+
 	/**
 	 * Constructor for SymbolProcedure.
 	 *
@@ -23,7 +26,13 @@ public class SymbolProcedure
 	 */
 	public SymbolProcedure(ScopeIF scope,
 	                       String name,
+	                       StmSubprogram stmSubprogram,
 	                       TypeIF type) {
 		super(scope, name, type);
+		this.stmSubprogram = stmSubprogram;
+	}
+
+	public StmSubprogram getStmSubprogram() {
+		return stmSubprogram;
 	}
 }

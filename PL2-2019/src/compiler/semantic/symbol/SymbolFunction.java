@@ -1,5 +1,6 @@
 package compiler.semantic.symbol;
 
+import compiler.syntax.nonTerminal.StmSubprogram;
 import es.uned.lsi.compiler.semantic.ScopeIF;
 import es.uned.lsi.compiler.semantic.type.TypeIF;
 
@@ -7,11 +8,7 @@ import es.uned.lsi.compiler.semantic.type.TypeIF;
  * Class for SymbolFunction.
  */
 
-// TODO: Student work
-//       Include properties to characterize function calls
-
-public class SymbolFunction
-		extends SymbolProcedure {
+public class SymbolFunction extends SymbolProcedure {
 
 	/**
 	 * Constructor for SymbolFunction.
@@ -22,7 +19,12 @@ public class SymbolFunction
 	 */
 	public SymbolFunction(ScopeIF scope,
 	                      String name,
+	                      StmSubprogram stmSubprogram,
 	                      TypeIF type) {
-		super(scope, name, type);
+		super(scope, name, stmSubprogram, type);
+	}
+
+	public StmSubprogram getStmSubprogram() {
+		return super.getStmSubprogram();
 	}
 }

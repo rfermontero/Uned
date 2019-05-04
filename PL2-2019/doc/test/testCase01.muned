@@ -20,7 +20,14 @@ MODULE uno;
    	BEGIN
    		s := a-b;
    		RETURN s;
-    END Restar;
+   END Restar;
+
+   PROCEDURE Restara(a,b: INTEGER) : INTEGER;
+        	VAR s: INTEGER;
+       	BEGIN
+       		s := a-b;
+       		RETURN s;
+    END Restara;
 
   BEGIN
 

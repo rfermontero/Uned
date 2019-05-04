@@ -9,9 +9,10 @@ public class StmSubprogram extends NonTerminal {
 		super();
 	}
 
-	public void addCuerpoAndProcedure(Cuerpo cuerpo, CabProcedure cabProcedure) {
+	public StmSubprogram addCuerpoAndProcedure(Cuerpo cuerpo, CabProcedure cabProcedure) {
 		this.cabProcedure = cabProcedure;
 		this.cuerpo = cuerpo;
+		return this;
 	}
 
 

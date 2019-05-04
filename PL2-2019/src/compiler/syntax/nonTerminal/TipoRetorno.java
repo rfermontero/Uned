@@ -12,4 +12,8 @@ public class TipoRetorno extends NonTerminal {
 		super();
 		this.intOBool = intOBool;
 	}
+
+	public IntOBool getIntOBool() {
+		return intOBool;
+	}
 }

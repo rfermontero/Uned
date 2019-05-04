@@ -5,12 +5,16 @@ import java.util.List;
 
 public class ProcListParam extends NonTerminal {
 
-	private final List<ProcParam> procParam;
+	private List<ProcParam> procParam;
 
 	public ProcListParam(ProcParam procParam) {
 		super();
 		this.procParam = new ArrayList<>();
 		this.procParam.add(procParam);
+	}
+
+	public ProcListParam() {
+		super();
 	}
 
 	public List<ProcParam> getProcListParam() {
