@@ -258,8 +258,7 @@ cabModule     ::= MODULE IDENTIFICADOR:identificador PUNTOYCOMA
                    addType("int", new TypeSimple(getCurrentScope(), "int"));
 
                    RESULT = new CabModule(identificador.getLexema());
-                  :}
-                | MODULE error;
+                  :};
 
 // Cuerpo de los modulos y comun para procedimientos y funciones
 cuerpo        ::= stmConstantes:stmConstantes stmTipos:stmTipos stmVar:stmVar stmSubprogram:stmSubprogram BEGIN sentencias:sentencias END IDENTIFICADOR PUNTOYCOMA
@@ -324,9 +323,7 @@ cuerpo        ::= stmConstantes:stmConstantes stmTipos:stmTipos stmVar:stmVar st
 
                    RESULT = new Cuerpo(stmConstantes, stmTipos, stmVar, stmSubprogram, sentencias);
                    closeCurrentScope();
-                :}
-                | stmConstantes stmTipos stmVar stmSubprogram BEGIN sentencias END error
-                | stmConstantes stmTipos stmVar stmSubprogram BEGIN error;
+                :};
 
 // Reglas de producción para constantes
 stmConstantes ::= CONST sentConst:sentConst
@@ -336,8 +333,7 @@ stmConstantes ::= CONST sentConst:sentConst
                 |
                   {:
                    RESULT = new StmConstantes();
-                  :}
-                | CONST error;
+                  :};
 
 sentConst     ::= sentConst:sentConst expConst:expConst
                   {:
@@ -354,8 +350,7 @@ expConst      ::= IDENTIFICADOR:identificador IGUAL valorConst:valorConst PUNTOY
                    String expConstIdentificador = identificador.getLexema();
                    ExpConst expConst = new ExpConst(expConstIdentificador, valorConst);
                    RESULT = expConst;
-                  :}
-                 | IDENTIFICADOR error PUNTOYCOMA;
+                  :};
 
 valorConst    ::= ENTERO:valor
                   {:
@@ -376,8 +371,7 @@ stmTipos      ::= TYPE sentTipo:sentTipo
                 |
                 {:
                     RESULT = new StmTipos();
-                :}
-                | TYPE error;
+                :};
 
 sentTipo      ::= sentTipo:sentTipo expTipo:expTipo
                 {:
@@ -392,8 +386,7 @@ sentTipo      ::= sentTipo:sentTipo expTipo:expTipo
 expTipo       ::= IDENTIFICADOR:identificador IGUAL ARRAY CORCHIZQ entOid:endOidI PUNTOPUNTO entOid:endOidd CORCHDER OF intOBool:intOBool PUNTOYCOMA
                     {:
                         RESULT = new ExpTipo(identificador.getLexema(), endOidI, endOidd, intOBool);
-                    :}
-                | IDENTIFICADOR error PUNTOYCOMA;
+                    :};
 
 // Reglas de producción para Variables
 stmVar        ::= VAR sentVar:sentVar
@@ -403,8 +396,7 @@ stmVar        ::= VAR sentVar:sentVar
                 |
                   {:
                     RESULT = new StmVar();
-                  :}
-                | VAR error;
+                  :};
 
 sentVar       ::= sentVar:sentVar expVar:expVar
                   {:
@@ -419,8 +411,7 @@ sentVar       ::= sentVar:sentVar expVar:expVar
 expVar        ::= cadIdVar:cadIdVar DOSPUNTOS tipoVar:tipoVar PUNTOYCOMA
                   {:
                    RESULT = new ExpVar(cadIdVar, tipoVar);
-                  :}
-                | cadIdVar error PUNTOYCOMA;
+                  :};
 
 cadIdVar      ::= IDENTIFICADOR:identificador COMA cadIdVar:cadIdVar
                  {:
@@ -461,9 +452,7 @@ cabProcedure   ::= PROCEDURE IDENTIFICADOR:identificador procParenParam:procPare
                   {:
                    openScope("PROCEDURE_"+identificador.getLexema());
                    RESULT = new CabProcedure(identificador.getLexema(), procParenParam, tipoRetorno);
-                  :}
-                |  PROCEDURE IDENTIFICADOR error 
-                |  PROCEDURE error;
+                  :};
 
 procParenParam ::= PARENIZQ procListParam:procListParam PARENDER
                 {:
@@ -484,9 +473,9 @@ procListParam  ::= procParam:procParam PUNTOYCOMA procListParam:procListParam
                  RESULT = new ProcListParam(procParam);
                 :}
                 |
-                    {:
-                        RESULT = new ProcListParam();
-                    :}
+                {:
+                    RESULT = new ProcListParam();
+                :}
                 ;
 
 procParam      ::= cadIdVar:cadIdVar DOSPUNTOS tipoVar:tipoVar
@@ -502,120 +491,74 @@ tipoRetorno    ::= DOSPUNTOS intOBool:intOBool
                 |
                  {:
                    RESULT = new TipoRetorno();
-                 :}
-                |  DOSPUNTOS error PUNTOYCOMA;
+                 :};
 
 // expresion logicas y aritmeticas.
 expresion     ::= exprArit
                 | exprLogica
                 | PARENIZQ expresion PARENDER
-                | variables
-                      ;
+                | variables;
 
 // Reglas de produccion para expresiones aritmeticas.
 exprArit      ::= expresion MINUS expresion
-                      
                 | expresion PRODUCTO expresion
-                      
-                | ENTERO
-                      ;
+                | ENTERO;
 
 // Reglas de produccion para expresiones logicas.
 exprLogica    ::= expresion MAYOR expresion
-                      
                 | expresion IGUAL expresion
-                      
                 | expresion OR expresion
-                      
                 | NOT expresion
-                      
                 | vBooleano
                       ;
 
 // Reglas para sentencias.
 sentencias    ::= listSentencia PUNTOYCOMA
-                      
                 | listSentencia
-                       
-                |  // epsilon
-                      ;  // epsilon
+                |;
 
 listSentencia ::= listSentencia PUNTOYCOMA sentencia
-                      
-                | sentencia
-                      ;
+                | sentencia;
 
 sentencia     ::= sentAsign
-                      
                 | sentIf
-                      
                 | sentFor
-                      
                 | sentReturn
-                      
                 | sWriteString
-                      
                 | sWriteInt
-                      
                 | sWriteLn
-                      
-                | sentProcedure
-                      ;
+                | sentProcedure ;
 
 // Sentencias Return
-sentReturn     ::= RETURN expresion
-                      
-                |  RETURN error PUNTOYCOMA  
-                      ;
+sentReturn     ::= RETURN expresion;
 
 // Sentencias de Asignacion
-sentAsign     ::= variables DOSPUNTOSIGUAL expresion
-                      
-                | variables error PUNTOYCOMA 
-                      ;
+sentAsign     ::= variables DOSPUNTOSIGUAL expresion;
                       
 // Sentencia IF-ELSE
-sentIf        ::= IF expresion THEN sentencias sentElse END
-                      
-                | IF expresion error
-                      
-                | IF error PUNTOYCOMA;
+sentIf        ::= IF expresion THEN sentencias sentElse END;
                       
 sentElse      ::= ELSE sentencias
-                      
-                |  // epsilon
-                      ;
+                |;
 
 // Sentencia FOR
-sentFor       ::= FOR IDENTIFICADOR DOSPUNTOSIGUAL expresion TO expresion DO sentencias END
-                      
-                | FOR IDENTIFICADOR DOSPUNTOSIGUAL expresion TO expresion error PUNTOYCOMA 
-                      
-                | FOR error PUNTOYCOMA;
+sentFor       ::= FOR IDENTIFICADOR DOSPUNTOSIGUAL expresion TO expresion DO sentencias END;
 
 // Sentencia llamada Funcion o Procedimiento
 sentProcedure ::= IDENTIFICADOR
-
                 | IDENTIFICADOR parFuncion;
                   
 // Parametros de llamada a función
 parFuncion    ::= PARENIZQ parametros PARENDER
-                      
-                | PARENIZQ PARENDER
-                      
-                | PARENIZQ error;
+                | PARENIZQ PARENDER;
 
 parametros    ::= parametros COMA expresion
-                      
                 | expresion;
 
 // Sentencias de Salida.
-sWriteString  ::= WRITESTRING PARENIZQ STRING PARENDER
-                | WRITESTRING error PUNTOYCOMA;
+sWriteString  ::= WRITESTRING PARENIZQ STRING PARENDER;
 
-sWriteInt     ::= WRITEINT PARENIZQ expresion PARENDER
-                      
-                | WRITEINT error PUNTOYCOMA;
+sWriteInt     ::= WRITEINT PARENIZQ expresion PARENDER;
 
 sWriteLn      ::= WRITELN;
 
