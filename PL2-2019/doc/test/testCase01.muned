@@ -15,19 +15,19 @@ MODULE uno;
    	bol2 : BOOLEAN;
    	bol3 : TVector;
 
-   PROCEDURE Restar (a,b: INTEGER) : INTEGER;
-    	VAR s: INTEGER;
+   PROCEDURE Restar (arestar,brestar: INTEGER) : INTEGER;
+    	VAR srestar: INTEGER;
    	BEGIN
-   		s := a-b;
-   		RETURN s;
+   		srestar := arestar-brestar;
+   		RETURN srestar;
    END Restar;
 
-   PROCEDURE Restara(a,b: INTEGER) : INTEGER;
-        	VAR s: INTEGER;
+   PROCEDURE Sumar(asumar,bsumar: INTEGER) : INTEGER;
+        	VAR ssumar: INTEGER;
        	BEGIN
-       		s := a-b;
-       		RETURN s;
-    END Restara;
+       		ssumar := asumar-bsumar;
+       		RETURN ssumar;
+    END Sumar;
 
   BEGIN
 
