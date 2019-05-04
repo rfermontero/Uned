@@ -5,6 +5,7 @@ public class CabProcedure extends NonTerminal {
 	private final String identificador;
 	private final ProcParenParam procParemParam;
 	private final TipoRetorno tipoRetorno;
+	private Cuerpo cuerpo;
 
 	public CabProcedure(String identificador, ProcParenParam procParenParam, TipoRetorno tipoRetorno) {
 		super();
@@ -23,5 +24,13 @@ public class CabProcedure extends NonTerminal {
 
 	public TipoRetorno getTipoRetorno() {
 		return tipoRetorno;
+	}
+
+	public void addCuerpo(Cuerpo cuerpo) {
+		this.cuerpo = cuerpo;
+	}
+
+	public Cuerpo getCuerpo() {
+		return cuerpo;
 	}
 }

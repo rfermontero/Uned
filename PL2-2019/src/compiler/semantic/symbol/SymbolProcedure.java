@@ -1,6 +1,6 @@
 package compiler.semantic.symbol;
 
-import compiler.syntax.nonTerminal.StmSubprogram;
+import compiler.syntax.nonTerminal.CabProcedure;
 import es.uned.lsi.compiler.semantic.ScopeIF;
 import es.uned.lsi.compiler.semantic.symbol.SymbolBase;
 import es.uned.lsi.compiler.semantic.type.TypeIF;
@@ -9,13 +9,9 @@ import es.uned.lsi.compiler.semantic.type.TypeIF;
  * Class for SymbolProcedure.
  */
 
-// TODO: Student work
-//       Include properties to characterize procedure calls
+public class SymbolProcedure extends SymbolBase {
 
-public class SymbolProcedure
-		extends SymbolBase {
-
-	private final StmSubprogram stmSubprogram;
+	private final CabProcedure cabProcedure;
 
 	/**
 	 * Constructor for SymbolProcedure.
@@ -26,13 +22,13 @@ public class SymbolProcedure
 	 */
 	public SymbolProcedure(ScopeIF scope,
 	                       String name,
-	                       StmSubprogram stmSubprogram,
+	                       CabProcedure cabProcedure,
 	                       TypeIF type) {
 		super(scope, name, type);
-		this.stmSubprogram = stmSubprogram;
+		this.cabProcedure = cabProcedure;
 	}
 
-	public StmSubprogram getStmSubprogram() {
-		return stmSubprogram;
+	public CabProcedure getProcedure() {
+		return cabProcedure;
 	}
 }

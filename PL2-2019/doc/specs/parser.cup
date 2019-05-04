@@ -305,21 +305,18 @@ cuerpo        ::= stmConstantes:stmConstantes stmTipos:stmTipos stmVar:stmVar st
 
                   //Subprograms
 
-                  if(stmSubprogram.getCuerpo()!=null && stmSubprogram.getCabProcedure()!=null) {
-                    checkSymbolDoesNotExists(stmSubprogram.getCabProcedure().getIdentificador());
-                    SymbolIF symbol  = null;
-
-                    if(stmSubprogram.getCabProcedure().getTipoRetorno().getIntOBool() == null) {//Is function
-                        symbol = new SymbolFunction(getCurrentScope(), stmSubprogram.getCabProcedure().getIdentificador(),
-                            stmSubprogram, new TypeFunction(getCurrentScope()));
-                    } else {
-                        symbol = new SymbolProcedure(getCurrentScope(), stmSubprogram.getCabProcedure().getIdentificador(),
-                            stmSubprogram, new TypeFunction(getCurrentScope()));
+                  for (CabProcedure procedure : stmSubprogram.getProcedures()) {
+                        checkSymbolDoesNotExists(procedure.getIdentificador());
+                        SymbolIF symbol  = null;
+                        if(procedure.getTipoRetorno().getIntOBool() == null) {//Is function
+                            symbol = new SymbolFunction(getCurrentScope(), procedure.getIdentificador(),
+                            procedure, new TypeFunction(getCurrentScope()));
+                        } else {
+                            symbol = new SymbolProcedure(getCurrentScope(), procedure.getIdentificador(),
+                            procedure, new TypeFunction(getCurrentScope()));
+                        }
+                        addSymbol(procedure.getIdentificador(), symbol);
                     }
-
-                     addSymbol(stmSubprogram.getCabProcedure().getIdentificador(), symbol);
-
-                  }
 
                    RESULT = new Cuerpo(stmConstantes, stmTipos, stmVar, stmSubprogram, sentencias);
                    closeCurrentScope();
@@ -437,10 +434,7 @@ stmSubprogram  ::= cabProcedure:cabProcedure
                    cuerpo:cuerpo
                    stmSubprogram:stmSubprogram
                 {:
-                    System.out.println(stmSubprogram);
-                  stmSubprogram = stmSubprogram.addCuerpoAndProcedure(cuerpo, cabProcedure);
-                                      System.out.println(stmSubprogram);
-
+                  stmSubprogram.addCuerpoAndProcedure(cuerpo, cabProcedure);
                   RESULT = stmSubprogram;
                 :}
                 |

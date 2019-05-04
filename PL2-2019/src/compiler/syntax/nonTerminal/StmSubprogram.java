@@ -1,26 +1,23 @@
 package compiler.syntax.nonTerminal;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class StmSubprogram extends NonTerminal {
 
-	private Cuerpo cuerpo;
-	private CabProcedure cabProcedure;
+	private List<CabProcedure> procedures;
 
 	public StmSubprogram() {
 		super();
+		procedures = new ArrayList<>();
 	}
 
-	public StmSubprogram addCuerpoAndProcedure(Cuerpo cuerpo, CabProcedure cabProcedure) {
-		this.cabProcedure = cabProcedure;
-		this.cuerpo = cuerpo;
-		return this;
+	public void addCuerpoAndProcedure(Cuerpo cuerpo, CabProcedure cabProcedure) {
+		cabProcedure.addCuerpo(cuerpo);
+		procedures.add(cabProcedure);
 	}
 
-
-	public Cuerpo getCuerpo() {
-		return cuerpo;
-	}
-
-	public CabProcedure getCabProcedure() {
-		return cabProcedure;
+	public List<CabProcedure> getProcedures(){
+		return procedures;
 	}
 }

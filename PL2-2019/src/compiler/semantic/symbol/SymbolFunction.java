@@ -1,5 +1,6 @@
 package compiler.semantic.symbol;
 
+import compiler.syntax.nonTerminal.CabProcedure;
 import compiler.syntax.nonTerminal.StmSubprogram;
 import es.uned.lsi.compiler.semantic.ScopeIF;
 import es.uned.lsi.compiler.semantic.type.TypeIF;
@@ -19,12 +20,12 @@ public class SymbolFunction extends SymbolProcedure {
 	 */
 	public SymbolFunction(ScopeIF scope,
 	                      String name,
-	                      StmSubprogram stmSubprogram,
+	                      CabProcedure cabProcedure,
 	                      TypeIF type) {
-		super(scope, name, stmSubprogram, type);
+		super(scope, name, cabProcedure, type);
 	}
 
-	public StmSubprogram getStmSubprogram() {
-		return super.getStmSubprogram();
+	public CabProcedure getProcedure() {
+		return super.getProcedure();
 	}
 }
