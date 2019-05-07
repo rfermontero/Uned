@@ -2,7 +2,14 @@ package compiler.syntax.nonTerminal;
 
 public class SentReturn extends NonTerminal {
 
-	public SentReturn() {
+	private Expresion expresion;
+
+	public SentReturn(Expresion expresion) {
 		super();
+		this.expresion = expresion;
+	}
+
+	public Expresion getExpresion() {
+		return expresion;
 	}
 }

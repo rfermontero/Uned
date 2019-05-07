@@ -15,6 +15,7 @@ public class ProcListParam extends NonTerminal {
 
 	public ProcListParam() {
 		super();
+		this.procParam = new ArrayList<>();
 	}
 
 	public List<ProcParam> getProcListParam() {

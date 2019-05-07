@@ -304,7 +304,6 @@ cuerpo        ::= stmConstantes:stmConstantes stmTipos:stmTipos stmVar:stmVar st
 
 
                   //Subprograms
-
                   for (CabProcedure procedure : stmSubprogram.getProcedures()) {
                         checkSymbolDoesNotExists(procedure.getIdentificador());
                         SymbolIF symbol  = null;
@@ -469,14 +468,12 @@ procListParam  ::= procParam:procParam PUNTOYCOMA procListParam:procListParam
                 |
                 {:
                     RESULT = new ProcListParam();
-                :}
-                ;
+                :};
 
 procParam      ::= cadIdVar:cadIdVar DOSPUNTOS tipoVar:tipoVar
                 {:
                   RESULT = new ProcParam(cadIdVar, tipoVar);
-                :}
-                |  cadIdVar error PUNTOYCOMA;
+                :};
 
 tipoRetorno    ::= DOSPUNTOS intOBool:intOBool
                   {:
@@ -507,54 +504,139 @@ exprLogica    ::= expresion MAYOR expresion
                       ;
 
 // Reglas para sentencias.
-sentencias    ::= listSentencia PUNTOYCOMA
-                | listSentencia
-                |;
+sentencias    ::= listSentencia:listSentencia PUNTOYCOMA
+                {:
+                   RESULT = new Sentencias(listSentencia);
+                :}
+                | listSentencia:listSentencia
+                {:
+                   RESULT = new Sentencias(listSentencia);
+                :}
+                |
+                {:
+                  RESULT = new Sentencias();
+                :};
 
-listSentencia ::= listSentencia PUNTOYCOMA sentencia
-                | sentencia;
+listSentencia ::= listSentencia:listSentencia PUNTOYCOMA sentencia:sentencia
+                {:
+                    listSentencia.addSentencia(sentencia);
+                :}
+                | sentencia:sentencia
+                {:
+                    RESULT = new ListSentencia(sentencia);
+                :};
 
-sentencia     ::= sentAsign
-                | sentIf
-                | sentFor
-                | sentReturn
-                | sWriteString
-                | sWriteInt
-                | sWriteLn
-                | sentProcedure ;
+sentencia     ::= sentAsign:sentAsign
+                 {:
+                    RESULT = new Sentencia(sentAsign);
+                 :}
+                | sentIf:sentIf
+                {:
+                  RESULT = new Sentencia(sentIf);
+                :}
+                | sentFor:sentFor
+                {:
+                  RESULT = new Sentencia(sentFor);
+                :}
+                | sentReturn:sentReturn
+                {:
+                  RESULT = new Sentencia(sentReturn);
+                :}
+                | sWriteString:sWriteString
+                {:
+                  RESULT = new Sentencia(sWriteString);
+                :}
+                | sWriteInt:sWriteInt
+                {:
+                  RESULT = new Sentencia(sWriteInt);
+                :}
+                | sWriteLn:sWriteLn
+                {:
+                  RESULT = new Sentencia(sWriteLn);
+                :}
+                | sentProcedure:sentProcedure
+                {:
+                  RESULT = new Sentencia(sentProcedure);
+                :};
 
 // Sentencias Return
-sentReturn     ::= RETURN expresion;
+sentReturn     ::= RETURN expresion:expresion
+                {:
+                   RESULT = new SentReturn(expresion);
+                :};
 
 // Sentencias de Asignacion
-sentAsign     ::= variables DOSPUNTOSIGUAL expresion;
+sentAsign     ::= variables:variables DOSPUNTOSIGUAL expresion:expresion
+                {:
+                 RESULT = new SentAsign(variables, expresion);
+                :};
                       
 // Sentencia IF-ELSE
-sentIf        ::= IF expresion THEN sentencias sentElse END;
-                      
-sentElse      ::= ELSE sentencias
-                |;
+sentIf        ::= IF expresion:expresion THEN sentencias:sentencias sentElse:sentElse END
+                {:
+                  RESULT = new SentIf(expresion, sentencias, sentElse);
+
+                :};
+sentElse      ::= ELSE sentencias:sentencias
+                {:
+                   RESULT = new SentElse(sentencias);
+                :}
+                |
+                {:
+                   RESULT = new SentElse();
+                :};
 
 // Sentencia FOR
-sentFor       ::= FOR IDENTIFICADOR DOSPUNTOSIGUAL expresion TO expresion DO sentencias END;
+sentFor       ::= FOR IDENTIFICADOR:identificador DOSPUNTOSIGUAL expresion:expresionFrom TO expresion:expresionTo DO sentencias:sentencias END
+                {:
+                   RESULT = new SentFor(identificador.getLexema(), expresionFrom, expresionTo, sentencias);
+                :};
 
 // Sentencia llamada Funcion o Procedimiento
-sentProcedure ::= IDENTIFICADOR
-                | IDENTIFICADOR parFuncion;
+sentProcedure ::= IDENTIFICADOR:identificador
+                {:
+                 RESULT = new SentProcedure(identificador.getLexema());
+                :}
+                | IDENTIFICADOR:identificador parFuncion:parFuncion
+                {:
+                    RESULT = new SentProcedure(identificador.getLexema(), parFuncion);
+                :};
                   
 // Parametros de llamada a función
-parFuncion    ::= PARENIZQ parametros PARENDER
-                | PARENIZQ PARENDER;
+parFuncion    ::= PARENIZQ parametros:parametros PARENDER
+                {:
+                   RESULT = new ParFuncion(parametros);
+                :}
+                | PARENIZQ PARENDER
+                {:
+                   RESULT = new ParFuncion();
+                :};
 
-parametros    ::= parametros COMA expresion
-                | expresion;
+parametros    ::= parametros:parametros COMA expresion:expresion
+                {:
+                    parametros.addExpresion(expresion);
+                    RESULT = parametros;
+                :}
+                | expresion:expresion
+                {:
+                    RESULT = new Parametros(expresion);
+                :};
 
 // Sentencias de Salida.
-sWriteString  ::= WRITESTRING PARENIZQ STRING PARENDER;
+sWriteString  ::= WRITESTRING PARENIZQ STRING:string PARENDER
+                {:
+                    RESULT = new SWriteString(string.getLexema());
+                :};
 
-sWriteInt     ::= WRITEINT PARENIZQ expresion PARENDER;
+sWriteInt     ::= WRITEINT PARENIZQ expresion:expresion PARENDER
+                {:
+                    RESULT = new SWriteInt(expresion);
+                :};
 
-sWriteLn      ::= WRITELN;
+sWriteLn      ::= WRITELN
+                {:
+                RESULT = new SWriteLn();
+                :};
 
 // Tipos Basicos
 variables     ::= IDENTIFICADOR:identificador

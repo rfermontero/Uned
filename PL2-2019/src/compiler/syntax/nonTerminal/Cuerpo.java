@@ -16,4 +16,24 @@ public class Cuerpo extends NonTerminal {
 		this.stmSubprogram = stmSubprogram;
 		this.sentencias = sentencias;
 	}
+
+	public StmConstantes getStmConstantes() {
+		return stmConstantes;
+	}
+
+	public StmTipos getStmTipos() {
+		return stmTipos;
+	}
+
+	public StmVar getStmVar() {
+		return stmVar;
+	}
+
+	public StmSubprogram getStmSubprogram() {
+		return stmSubprogram;
+	}
+
+	public Sentencias getSentencias() {
+		return sentencias;
+	}
 }

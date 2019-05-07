@@ -15,7 +15,7 @@ MODULE uno;
    	bol2 : BOOLEAN;
    	bol3 : TVector;
 
-   PROCEDURE Restar (arestar,brestar: INTEGER) : INTEGER;
+   PROCEDURE Restar (arestar, brestar: INTEGER) : INTEGER;
     	VAR srestar: INTEGER;
    	BEGIN
    		srestar := arestar-brestar;

@@ -2,7 +2,15 @@ package compiler.syntax.nonTerminal;
 
 public class SWriteInt extends NonTerminal {
 
-	public SWriteInt() {
+	private Expresion expresion;
+
+	public SWriteInt(Expresion expresion) {
 		super();
+		this.expresion = expresion;
+	}
+
+
+	public Expresion getExpresion() {
+		return expresion;
 	}
 }

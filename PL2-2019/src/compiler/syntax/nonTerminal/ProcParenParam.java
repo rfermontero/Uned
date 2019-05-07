@@ -7,6 +7,7 @@ public class ProcParenParam extends NonTerminal {
 
 	public ProcParenParam() {
 		super();
+		this.procListParam = new ProcListParam();
 	}
 
 	public ProcParenParam(ProcListParam procListParam) {
