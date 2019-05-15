@@ -57,6 +57,23 @@ action code   {:
 		}
 	}
 
+	public void checkSymbolExists(String identifier){
+	        ScopeIF scope = scopeManager.getCurrentScope();
+    		SymbolTableIF symbolTable = scope.getSymbolTable();
+    	    if(!symbolTable.containsSymbol(identifier)){
+                semanticErrorManager.semanticFatalError("Identificador no existente");
+    		}
+	}
+
+	public void checkSymbolType(String identifier, Class symbolToCompare){
+    	        ScopeIF scope = scopeManager.getCurrentScope();
+        		SymbolTableIF symbolsTable = scope.getSymbolTable();
+        	    SymbolIF symbol = symbolsTable.getSymbol(identifier);
+        	    if(!symbol.getClass().equals(symbolToCompare)){
+        	       semanticErrorManager.semanticFatalError("Tipo de simbolo no esperado");
+        	    }
+    	}
+
 	public void checkTypeDoesNotExists(String identifier){
 	    ScopeIF scope = scopeManager.getCurrentScope();
         TypeTableIF typeTable = scope.getTypeTable();
@@ -84,7 +101,6 @@ action code   {:
                           scope = scope.getParentScope();
                           typeTable = scope.getTypeTable();
                           type = typeTable.getType(identifier);
-                          System.out.println("Searching type " + identifier);
                           if(type == null){
                             semanticErrorManager.semanticFatalError("Tipo no encontrado");
                           }
@@ -93,13 +109,19 @@ action code   {:
 
 
                 return type;
+    }
+
+    public void checkTypesAreSame(TypeIF typeLeft, TypeIF typeRigth){
+        if(typeLeft.getName() != typeRigth.getName()){
+            semanticErrorManager.semanticFatalError("Los tipos no corresponden al esperado");
         }
+    }
 
 	public void addSymbol(String identifier, SymbolIF symbol){
 	    ScopeIF scope = scopeManager.getCurrentScope();
         SymbolTableIF symbolTable = scope.getSymbolTable();
         symbolTable.addSymbol(identifier, symbol);
-        semanticErrorManager.semanticInfo("Added symbol " + identifier + " in " + scope);
+        semanticErrorManager.semanticInfo("Added symbol " + identifier + " with type" + symbol.getClass() + " in " + scope);
 	}
 
 	public void addType(String identifier, TypeIF type){
@@ -109,6 +131,43 @@ action code   {:
         semanticErrorManager.semanticInfo("Added type " + identifier + " in " + scope);
 	}
 
+	public SymbolIF getSymbol(String identificador){
+	   ScopeIF scope = scopeManager.getCurrentScope();
+       SymbolTableIF symbolTable = scope.getSymbolTable();
+       return symbolTable.getSymbol(identificador);
+	}
+
+	public TypeIF getExpresionTypeResult(Expresion expresion) {
+
+		TypeTableIF typeTable = getCurrentScope().getTypeTable();
+
+		if (expresion.getExpArit() != null) {
+			return typeTable.getType("int");
+		}
+
+		if (expresion.getExprLogica() != null) {
+			return typeTable.getType("boolean");
+		}
+
+		if (expresion.getVariables() != null) {
+
+			if (expresion.getVariables().getParFuncion()!= null && expresion.getVariables().getParFuncion().getParametros() !=null && expresion.getVariables().getParFuncion().getParametros().getExpresionList().size() > 0) {
+				return getExpresionTypeResult(expresion.getVariables().getParFuncion().getParametros().getExpresionList().get(0));
+			}
+
+			if (expresion.getVariables().getIdArray() != null) {
+				return getExpresionTypeResult(expresion.getVariables().getIdArray().getExpresion());
+			}
+
+			if (expresion.getVariables().getIdentificador() != null) {
+				SymbolTableIF symbolTableIF = getCurrentScope().getSymbolTable();
+				return symbolTableIF.getSymbol(expresion.getVariables().getIdentificador()).getType();
+			}
+		}
+
+
+		return getExpresionTypeResult(expresion.getExpresionList().get(0));
+	}
 :}
 
 parser code {:
@@ -244,20 +303,18 @@ program ::=
 
 
 axiom ::= cabModule:cabModule
-          cuerpo:cuerpo
-          | cabModule error;
+          cuerpo:cuerpo;
 
 // Cabecera de los modulos
 cabModule     ::= MODULE IDENTIFICADOR:identificador PUNTOYCOMA
                   {:
 
                    openScope("MODULE_" + identificador.getLexema());
-
                    //Add simple types
                    addType("boolean", new TypeSimple(getCurrentScope(), "boolean"));
                    addType("int", new TypeSimple(getCurrentScope(), "int"));
-
                    RESULT = new CabModule(identificador.getLexema());
+
                   :};
 
 // Cuerpo de los modulos y comun para procedimientos y funciones
@@ -299,23 +356,49 @@ cuerpo        ::= stmConstantes:stmConstantes stmTipos:stmTipos stmVar:stmVar st
                                 identificadorVariable, getType(expVar.getTipoVar().getIdentificadorTipo()));
                              addSymbol(identificadorVariable, symbolVariable);
                         }
-                    }
+                     }
                   }
 
+                   //Subprograms
+                   //Delegados a la declaracion
 
-                  //Subprograms
-                  for (CabProcedure procedure : stmSubprogram.getProcedures()) {
-                        checkSymbolDoesNotExists(procedure.getIdentificador());
-                        SymbolIF symbol  = null;
-                        if(procedure.getTipoRetorno().getIntOBool() == null) {//Is function
-                            symbol = new SymbolFunction(getCurrentScope(), procedure.getIdentificador(),
-                            procedure, new TypeFunction(getCurrentScope()));
-                        } else {
-                            symbol = new SymbolProcedure(getCurrentScope(), procedure.getIdentificador(),
-                            procedure, new TypeFunction(getCurrentScope()));
+
+                     //Sentencias
+                     for(Sentencia sentencia : sentencias.getListSentencia().getSentenciaList()) {
+
+                        switch(sentencia.getType()) {
+
+                            case PROCEDURE:
+                                SentProcedure procedure = sentencia.getSentProcedure();
+                                String identificador = procedure.getIdentificador();
+                                //Comprobamos que el procedimiento ya existe en el scope
+                                checkSymbolExists(identificador);
+
+                                checkSymbolType(identificador, SymbolProcedure.class);
+
+                                //Comprobamos que los parametros son correctos
+
+                                //Obtenemos el simbolo en la tabla de simbolos
+                                SymbolProcedure symbol = (SymbolProcedure) getSymbol(identificador);
+
+                                for(int i=0;i<symbol.getCabProcedure().getProcParemParam().getProcListParam().getProcListParam().size();i++) {
+
+                                    //Comprobamos en base a la definicion
+                                    ProcParam procParam = symbol.getCabProcedure().getProcParemParam().getProcListParam().getProcListParam().get(i);
+                                    CadIdVar cadIdVar = procParam.getCadIdVar();
+                                    TipoVar tipoVar   = procParam.getTipoVar();
+
+                                    for(int j=0;j<cadIdVar.getIdentificadores().size();j++){
+                                        checkTypesAreSame(getType(tipoVar.getIdentificadorTipo()), getExpresionTypeResult(procedure.getParFuncion().getParametros().getExpresionList().get(j)));
+                                    }
+                                }
+
+                                break;
                         }
-                        addSymbol(procedure.getIdentificador(), symbol);
-                    }
+
+
+
+                     }
 
                    RESULT = new Cuerpo(stmConstantes, stmTipos, stmVar, stmSubprogram, sentencias);
                    closeCurrentScope();
@@ -443,8 +526,18 @@ stmSubprogram  ::= cabProcedure:cabProcedure
                 
 cabProcedure   ::= PROCEDURE IDENTIFICADOR:identificador procParenParam:procParenParam tipoRetorno:tipoRetorno PUNTOYCOMA
                   {:
-                   openScope("PROCEDURE_"+identificador.getLexema());
-                   RESULT = new CabProcedure(identificador.getLexema(), procParenParam, tipoRetorno);
+                       checkSymbolDoesNotExists(identificador.getLexema());
+                       SymbolIF symbol  = null;
+                       RESULT = new CabProcedure(identificador.getLexema(), procParenParam, tipoRetorno);
+                       if(tipoRetorno.getIntOBool() == null) {//Is function
+                            symbol = new SymbolFunction(getCurrentScope(), identificador.getLexema(),
+                            RESULT, new TypeFunction(getCurrentScope()));
+                       } else { //Is procedure
+                            symbol = new SymbolProcedure(getCurrentScope(), identificador.getLexema(),
+                            RESULT, new TypeProcedure(getCurrentScope()));
+                       }
+                       addSymbol(identificador.getLexema(), symbol);
+                       openScope("PROCEDURE_"+identificador.getLexema());
                   :};
 
 procParenParam ::= PARENIZQ procListParam:procListParam PARENDER
@@ -485,23 +578,45 @@ tipoRetorno    ::= DOSPUNTOS intOBool:intOBool
                  :};
 
 // expresion logicas y aritmeticas.
-expresion     ::= exprArit
-                | exprLogica
-                | PARENIZQ expresion PARENDER
-                | variables;
+expresion     ::= exprArit:exprArit
+                {:
+                 RESULT = new Expresion(exprArit);
+                :}
+                | exprLogica:exprLogica
+                {:
+                 RESULT = new Expresion(exprLogica);
+                :}
+                | PARENIZQ expresion:expresion PARENDER
+
+                {:
+                 expresion.addExpresion(expresion);
+                 RESULT = expresion;
+                :}
+                | variables:variables
+                {:
+                 RESULT = new Expresion(variables);
+                :};
 
 // Reglas de produccion para expresiones aritmeticas.
-exprArit      ::= expresion MINUS expresion
-                | expresion PRODUCTO expresion
-                | ENTERO;
+exprArit      ::= expresion:expresionl MINUS expresion:expresionr
+                {:
+                 RESULT = new ExpArit(expresionl, "-", expresionr);
+                :}
+                | expresion:expresionl PRODUCTO expresion:expresionr
+                {:
+                    RESULT = new ExpArit(expresionl, "*", expresionr);
+                :}
+                | ENTERO:ENTERO
+                {:
+                  RESULT = new ExpArit(Integer.parseInt(ENTERO.getLexema()));
+                :};
 
 // Reglas de produccion para expresiones logicas.
 exprLogica    ::= expresion MAYOR expresion
                 | expresion IGUAL expresion
                 | expresion OR expresion
                 | NOT expresion
-                | vBooleano
-                      ;
+                | vBooleano;
 
 // Reglas para sentencias.
 sentencias    ::= listSentencia:listSentencia PUNTOYCOMA
@@ -520,6 +635,7 @@ sentencias    ::= listSentencia:listSentencia PUNTOYCOMA
 listSentencia ::= listSentencia:listSentencia PUNTOYCOMA sentencia:sentencia
                 {:
                     listSentencia.addSentencia(sentencia);
+                    RESULT = listSentencia;
                 :}
                 | sentencia:sentencia
                 {:
@@ -595,11 +711,11 @@ sentFor       ::= FOR IDENTIFICADOR:identificador DOSPUNTOSIGUAL expresion:expre
 // Sentencia llamada Funcion o Procedimiento
 sentProcedure ::= IDENTIFICADOR:identificador
                 {:
-                 RESULT = new SentProcedure(identificador.getLexema());
+                     RESULT = new SentProcedure(identificador.getLexema());
                 :}
                 | IDENTIFICADOR:identificador parFuncion:parFuncion
                 {:
-                    RESULT = new SentProcedure(identificador.getLexema(), parFuncion);
+                     RESULT = new SentProcedure(identificador.getLexema(), parFuncion);
                 :};
                   
 // Parametros de llamada a función

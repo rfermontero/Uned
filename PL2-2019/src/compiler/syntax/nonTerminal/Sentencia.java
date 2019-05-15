@@ -2,6 +2,8 @@ package compiler.syntax.nonTerminal;
 
 public class Sentencia extends NonTerminal {
 
+	private final SentenciaType type;
+
 	private SentFor sentFor;
 	private SentProcedure sentProcedure;
 	private SWriteLn sWriteLn;
@@ -14,41 +16,49 @@ public class Sentencia extends NonTerminal {
 	public Sentencia(SentAsign sentAsign) {
 		super();
 		this.sentAsign = sentAsign;
+		this.type = SentenciaType.ASIGN;
 	}
 
 	public Sentencia(SentIf sentIf) {
 		super();
 		this.sentIf = sentIf;
+		this.type = SentenciaType.IF;
 	}
 
 	public Sentencia(SentReturn sentReturn) {
 		super();
 		this.sentReturn = sentReturn;
+		this.type = SentenciaType.RETURN;
 	}
 
 	public Sentencia(SWriteString sWriteString) {
 		super();
 		this.sWriteString = sWriteString;
+		this.type = SentenciaType.SWRITE;
 	}
 
 	public Sentencia(SWriteInt sWriteInt) {
 		super();
 		this.sWriteInt = sWriteInt;
+		this.type = SentenciaType.INTWRITE;
 	}
 
 	public Sentencia(SentFor sentFor) {
 		super();
 		this.sentFor = sentFor;
+		this.type = SentenciaType.FOR;
 	}
 
 	public Sentencia(SWriteLn sWriteLn) {
 		super();
 		this.sWriteLn = sWriteLn;
+		this.type = SentenciaType.LNWRITE;
 	}
 
 	public Sentencia(SentProcedure sentProcedure) {
 		super();
 		this.sentProcedure = sentProcedure;
+		this.type = SentenciaType.PROCEDURE;
 	}
 
 	public SentProcedure getSentProcedure() {
@@ -109,5 +119,13 @@ public class Sentencia extends NonTerminal {
 
 	public SentFor getSentFor() {
 		return sentFor;
+	}
+
+	public SentenciaType getType() {
+		return type;
+	}
+
+	public enum SentenciaType {
+		FOR, ASIGN, IF, SWRITE, RETURN, INT, LNWRITE, INTWRITE, PROCEDURE
 	}
 }

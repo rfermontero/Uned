@@ -5,15 +5,12 @@ import java.util.List;
 
 public class Parametros extends NonTerminal {
 
-	private final List<Expresion> expresionList;
+	private final List<Expresion> expresionList  = new ArrayList<>();
 
 	public Parametros() {
-		super();
-		this.expresionList = new ArrayList<>();
 	}
 
 	public Parametros(Expresion expresion){
-		this.expresionList = new ArrayList<>();
 		this.expresionList.add(expresion);
 	}
 
@@ -23,5 +20,12 @@ public class Parametros extends NonTerminal {
 
 	public List<Expresion> getExpresionList() {
 		return expresionList;
+	}
+
+	@Override
+	public String toString() {
+		return "Parametros{" +
+				"expresionList=" + expresionList +
+				'}';
 	}
 }

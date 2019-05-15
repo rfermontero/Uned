@@ -22,7 +22,7 @@ MODULE uno;
    		RETURN srestar;
    END Restar;
 
-   PROCEDURE Sumar(asumar,bsumar: INTEGER) : INTEGER;
+   PROCEDURE Sumar(asumar, bsumar: INTEGER) : INTEGER;
         	VAR ssumar: INTEGER;
        	BEGIN
        		ssumar := asumar-bsumar;
@@ -30,5 +30,7 @@ MODULE uno;
     END Sumar;
 
   BEGIN
+
+    Restar(mult, a2-a2);
 
   END uno;

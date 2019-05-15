@@ -6,6 +6,7 @@ public class Sentencias extends NonTerminal {
 
 	public Sentencias() {
 		super();
+		this.listSentencia = new ListSentencia();
 	}
 
 	public Sentencias(ListSentencia listSentencia) {

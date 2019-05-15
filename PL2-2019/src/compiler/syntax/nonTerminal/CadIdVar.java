@@ -20,4 +20,11 @@ public class CadIdVar extends NonTerminal {
 	public void addIdentificador(String identificador) {
 		this.identificadores.add(identificador);
 	}
+
+	@Override
+	public String toString() {
+		return "CadIdVar{" +
+				"identificadores=" + identificadores +
+				'}';
+	}
 }

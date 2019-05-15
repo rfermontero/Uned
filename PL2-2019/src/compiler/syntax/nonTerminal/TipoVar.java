@@ -34,4 +34,12 @@ public class TipoVar extends NonTerminal {
 	public boolean esTipoCustom() {
 		return identificador != null;
 	}
+
+	@Override
+	public String toString() {
+		return "TipoVar{" +
+				"intOBool=" + intOBool +
+				", identificador='" + identificador + '\'' +
+				'}';
+	}
 }

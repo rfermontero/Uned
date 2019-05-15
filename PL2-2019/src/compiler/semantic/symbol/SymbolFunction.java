@@ -24,8 +24,4 @@ public class SymbolFunction extends SymbolProcedure {
 	                      TypeIF type) {
 		super(scope, name, cabProcedure, type);
 	}
-
-	public CabProcedure getProcedure() {
-		return super.getProcedure();
-	}
 }

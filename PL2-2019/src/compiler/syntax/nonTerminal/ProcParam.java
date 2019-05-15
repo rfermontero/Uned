@@ -19,4 +19,11 @@ public class ProcParam extends NonTerminal {
 		return this.tipoVar;
 	}
 
+	@Override
+	public String toString() {
+		return "ProcParam{" +
+				"cadIdVar=" + cadIdVar +
+				", tipoVar=" + tipoVar +
+				'}';
+	}
 }

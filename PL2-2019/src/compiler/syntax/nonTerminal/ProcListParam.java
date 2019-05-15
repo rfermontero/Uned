@@ -25,4 +25,11 @@ public class ProcListParam extends NonTerminal {
 	public void addProcParam(ProcParam procParam) {
 		this.procParam.add(procParam);
 	}
+
+	@Override
+	public String toString() {
+		return "ProcListParam{" +
+				"procParam=" + procParam +
+				'}';
+	}
 }

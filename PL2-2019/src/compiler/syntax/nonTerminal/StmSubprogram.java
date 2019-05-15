@@ -20,4 +20,11 @@ public class StmSubprogram extends NonTerminal {
 	public List<CabProcedure> getProcedures(){
 		return procedures;
 	}
+
+	@Override
+	public String toString() {
+		return "StmSubprogram{" +
+				"procedures=" + procedures +
+				'}';
+	}
 }

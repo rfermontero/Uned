@@ -8,4 +8,15 @@ public class IdArray extends NonTerminal {
 		super();
 		this.expresion = expresion;
 	}
+
+	public Expresion getExpresion() {
+		return expresion;
+	}
+
+	@Override
+	public String toString() {
+		return "IdArray{" +
+				"expresion=" + expresion +
+				'}';
+	}
 }

@@ -28,7 +28,7 @@ public class SymbolProcedure extends SymbolBase {
 		this.cabProcedure = cabProcedure;
 	}
 
-	public CabProcedure getProcedure() {
+	public CabProcedure getCabProcedure() {
 		return cabProcedure;
 	}
 }

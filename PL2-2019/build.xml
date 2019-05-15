@@ -93,6 +93,7 @@
 	<!-- Syntax Test -->
 	<target name="cupTest" depends="build">
 		<java classpath="${classpath}" classname="compiler.test.SyntaxTestCase" fork="true">
+			<jvmarg value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"/>
 			<arg file="${test-file}"/>
 		</java>
 	</target>

@@ -16,4 +16,11 @@ public class ParFuncion extends NonTerminal {
 	public Parametros getParametros() {
 		return parametros;
 	}
+
+	@Override
+	public String toString() {
+		return "ParFuncion{" +
+				"parametros=" + parametros +
+				'}';
+	}
 }

@@ -20,4 +20,25 @@ public class Variables extends NonTerminal {
 		super();
 		this.idArray = idArray;
 	}
+
+	public IdArray getIdArray() {
+		return idArray;
+	}
+
+	public ParFuncion getParFuncion() {
+		return parFuncion;
+	}
+
+	public String getIdentificador() {
+		return identificador;
+	}
+
+	@Override
+	public String toString() {
+		return "Variables{" +
+				"idArray=" + idArray +
+				", parFuncion=" + parFuncion +
+				", identificador='" + identificador + '\'' +
+				'}';
+	}
 }
