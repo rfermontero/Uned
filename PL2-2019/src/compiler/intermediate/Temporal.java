@@ -7,8 +7,8 @@ import es.uned.lsi.compiler.semantic.ScopeIF;
  * Class for temporal variables within the intermediate code.
  */
 
-public class Temporal
-		implements TemporalIF {
+public class Temporal implements TemporalIF {
+	
 	private String name = null;
 	private ScopeIF scope = null;
 	private int address = 0;

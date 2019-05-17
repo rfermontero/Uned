@@ -2,15 +2,18 @@ package compiler.intermediate;
 
 import es.uned.lsi.compiler.intermediate.VariableIF;
 import es.uned.lsi.compiler.semantic.ScopeIF;
+import es.uned.lsi.compiler.semantic.symbol.*;
+import compiler.semantic.symbol.*;
 
 /**
  * Class for variables in intermediate code.
  */
 
-public class Variable
-		implements VariableIF {
+public class Variable implements VariableIF {
+
 	private String name = null;
 	private ScopeIF scope = null;
+	private SymbolIF symbol = null;
 
 	/**
 	 * Constructor for Variable.
@@ -23,6 +26,11 @@ public class Variable
 		this.name = name;
 		this.scope = scope;
 	}
+
+	public Variable(SymbolIF symbol) {
+        this(symbol.getName(), symbol.getScope());
+        this.symbol = symbol;
+    }
 
 	/**
 	 * Returns the name.

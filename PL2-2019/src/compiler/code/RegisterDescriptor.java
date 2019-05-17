@@ -12,7 +12,7 @@ import java.util.Set;
  * Class for the Register Descriptors.
  */
 
-public class RegisterDescriptor
+public class    RegisterDescriptor
 		implements RegisterDescriptorIF {
 	private Map<String, Set<OperandIF>> descriptor;
 

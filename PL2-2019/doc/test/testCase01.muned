@@ -1,6 +1,6 @@
 MODULE siete;
     
-  VAR 	
+  VAR
   		a1:INTEGER;
   		b1:INTEGER;
   
