@@ -4,6 +4,7 @@ package compiler.syntax.nonTerminal;
  * Abstract Class for Axiom non terminal.
  */
 public abstract class Axiom extends NonTerminal {
+
 	private final CabModule cabModule;
 	private final Cuerpo cuerpo;
 
@@ -14,5 +15,13 @@ public abstract class Axiom extends NonTerminal {
 		super();
 		this.cabModule = cabModule;
 		this.cuerpo = cuerpo;
+	}
+
+	@Override
+	public String toString() {
+		return "Axiom{" +
+				"cabModule=" + cabModule +
+				", cuerpo=" + cuerpo +
+				'}';
 	}
 }

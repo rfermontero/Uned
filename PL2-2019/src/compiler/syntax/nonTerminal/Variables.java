@@ -11,14 +11,16 @@ public class Variables extends NonTerminal {
 		this.identificador = identificador;
 	}
 
-	public Variables(ParFuncion parFuncion) {
+	public Variables(String identificador, ParFuncion parFuncion) {
 		super();
 		this.parFuncion = parFuncion;
+		this.identificador = identificador;
 	}
 
-	public Variables(IdArray idArray) {
+	public Variables(String identificador, IdArray idArray) {
 		super();
 		this.idArray = idArray;
+		this.identificador = identificador;
 	}
 
 	public IdArray getIdArray() {

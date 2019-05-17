@@ -18,6 +18,18 @@ public class ExpArit extends NonTerminal {
 		this.value = value;
 	}
 
+	public Integer getFinalValue() {
+		if (value != null) {
+			return value;
+		} else {
+			if (operacion.equals("-")) {
+				return (int) expresionl.getValue() - (int) expresionr.getValue();
+			} else {
+				return (int) expresionl.getValue() * (int) expresionr.getValue();
+			}
+		}
+	}
+
 	public Integer getValue() {
 		return value;
 	}

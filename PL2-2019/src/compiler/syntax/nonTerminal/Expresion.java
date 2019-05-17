@@ -1,11 +1,5 @@
 package compiler.syntax.nonTerminal;
 
-import compiler.CompilerContext;
-import es.uned.lsi.compiler.semantic.ScopeManagerIF;
-import es.uned.lsi.compiler.semantic.symbol.SymbolTableIF;
-import es.uned.lsi.compiler.semantic.type.TypeIF;
-import es.uned.lsi.compiler.semantic.type.TypeTableIF;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,6 +45,16 @@ public class Expresion extends NonTerminal {
 
 	public List<Expresion> getExpresionList() {
 		return this.expresionList;
+	}
+
+	public Object getValue() {
+		if (expArit != null) {
+			return expArit.getFinalValue();
+		}
+		if (exprLogica != null) {
+			return exprLogica.getFinalValue();
+		}
+		return 1;
 	}
 
 	@Override

@@ -8,11 +8,7 @@ import es.uned.lsi.compiler.semantic.type.TypeIF;
  * Class for SymbolVariable.
  */
 
-// TODO: Student work
-//       Include properties to characterize variables
-
-public class SymbolVariable
-		extends SymbolBase {
+public class SymbolVariable extends SymbolBase {
 
 	/**
 	 * Constructor for SymbolVariable.

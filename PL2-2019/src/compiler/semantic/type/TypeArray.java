@@ -1,5 +1,6 @@
 package compiler.semantic.type;
 
+import compiler.syntax.nonTerminal.ExpTipo;
 import es.uned.lsi.compiler.semantic.ScopeIF;
 import es.uned.lsi.compiler.semantic.type.TypeBase;
 
@@ -7,20 +8,9 @@ import es.uned.lsi.compiler.semantic.type.TypeBase;
  * Class for TypeArray.
  */
 
-// TODO: Student work
-//       Include properties to characterize array type
+public class TypeArray extends TypeBase {
 
-public class TypeArray
-		extends TypeBase {
-
-	/**
-	 * Constructor for TypeArray.
-	 *
-	 * @param scope The declaration scope.
-	 */
-	public TypeArray(ScopeIF scope) {
-		super(scope);
-	}
+	private final ExpTipo expTipo;
 
 	/**
 	 * Constructor for TypeArray.
@@ -28,8 +18,9 @@ public class TypeArray
 	 * @param scope The declaration scope.
 	 * @param name  The name of the type.
 	 */
-	public TypeArray(ScopeIF scope, String name) {
+	public TypeArray(ScopeIF scope, String name, ExpTipo expTipo) {
 		super(scope, name);
+		this.expTipo = expTipo;
 	}
 
 	/**
@@ -39,7 +30,10 @@ public class TypeArray
 	 */
 	@Override
 	public int getSize() {
-		// TODO: Student work
-		return 1;
+		return expTipo.getRigth().getValue();
+	}
+
+	public ExpTipo getExpTipo() {
+		return expTipo;
 	}
 }
