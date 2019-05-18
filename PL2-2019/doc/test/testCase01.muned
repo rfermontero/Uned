@@ -1,11 +1,12 @@
 MODULE siete;
-    
-  VAR
-  		a1:INTEGER;
-  		b1:INTEGER;
-  
+  VAR a1:BOOLEAN;
+  		b1:BOOLEAN;
   BEGIN
-	FOR a1:=1 TO 9 DO
-    	WRITESTRING("a1");
-    END;
+	a1:=TRUE;
+	b1:=FALSE;
+    IF NOT a1 THEN
+	  	WRITESTRING("TRUE");
+	  ELSE
+	  	WRITESTRING("2<1");
+	  END;   
   END siete;

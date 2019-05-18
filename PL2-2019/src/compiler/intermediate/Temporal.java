@@ -1,5 +1,6 @@
 package compiler.intermediate;
 
+import compiler.semantic.symbol.SymbolProcedure;
 import es.uned.lsi.compiler.intermediate.TemporalIF;
 import es.uned.lsi.compiler.semantic.ScopeIF;
 
@@ -8,10 +9,11 @@ import es.uned.lsi.compiler.semantic.ScopeIF;
  */
 
 public class Temporal implements TemporalIF {
-	
-	private String name = null;
-	private ScopeIF scope = null;
+
+	private String name;
+	private ScopeIF scope;
 	private int address = 0;
+	private SymbolProcedure enclosingSymbol;
 
 	/**
 	 * Constructor for Temporal.
@@ -25,7 +27,6 @@ public class Temporal implements TemporalIF {
 		this.name = name;
 		this.scope = scope;
 	}
-
 
 	/**
 	 * Constructor for Temporal.
@@ -79,6 +80,18 @@ public class Temporal implements TemporalIF {
 	@Override
 	public final void setAddress(int address) {
 		this.address = address;
+	}
+
+	public SymbolProcedure getEnclosingSymbol() {
+		return enclosingSymbol;
+	}
+
+
+	/**
+	 * @param enclosingSymbol the enclosingSymbol to set
+	 */
+	public void setEnclosingSymbol(SymbolProcedure enclosingSymbol) {
+		this.enclosingSymbol = enclosingSymbol;
 	}
 
 	/**

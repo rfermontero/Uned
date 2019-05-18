@@ -29,11 +29,11 @@ public class TypeSimple extends TypeBase {
 		super(scope, identifier);
 	}
 
-		/**
-		 * Returns the size of the type.
-		 *
-		 * @return the size of the type.
-		 */
+	/**
+	 * Returns the size of the type.
+	 *
+	 * @return the size of the type.
+	 */
 	@Override
 	public int getSize() {
 		ExecutionEnvironmentIF environment = CompilerContext.getExecutionEnvironment();

@@ -1,5 +1,6 @@
 package compiler.semantic.symbol;
 
+import es.uned.lsi.compiler.intermediate.TemporalIF;
 import es.uned.lsi.compiler.semantic.ScopeIF;
 import es.uned.lsi.compiler.semantic.symbol.SymbolBase;
 import es.uned.lsi.compiler.semantic.type.TypeIF;
@@ -8,11 +9,11 @@ import es.uned.lsi.compiler.semantic.type.TypeIF;
  * Class for SymbolVariable.
  */
 
-// TODO: Student work
-//       Include properties to characterize parameters
+public class SymbolParameter extends SymbolBase {
 
-public class SymbolParameter
-		extends SymbolBase {
+	private int address;
+	private TemporalIF temporal;
+	private SymbolProcedure enclosingSymbol;
 
 	/**
 	 * Constructor for SymbolParameter.
@@ -25,5 +26,29 @@ public class SymbolParameter
 	                       String name,
 	                       TypeIF type) {
 		super(scope, name, type);
+	}
+
+	public int getAddress() {
+		return address;
+	}
+
+	public void setAddress(int address) {
+		this.address = address;
+	}
+
+	public TemporalIF getTemporal() {
+		return temporal;
+	}
+
+	public void setTemporal(TemporalIF temporal) {
+		this.temporal = temporal;
+	}
+
+	public SymbolProcedure getEnclosingSymbol() {
+		return enclosingSymbol;
+	}
+
+	public void setEnclosingSymbol(SymbolProcedure enclosingSymbol) {
+		this.enclosingSymbol = enclosingSymbol;
 	}
 }

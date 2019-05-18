@@ -5,9 +5,10 @@ import java.util.List;
 
 public class ListSentencia extends NonTerminal {
 
-	private final List<Sentencia> sentenciaList =  new ArrayList<>();
+	private final List<Sentencia> sentenciaList = new ArrayList<>();
 
 	public ListSentencia() {
+		super();
 	}
 
 	public ListSentencia(Sentencia sentencia) {
@@ -15,7 +16,7 @@ public class ListSentencia extends NonTerminal {
 		this.sentenciaList.add(sentencia);
 	}
 
-	public void addSentencia(Sentencia sentencia){
+	public void addSentencia(Sentencia sentencia) {
 		this.sentenciaList.add(sentencia);
 	}
 

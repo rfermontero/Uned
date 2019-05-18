@@ -1,9 +1,10 @@
 package compiler.intermediate;
 
+import compiler.semantic.symbol.SymbolParameter;
+import compiler.semantic.symbol.SymbolVariable;
 import es.uned.lsi.compiler.intermediate.VariableIF;
 import es.uned.lsi.compiler.semantic.ScopeIF;
-import es.uned.lsi.compiler.semantic.symbol.*;
-import compiler.semantic.symbol.*;
+import es.uned.lsi.compiler.semantic.symbol.SymbolIF;
 
 /**
  * Class for variables in intermediate code.
@@ -11,9 +12,10 @@ import compiler.semantic.symbol.*;
 
 public class Variable implements VariableIF {
 
-	private String name = null;
-	private ScopeIF scope = null;
-	private SymbolIF symbol = null;
+	private String name;
+	private ScopeIF scope;
+	private SymbolIF symbol;
+	private int offset;
 
 	/**
 	 * Constructor for Variable.
@@ -25,12 +27,13 @@ public class Variable implements VariableIF {
 		super();
 		this.name = name;
 		this.scope = scope;
+		this.symbol = scope.getSymbolTable().getSymbol(name);
 	}
 
 	public Variable(SymbolIF symbol) {
-        this(symbol.getName(), symbol.getScope());
-        this.symbol = symbol;
-    }
+		this(symbol.getName(), symbol.getScope());
+		this.symbol = symbol;
+	}
 
 	/**
 	 * Returns the name.
@@ -59,8 +62,11 @@ public class Variable implements VariableIF {
 	 */
 	@Override
 	public final int getAddress() {
-		// TODO : Student Work
-		return 0;
+		if (symbol instanceof SymbolVariable) {
+			return ((SymbolVariable) symbol).getAddress();
+		} else {
+			return ((SymbolParameter) symbol).getAddress();
+		}
 	}
 
 	/**
@@ -70,8 +76,15 @@ public class Variable implements VariableIF {
 	 */
 	@Override
 	public final boolean isGlobal() {
-		// TODO : Student Work
-		return true;
+		return scope.getLevel() == 0;
+	}
+
+	public int getOffset() {
+		return offset;
+	}
+
+	public void setOffset(int offset) {
+		this.offset = offset;
 	}
 
 	/**

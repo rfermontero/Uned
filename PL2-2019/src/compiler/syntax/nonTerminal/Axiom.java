@@ -1,5 +1,7 @@
 package compiler.syntax.nonTerminal;
 
+import es.uned.lsi.compiler.intermediate.LabelIF;
+
 /**
  * Abstract Class for Axiom non terminal.
  */
@@ -24,4 +26,8 @@ public abstract class Axiom extends NonTerminal {
 				", cuerpo=" + cuerpo +
 				'}';
 	}
+
+	public abstract void setLabel(LabelIF label);
+
+	public abstract LabelIF getLabel();
 }
