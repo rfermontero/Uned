@@ -100,7 +100,6 @@ public class ExecutionEnvironmentEns2001 implements ExecutionEnvironmentIF {
 		String r;
 		String oper = quadruple.getOperation();
 		StringBuffer b = new StringBuffer();
-		System.out.println(oper);
 		b.append(";").append(quadruple.toString()).append(" \n");
 
 		if (oper.equals("ADD")) {

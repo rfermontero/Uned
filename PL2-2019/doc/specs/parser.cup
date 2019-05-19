@@ -95,7 +95,7 @@ action code   {:
                 TypeTableIF typeTable = scope.getTypeTable();
                 TypeIF type = typeTable.getType(identifier);
 
-                 if(type==null) {
+                 if (type==null) {
                     while(scope.getParentScope() != null){
                           scope = scope.getParentScope();
                           typeTable = scope.getTypeTable();
@@ -335,7 +335,7 @@ program ::=
 			  }
 			}
 
-       IntermediateCodeBuilder cb = new IntermediateCodeBuilder(currentScope);
+      IntermediateCodeBuilder cb = new IntermediateCodeBuilder(currentScope);
 		
       cb.addQuadruple("RESG", null, globalAddress + globalOffset, globalAddress);		
       cb.addQuadruple("BR", ax.getLabel());
@@ -593,7 +593,7 @@ tipoRetorno    ::= DOSPUNTOS intOBool:intOBool
                  :};
 
 // expresion logicas y aritmeticas.
-expresion     ::= exprArit:exprArit
+expresion      ::= exprArit:exprArit
                 {:
                   Expresion expresion = new Expresion(exprArit);
                 
@@ -690,7 +690,7 @@ exprArit      ::= expresion:expresionl MINUS expresion:expresionr
 // Reglas de produccion para expresiones logicas.
 exprLogica    ::= expresion:expresionl MAYOR expresion:expresionr
                 {:
-                  ExprLogica expLogica = new ExprLogica(expresionl, ">", expresionr);
+                   ExprLogica expLogica = new ExprLogica(expresionl, ">", expresionr);
                   
                     //Código intermedio
                   	TemporalFactoryIF tf = new TemporalFactory(getCurrentScope());
@@ -705,10 +705,12 @@ exprLogica    ::= expresion:expresionl MAYOR expresion:expresionr
                     expLogica.setIntermediateCode(cb.create());
                                 
                     RESULT = expLogica;
+
                 :}
                 | expresion:expresionl IGUAL expresion:expresionr
                 {:
                   ExprLogica expLogica = new ExprLogica(expresionl, "=", expresionr);
+
                    //Código intermedio
                   TemporalFactoryIF tf = new TemporalFactory(getCurrentScope());
                   IntermediateCodeBuilderIF cb = new IntermediateCodeBuilder(getCurrentScope());
@@ -751,11 +753,14 @@ exprLogica    ::= expresion:expresionl MAYOR expresion:expresionr
                   cb.addQuadruple("INL",l3);
                   expLogica.setTemporal(temp);
                   expLogica.setIntermediateCode(cb.create());
+
                   RESULT = expLogica;
                 :}
                 | NOT expresion:expresionl
                 {:
+                
                   ExprLogica expLogica = new ExprLogica(expresionl, "NOT");
+
                   //Ćdigo intermedio
                   TemporalFactoryIF tf = new TemporalFactory(getCurrentScope());
                   IntermediateCodeBuilderIF cb = new IntermediateCodeBuilder(getCurrentScope());
@@ -765,6 +770,7 @@ exprLogica    ::= expresion:expresionl MAYOR expresion:expresionr
                   cb.addQuadruple("NOT", temp, temp1);
                   expLogica.setTemporal(temp);
                   expLogica.setIntermediateCode(cb.create());
+
                   RESULT = expLogica;
                 :}
                 | vBooleano:vBooleano
@@ -786,6 +792,8 @@ exprLogica    ::= expresion:expresionl MAYOR expresion:expresionr
 // Reglas para sentencias.
 sentencias    ::= listSentencia:listSentencia PUNTOYCOMA
                 {:
+
+                  System.out.println(listSentencia);
                    Sentencias sentencias = new Sentencias(listSentencia);
 
                    //Código intermedio
@@ -793,17 +801,22 @@ sentencias    ::= listSentencia:listSentencia PUNTOYCOMA
                    IntermediateCodeBuilderIF cb = new IntermediateCodeBuilder(getCurrentScope());
                    cb.addQuadruples(listSentencia.getIntermediateCode());
                    sentencias.setIntermediateCode(cb.create());
+                   System.out.println(sentencias.getIntermediateCode());
 
                    RESULT = sentencias;
                 :}
                 | listSentencia:listSentencia
                 {:
+
+                   System.out.println(listSentencia);
                    Sentencias sentencias = new Sentencias(listSentencia);
                    //Código intermedio
                    TemporalFactoryIF tf = new TemporalFactory(getCurrentScope());
                    IntermediateCodeBuilderIF cb = new IntermediateCodeBuilder(getCurrentScope());
                    cb.addQuadruples(listSentencia.getIntermediateCode());
                    sentencias.setIntermediateCode(cb.create());
+                   System.out.println(sentencias.getIntermediateCode());
+
                    RESULT = sentencias;
                 :}
                 |
@@ -813,11 +826,12 @@ sentencias    ::= listSentencia:listSentencia PUNTOYCOMA
 
 listSentencia ::= listSentencia:listSentencia PUNTOYCOMA sentencia:sentencia
                 {:
-                    listSentencia.addSentencia(sentencia);
                     TemporalFactoryIF tf = new TemporalFactory(getCurrentScope());
                     IntermediateCodeBuilderIF cb = new IntermediateCodeBuilder(getCurrentScope());
+                    listSentencia.addSentencia(sentencia);
                     cb.addQuadruples(listSentencia.getIntermediateCode());
                     listSentencia.setIntermediateCode(cb.create());
+
                     RESULT = listSentencia;
                 :}
                 | sentencia:sentencia
@@ -830,7 +844,7 @@ listSentencia ::= listSentencia:listSentencia PUNTOYCOMA sentencia:sentencia
                    cb.addQuadruples(sentencia.getIntermediateCode());
                    listSentencia.setIntermediateCode(cb.create());
 
-                  RESULT = listSentencia;
+                   RESULT = listSentencia;
                 :};
 
 sentencia     ::= sentAsign:sentAsign
@@ -847,9 +861,9 @@ sentencia     ::= sentAsign:sentAsign
                  :}
                 | sentIf:sentIf
                 {:
-                  Sentencia sentencia = new Sentencia(sentIf);
+                   Sentencia sentencia = new Sentencia(sentIf);
 
-                    //Código intermedio
+                   //Código intermedio
                    TemporalFactoryIF tf = new TemporalFactory(getCurrentScope());
                    IntermediateCodeBuilderIF cb = new IntermediateCodeBuilder(getCurrentScope());
                    cb.addQuadruples(sentIf.getIntermediateCode());
@@ -860,6 +874,7 @@ sentencia     ::= sentAsign:sentAsign
                 | sentFor:sentFor
                 {:
                   Sentencia sentencia = new Sentencia(sentFor);
+                   System.out.println(sentencia);
 
                   //Código intermedio
                    TemporalFactoryIF tf = new TemporalFactory(getCurrentScope());
@@ -872,6 +887,7 @@ sentencia     ::= sentAsign:sentAsign
                 | sentReturn:sentReturn
                 {:
                   Sentencia sentencia = new Sentencia(sentReturn);
+                   System.out.println(sentencia);
 
                   //Código intermedio
                    TemporalFactoryIF tf = new TemporalFactory(getCurrentScope());
@@ -908,6 +924,7 @@ sentencia     ::= sentAsign:sentAsign
                 | sWriteLn:sWriteLn
                 {:
                   Sentencia sentencia = new Sentencia(sWriteLn);
+                   System.out.println(sentencia);
 
                   //Código intermedio
                    TemporalFactoryIF tf = new TemporalFactory(getCurrentScope());
@@ -920,6 +937,7 @@ sentencia     ::= sentAsign:sentAsign
                 | sentProcedure:sentProcedure
                 {:
                   Sentencia sentencia = new Sentencia(sentProcedure);
+                   System.out.println(sentencia);
 
                   //Código intermedio
                    TemporalFactoryIF tf = new TemporalFactory(getCurrentScope());
@@ -934,6 +952,7 @@ sentencia     ::= sentAsign:sentAsign
 sentReturn     ::= RETURN expresion:expresion
                 {:
                    SentReturn sentReturn = new SentReturn(expresion);
+
                     //Código intermedio
                    TemporalFactoryIF tf = new TemporalFactory(getCurrentScope());
                    IntermediateCodeBuilderIF cb = new IntermediateCodeBuilder(getCurrentScope());
@@ -946,7 +965,7 @@ sentReturn     ::= RETURN expresion:expresion
 // Sentencias de Asignacion
 sentAsign     ::= variables:variables DOSPUNTOSIGUAL expresion:expresion
                 {:
-                
+
                   SentAsign sentAsign = new SentAsign(variables, expresion);
                   SymbolIF symbol = getSymbol(variables.getIdentificador());
 
@@ -965,6 +984,8 @@ sentAsign     ::= variables:variables DOSPUNTOSIGUAL expresion:expresion
                   cb.addQuadruple("MVA", temp, var);
                   cb.addQuadruple("STP", temp, eTemp);
                   sentAsign.setIntermediateCode(cb.create());
+                  sentAsign.setTemporal(temp);
+
                   RESULT = sentAsign;
                 :};
                       
@@ -981,7 +1002,7 @@ sentIf        ::= IF expresion:expresion THEN sentencias:sentencias sentElse:sen
                   cb.addQuadruples(expresion.getIntermediateCode());
                   cb.addQuadruple("BRF", l1, expresion.getTemporal());
                   cb.addQuadruples(sentencias.getIntermediateCode());
-                  if(sentElse.getSentencias()!=null){
+                  if (sentElse.getSentencias()!=null){
                     cb.addQuadruple("BR", l2);
                   }
                   cb.addQuadruple("INL", l1);
@@ -994,6 +1015,7 @@ sentIf        ::= IF expresion:expresion THEN sentencias:sentencias sentElse:sen
 
                   RESULT = sentIf;
                 :};
+
 sentElse      ::= ELSE sentencias:sentencias
                 {:
                    SentElse sentElse = new SentElse(sentencias);
