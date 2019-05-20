@@ -27,8 +27,8 @@ import java.util.List;
 
 public class ExecutionEnvironmentEns2001 implements ExecutionEnvironmentIF {
 	private final static int MAX_ADDRESS = 65535;
-	private final static String[] REGISTERS = { ".PC", ".SP", ".SR", ".IX", ".IY", ".A", ".R0", ".R1", ".R2", ".R3",
-			".R4", ".R5", ".R6", ".R7", ".R8", ".R9" };
+	private final static String[] REGISTERS = {".PC", ".SP", ".SR", ".IX", ".IY", ".A", ".R0", ".R1", ".R2", ".R3",
+			".R4", ".R5", ".R6", ".R7", ".R8", ".R9"};
 
 	private RegisterDescriptorIF registerDescriptor;
 	private MemoryDescriptorIF memoryDescriptor;
@@ -152,11 +152,11 @@ public class ExecutionEnvironmentEns2001 implements ExecutionEnvironmentIF {
 			b.append("MOVE .SP, .IY \n");
 			b.append("PUSH .IX \n");
 			b.append("MOVE .IY, .IX \n");
+			Procedure p = (Procedure) quadruple.getResult();
 
-			b.append("CALL ").append(transOperand(quadruple.getResult())).append("\n");
+			b.append("CALL ").append("/").append(p.getCodeLabel()).append("\n");
 
 			b.append("POP .R9 \n");
-			Procedure p = (Procedure) quadruple.getResult();
 			SymbolProcedure sf = (SymbolProcedure) p.getSymbol();
 			int tamVarsTemp = sf.getTempSize();
 			b.append("; Saco variables y temporales \n");
@@ -324,18 +324,12 @@ public class ExecutionEnvironmentEns2001 implements ExecutionEnvironmentIF {
 		}
 
 		if (oper.equals("RETURN")) {
-			o1 = transOperand(quadruple.getFirstOperand());
-			r = transOperand(quadruple.getResult());
-			b.append("MOVE " + o1 + ",[.IX]\n");
-			b.append("BR /" + r);
-			b.append("\n ");
-			return b.toString();
-		}
-
-		if (oper.equals("RETVALUE")) {
-			r = transOperand(quadruple.getResult());
-			b.append("MOVE [.IY]," + r);
-			b.append("\n ");
+			if (quadruple.getResult() != null) {
+				b.append("MOVE ").append(transOperand(quadruple.getResult())).append(", ");
+				Temporal temporalResult = (Temporal) quadruple.getResult();
+				b.append("#").append(temporalResult.getEnclosingSymbol().getSize() + 3).append("[.IX]").append(" \n");
+			}
+			b.append("RET \n");
 			return b.toString();
 		}
 

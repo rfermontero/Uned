@@ -18,4 +18,11 @@ public class ProcParenParam extends NonTerminal {
 	public ProcListParam getProcListParam() {
 		return this.procListParam;
 	}
+
+	@Override
+	public String toString() {
+		return "ProcParenParam{" +
+				"procListParam=" + procListParam +
+				'}';
+	}
 }

@@ -3,12 +3,7 @@ MODULE Ejemplo;
     		BEGIN
 				WRITESTRING("SS");
     		END invertir;
-	PROCEDURE invertir2();
-    		BEGIN
-				WRITESTRING("SS2");
-    	END invertir;
 BEGIN
       invertir();
-	invertir2();
 END Ejemplo;
 

@@ -1,6 +1,5 @@
 package compiler.syntax.nonTerminal;
 
-import compiler.CompilerContext;
 import compiler.intermediate.Procedure;
 import es.uned.lsi.compiler.intermediate.IntermediateCodeBuilder;
 import es.uned.lsi.compiler.intermediate.QuadrupleIF;
@@ -52,6 +51,9 @@ public class CabProcedure extends NonTerminal {
 		IntermediateCodeBuilder cb = new IntermediateCodeBuilder(scope);
 		cb.addQuadruple("INL", procedure.getCodeLabel(), scope.getLevel());
 		cb.addQuadruples(cuerpo.getIntermediateCode());
+		if (tipoRetorno.getIntOBool() == null) {
+			cb.addQuadruple("RETURN");
+		}
 		return cb.create();
 	}
 

@@ -1,55 +1,37 @@
-;Quadruple - [RESG null, 2, 0] 
-RES 2 ;Reservo memoria para variables globales y temporales 
+;Quadruple - [RESG null, 1, 0] 
+RES 1 ;Reservo memoria para variables globales y temporales 
 MOVE #0, .IX  ;Situo IX en la posicion en la que va el primer temporal > globalAddress
  
 ;Quadruple - [BR L_Ejemplo, null, null] 
 BR /L_Ejemplo
  
-;Quadruple - [INL L_INVERTIR2, 0, null] 
-L_INVERTIR2: NOP
- 
-;Quadruple - [WRITESTRING null, SS2, null] 
-WRSTR /txt0 
-WRCHAR #10  
-WRCHAR #13  
-txt0: DATA "SS2" 
-NOP 
-
 ;Quadruple - [INL L_INVERTIR, 0, null] 
 L_INVERTIR: NOP
  
 ;Quadruple - [WRITESTRING null, SS, null] 
-WRSTR /txt1 
+WRSTR /txt0 
 WRCHAR #10  
 WRCHAR #13  
-txt1: DATA "SS" 
+txt0: DATA "SS" 
 NOP 
+
+;Quadruple - [RETURN null, null, null] 
+RET 
 
 ;Quadruple - [INL L_Ejemplo, 0, null] 
 L_Ejemplo: NOP
  
-;Quadruple - [CALL invertir, null, null] 
+;Quadruple - [PARAM null, null, null] 
+DEC .SP 
+
+;Quadruple - [CALL invertir, T_0, null] 
 PUSH .SR 
 PUSH .IX 
 ; invertir 
 MOVE .SP, .IY 
 PUSH .IX 
 MOVE .IY, .IX 
-CALL null
-POP .R9 
-; Saco variables y temporales 
-POP .IX 
-POP .SR 
-POP .R9 
-
-;Quadruple - [CALL invertir2, null, null] 
-PUSH .SR 
-PUSH .IX 
-; invertir2 
-MOVE .SP, .IY 
-PUSH .IX 
-MOVE .IY, .IX 
-CALL null
+CALL /L_INVERTIR
 POP .R9 
 ; Saco variables y temporales 
 POP .IX 

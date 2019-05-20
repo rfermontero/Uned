@@ -1088,7 +1088,7 @@ sentProcedure ::= IDENTIFICADOR:identificador
 
                     if (symbol instanceof SymbolFunction) {
                       sentProcedure.setTemporal(temp);
-                      cb.addQuadruple("RETVALUE", temp);
+                      cb.addQuadruple("return", temp);
                     }
                     sentProcedure.setIntermediateCode(cb.create());
 
@@ -1123,14 +1123,32 @@ sentProcedure ::= IDENTIFICADOR:identificador
                       LabelFactoryIF lf = new LabelFactory();
                       TemporalIF temp = tf.create();
                       LabelIF l1 = lf.create(identificador.getLexema());
-                      Procedure procedure = new Procedure(identificador.getLexema(), getCurrentScope(), symbol);
-                      cb.addQuadruple("CALL", procedure);
+                      sentProcedure.setTemporal(temp);
 
-                      if(((SymbolProcedure)symbol).getCabProcedure().getProcParemParam().getProcListParam()==null){
+                      if(((SymbolProcedure)symbol).getCabProcedure().getProcParemParam().getProcListParam().getProcListParam().size()==0){
                         cb.addQuadruple("PARAM");
-                      }                      // Si es una funcion añado return
+                      }
+
+
+                      Procedure procedure = new Procedure(identificador.getLexema(), getCurrentScope(), symbol);
+                      cb.addQuadruple("CALL", procedure, temp);
+
+                      /*
+        ScopeIF scope = CompilerContext.getScopeManager().getCurrentScope();
+        IntermediateCodeBuilder cb = new IntermediateCodeBuilder(scope);
+        cb.addQuadruples(this.getIntermediateCode());
+        cb.addQuadruples(ultimoParametro.getIntermediateCode());
+        if (this.getParametros().size() == 1) {
+        	cb.addQuadruple(InstructionSet.PARAM, null, ultimoParametro.getTemporal(),1);        
+        } else {
+        	cb.addQuadruple(InstructionSet.PARAM, null, ultimoParametro.getTemporal());
+        }
+        this.setIntermediateCode(cb.create());
+
+                      */
+                     // Si es una funcion añado return
                       if (symbol instanceof SymbolFunction) {
-                        cb.addQuadruple("RETVALUE", temp);
+                        cb.addQuadruple("RETURN", temp);
                       }
                       sentProcedure.setIntermediateCode(cb.create());
                       sentProcedure.setTemporal(temp);
