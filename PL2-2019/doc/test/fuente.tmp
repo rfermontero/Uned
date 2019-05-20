@@ -1,82 +1,32 @@
-;Quadruple - [RESG null, 4, 3] 
-RES 4 ;Reservo memoria para variables globales y temporales 
-MOVE #3, .IX  ;Situo IX en la posicion en la que va el primer temporal > globalAddress
+;Quadruple - [RESG null, 1, 0] 
+RES 1 ;Reservo memoria para variables globales y temporales 
+MOVE #0, .IX  ;Situo IX en la posicion en la que va el primer temporal > globalAddress
  
-;Quadruple - [BR L_siete, null, null] 
-BR /L_siete
+;Quadruple - [BR L_Ejemplo, null, null] 
+BR /L_Ejemplo
  
-;Quadruple - [INL L_siete, 0, null] 
-L_siete: NOP
+;Quadruple - [INL L_Ejemplo, 0, null] 
+L_Ejemplo: NOP
  
-;Quadruple - [MV T_0, 1, null] 
-MOVE #1,#0[.IX]
+;Quadruple - [INL invertir, 0, null] 
+null: NOP
  
-;Quadruple - [MV a1, T_0, null] 
-MOVE #0[.IX],/0
- 
-;Quadruple - [INL L_0, null, null] 
-L_0: NOP
- 
-;Quadruple - [MV T_1, 9, null] 
-MOVE #9,#1[.IX]
- 
-;Quadruple - [INC T_1, null, null] 
-INC #1[.IX]
- 
-;Quadruple - [BRF L_1, a1, T_1] 
-CMP /0, #1[.IX] 
-BZ /L_1 
-
-;Quadruple - [MVP T_2, a1, null] 
-MOVE /0,.R0
-MOVE [.R0],#2[.IX]
- 
-;Quadruple - [WRITEINT T_2, null, null] 
-WRINT #2[.IX]
-WRCHAR #10
- 
-;Quadruple - [INC a1, null, null] 
-INC /0
- 
-;Quadruple - [BR L_0, null, null] 
-BR /L_0
- 
-;Quadruple - [INL L_1, null, null] 
-L_1: NOP
- 
-;Quadruple - [MV T_3, 1, null] 
-MOVE #1,#3[.IX]
- 
-;Quadruple - [MV a1, T_3, null] 
-MOVE #3[.IX],/0
- 
-;Quadruple - [INL L_3, null, null] 
-L_3: NOP
- 
-;Quadruple - [MV T_4, 9, null] 
-MOVE #9,#4[.IX]
- 
-;Quadruple - [INC T_4, null, null] 
-INC #4[.IX]
- 
-;Quadruple - [BRF L_4, a1, T_4] 
-CMP /0, #4[.IX] 
-BZ /L_4 
-
-;Quadruple - [WRITESTRING null, a1, null] 
+;Quadruple - [WRITESTRING null, SS, null] 
 WRSTR /txt0 
 WRCHAR #10  
 WRCHAR #13  
-txt0: DATA "a1" 
+txt0: DATA "SS" 
 NOP 
 
-;Quadruple - [INC a1, null, null] 
-INC /0
- 
-;Quadruple - [BR L_3, null, null] 
-BR /L_3
- 
-;Quadruple - [INL L_4, null, null] 
-L_4: NOP
- 
+;Quadruple - [CALL L_invertir, null, null] 
+PUSH .SR 
+PUSH .IX 
+MOVE .SP, .IY 
+PUSH .IX 
+MOVE .IY, .IX 
+CALL L_invertir
+POP .R9 
+POP .IX 
+POP .SR 
+
 

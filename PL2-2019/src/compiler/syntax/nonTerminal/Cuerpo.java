@@ -1,5 +1,10 @@
 package compiler.syntax.nonTerminal;
 
+import es.uned.lsi.compiler.intermediate.QuadrupleIF;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class Cuerpo extends NonTerminal {
 
 	private final StmConstantes stmConstantes;

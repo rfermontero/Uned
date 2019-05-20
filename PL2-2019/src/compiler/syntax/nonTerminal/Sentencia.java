@@ -1,5 +1,10 @@
 package compiler.syntax.nonTerminal;
 
+import es.uned.lsi.compiler.intermediate.QuadrupleIF;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class Sentencia extends NonTerminal {
 
 	private final SentenciaType type;
@@ -126,6 +131,47 @@ public class Sentencia extends NonTerminal {
 	}
 
 	public enum SentenciaType {
-		FOR, ASIGN, IF, SWRITE, RETURN, INT, LNWRITE, INTWRITE, PROCEDURE
+		FOR, ASIGN, IF, SWRITE, RETURN, LNWRITE, INTWRITE, PROCEDURE
+	}
+
+	@Override
+	public List<QuadrupleIF> getIntermediateCode() {
+		List<QuadrupleIF> result;
+		switch (type) {
+			case FOR:
+				result = sentFor.getIntermediateCode();
+				break;
+
+			case ASIGN:
+				result = sentAsign.getIntermediateCode();
+				break;
+
+			case IF:
+				result = sentIf.getIntermediateCode();
+				break;
+
+			case SWRITE:
+				result = sWriteString.getIntermediateCode();
+				break;
+
+			case RETURN:
+				result = sentReturn.getIntermediateCode();
+				break;
+
+			case LNWRITE:
+				result = sWriteLn.getIntermediateCode();
+				break;
+
+			case INTWRITE:
+				result = sWriteInt.getIntermediateCode();
+				break;
+
+			case PROCEDURE:
+				result = sentProcedure.getIntermediateCode();
+				break;
+			default:
+				result = new ArrayList<>();
+		}
+		return result;
 	}
 }

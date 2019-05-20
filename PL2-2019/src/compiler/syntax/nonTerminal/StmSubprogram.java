@@ -1,5 +1,7 @@
 package compiler.syntax.nonTerminal;
 
+import es.uned.lsi.compiler.intermediate.QuadrupleIF;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,8 +19,17 @@ public class StmSubprogram extends NonTerminal {
 		procedures.add(cabProcedure);
 	}
 
-	public List<CabProcedure> getProcedures(){
+	public List<CabProcedure> getProcedures() {
 		return procedures;
+	}
+
+	@Override
+	public List<QuadrupleIF> getIntermediateCode() {
+		List<QuadrupleIF> quadruples = new ArrayList<>();
+		for (CabProcedure procedure : procedures) {
+			quadruples.addAll(procedure.getIntermediateCode());
+		}
+		return quadruples;
 	}
 
 	@Override

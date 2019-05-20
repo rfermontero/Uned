@@ -1,17 +1,21 @@
 package compiler.intermediate;
 
+import es.uned.lsi.compiler.intermediate.LabelFactory;
 import es.uned.lsi.compiler.intermediate.LabelIF;
 import es.uned.lsi.compiler.intermediate.ProcedureIF;
 import es.uned.lsi.compiler.semantic.ScopeIF;
+import es.uned.lsi.compiler.semantic.symbol.SymbolIF;
 
 /**
  * Class for procedures and functions in intermediate code.
  */
 
-public class Procedure
-		implements ProcedureIF {
-	private String name = null;
-	private ScopeIF scope = null;
+public class Procedure implements ProcedureIF {
+
+	private String name;
+	private ScopeIF scope;
+	private LabelIF codeLabel;
+	private SymbolIF symbol;
 
 	/**
 	 * Constructor for Variable.
@@ -19,10 +23,11 @@ public class Procedure
 	 * @param name  The name.
 	 * @param scope The scope index.
 	 */
-	public Procedure(String name, ScopeIF scope) {
+	public Procedure(String name, ScopeIF scope, SymbolIF symbol) {
 		super();
 		this.name = name;
 		this.scope = scope;
+		this.symbol = symbol;
 	}
 
 	/**
@@ -52,8 +57,11 @@ public class Procedure
 	 */
 	@Override
 	public final LabelIF getCodeLabel() {
-		// TODO : Student Work
-		return null;
+		if (codeLabel == null) {
+			LabelFactory labelFactory = new LabelFactory();
+			return labelFactory.create(name.toUpperCase());
+		}
+		return codeLabel;
 	}
 
 	/**
@@ -96,5 +104,13 @@ public class Procedure
 	@Override
 	public final String toString() {
 		return name;
+	}
+
+	public void setCodeLabel(LabelIF codeLabel) {
+		this.codeLabel = codeLabel;
+	}
+
+	public SymbolIF getSymbol() {
+		return symbol;
 	}
 }

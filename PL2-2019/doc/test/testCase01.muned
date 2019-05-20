@@ -1,17 +1,14 @@
-MODULE siete;
+MODULE Ejemplo;
+	PROCEDURE invertir();
+    		BEGIN
+				WRITESTRING("SS");
+    		END invertir;
+	PROCEDURE invertir2();
+    		BEGIN
+				WRITESTRING("SS2");
+    	END invertir;
+BEGIN
+      invertir();
+	invertir2();
+END Ejemplo;
 
-  VAR 	resta : INTEGER;
-  		a1:INTEGER;
-  		b1:INTEGER;
-
-  BEGIN
-		FOR a1:=1 TO 9 DO
-			WRITEINT(a1);
-		END; 
-
-		FOR a1:=1 TO 9 DO
-			WRITESTRING("a1");
-		END; 
-
-
-  END siete;

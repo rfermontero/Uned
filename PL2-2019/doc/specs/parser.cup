@@ -39,13 +39,15 @@ action code   {:
         semanticErrorManager.semanticInfo("Opened " + scope);
 	}
 
-    public ScopeIF getCurrentScope(){
-        return scopeManager.getCurrentScope();
+    public ScopeIF getCurrentScope() {
+      return scopeManager.getCurrentScope();
     }
 
 	public void closeCurrentScope() {
-	    ScopeIF scope = scopeManager.getCurrentScope();
-        scopeManager.closeScope();
+	      ScopeIF scope = scopeManager.getCurrentScope();
+        if(scope!=null){
+          scopeManager.closeScope();
+        }
         semanticErrorManager.semanticInfo("Close " + scope);
 	}
 
@@ -67,7 +69,7 @@ action code   {:
 
 	public void checkSymbolType(String identifier, Class symbolToCompare){
     	        ScopeIF scope = scopeManager.getCurrentScope();
-        		SymbolTableIF symbolsTable = scope.getSymbolTable();
+        		  SymbolTableIF symbolsTable = scope.getSymbolTable();
         	    SymbolIF symbol = symbolsTable.getSymbol(identifier);
         	    if(!symbol.getClass().equals(symbolToCompare)){
         	       semanticErrorManager.semanticFatalError("Tipo de simbolo no esperado");
@@ -119,14 +121,12 @@ action code   {:
 	    ScopeIF scope = scopeManager.getCurrentScope();
         SymbolTableIF symbolTable = scope.getSymbolTable();
         symbolTable.addSymbol(identifier, symbol);
-        semanticErrorManager.semanticInfo("Added symbol " + identifier + " with type" + symbol.getClass() + " in " + scope);
 	}
 
 	public void addType(String identifier, TypeIF type){
 	    ScopeIF scope = scopeManager.getCurrentScope();
         TypeTableIF typeTable = scope.getTypeTable();
         typeTable.addType(identifier, type);
-        semanticErrorManager.semanticInfo("Added type " + identifier + " in " + scope);
 	}
 
 	public SymbolIF getSymbol(String identificador){
@@ -272,13 +272,12 @@ program ::=
   axiom:ax
   {:
     
-			
+
 			int globalAddress = 0;
       int globalOffset = 0;
 			ScopeIF currentScope = null;
     	Map<String, SymbolProcedure> functions = new HashMap<String, SymbolProcedure>();
 			List<ScopeIF> scopes = scopeManager.getAllScopes();
-
 			for (ScopeIF scope : scopes) {
 
           int scopeOffset = 0;
@@ -313,7 +312,6 @@ program ::=
                 param.setEnclosingSymbol(function);
               }
           }
-
           List<TemporalIF> scopeTemporals = scope.getTemporalTable().getTemporals();
           for (TemporalIF scopeTemporal: scopeTemporals) {
             if (scope.getLevel() == 0) {
@@ -321,22 +319,24 @@ program ::=
               scopeOffset++;
             } else {
               scopeTemporal.setAddress(functionOffset);
-              SymbolProcedure function = (SymbolProcedure) functions.get(scopeTemporal.getScope().getName());
-              function.incrementSize();
-              ((Temporal) scopeTemporal).setEnclosingSymbol(function);
-              function.incrementTempSize();
-              functionOffset++;
+              if(functions.get(scopeTemporal.getScope().getName())!=null){
+                SymbolProcedure function = (SymbolProcedure) functions.get(scopeTemporal.getScope().getName());
+                function.incrementSize();
+                ((Temporal) scopeTemporal).setEnclosingSymbol(function);
+                function.incrementTempSize();
+                functionOffset++;
+              }
             }
 			  }
 
         if (scope.getLevel() == 0) {
           currentScope = scope;
-          globalOffset = functionOffset;
-			  }
+          globalOffset = scopeOffset;
+        }
 			}
 
       IntermediateCodeBuilder cb = new IntermediateCodeBuilder(currentScope);
-		
+
       cb.addQuadruple("RESG", null, globalAddress + globalOffset, globalAddress);		
       cb.addQuadruple("BR", ax.getLabel());
       cb.addQuadruples(ax.getIntermediateCode());
@@ -363,12 +363,20 @@ axiom ::= cabModule:cabModule
               axiom.setLabel(label);
 
               //Código intermedio
+              boolean labelAdded = false;
               TemporalFactoryIF tf = new TemporalFactory(getCurrentScope());
               IntermediateCodeBuilderIF cb = new IntermediateCodeBuilder(getCurrentScope());
-              cb.addQuadruple("INL", label, 0);
-              cb.addQuadruples(cuerpo.getIntermediateCode());
-              axiom.setIntermediateCode(cb.create());
-              axiom.setTemporal(cuerpo.getTemporal());
+
+              cb.addQuadruples(cuerpo.getStmSubprogram().getIntermediateCode());
+              for (Sentencia procedure : cuerpo.getSentencias().getListSentencia().getSentenciaList()) {
+                if(!labelAdded){
+                    cb.addQuadruple("INL", label, 0);
+                    labelAdded = true;
+                } 
+                cb.addQuadruples(procedure.getIntermediateCode());
+              }
+              axiom.getIntermediateCode().addAll(cb.create());
+              closeCurrentScope();
 
               RESULT = axiom;
           :};
@@ -376,9 +384,7 @@ axiom ::= cabModule:cabModule
 // Cabecera de los modulos
 cabModule     ::= MODULE IDENTIFICADOR:identificador PUNTOYCOMA
                   {:
-
                    openScope("MODULE_" + identificador.getLexema());
-
                    addType("boolean", new TypeSimple(getCurrentScope(), "boolean"));
                    addType("int", new TypeSimple(getCurrentScope(), "int"));
                    RESULT = new CabModule(identificador.getLexema());
@@ -392,9 +398,12 @@ cuerpo        ::= stmConstantes:stmConstantes stmTipos:stmTipos stmVar:stmVar st
                    //Código intermedio
                    TemporalFactoryIF tf = new TemporalFactory(getCurrentScope());
                    IntermediateCodeBuilderIF cb = new IntermediateCodeBuilder(getCurrentScope());
+                   cb.addQuadruples(stmSubprogram.getIntermediateCode());
                    cb.addQuadruples(sentencias.getIntermediateCode());
                    cuerpo.setIntermediateCode(cb.create());
-
+                   if (getCurrentScope().getLevel()!=0){
+                     closeCurrentScope();
+                   }
                    RESULT = cuerpo;
                 :};
 
@@ -543,8 +552,8 @@ cabProcedure   ::= PROCEDURE IDENTIFICADOR:identificador procParenParam:procPare
                   {:
                        checkSymbolDoesNotExists(identificador.getLexema());
                        SymbolIF symbol  = null;
-                       RESULT = new CabProcedure(identificador.getLexema(), procParenParam, tipoRetorno);
-                       if(tipoRetorno.getIntOBool() == null) {//Is function
+                       RESULT = new CabProcedure(getCurrentScope(), identificador.getLexema(), procParenParam, tipoRetorno);
+                       if(tipoRetorno.getIntOBool() != null) {//Is function
                             symbol = new SymbolFunction(getCurrentScope(), identificador.getLexema(),
                             RESULT, new TypeFunction(getCurrentScope()));
                        } else { //Is procedure
@@ -690,7 +699,7 @@ exprArit      ::= expresion:expresionl MINUS expresion:expresionr
 // Reglas de produccion para expresiones logicas.
 exprLogica    ::= expresion:expresionl MAYOR expresion:expresionr
                 {:
-                   ExprLogica expLogica = new ExprLogica(expresionl, ">", expresionr);
+                    ExprLogica expLogica = new ExprLogica(expresionl, ">", expresionr);
                   
                     //Código intermedio
                   	TemporalFactoryIF tf = new TemporalFactory(getCurrentScope());
@@ -775,25 +784,23 @@ exprLogica    ::= expresion:expresionl MAYOR expresion:expresionr
                 :}
                 | vBooleano:vBooleano
                  {:
-                  ExprLogica expLogica = new ExprLogica(vBooleano);
-
-                   //Ćdigo intermedio
-                  TemporalFactoryIF tf = new TemporalFactory(getCurrentScope());
-                  IntermediateCodeBuilderIF cb = new IntermediateCodeBuilder(getCurrentScope());
-                  TemporalIF temp1 = vBooleano.getTemporal();
-                  TemporalIF temp = tf.create();
-                  cb.addQuadruple("MV", temp, temp1);
-                  expLogica.setTemporal(temp);
-                  expLogica.setIntermediateCode(cb.create());
+                    ExprLogica expLogica = new ExprLogica(vBooleano);
                   
-                  RESULT = expLogica;
+                    //Código intermedio
+                  	TemporalFactoryIF tf = new TemporalFactory(getCurrentScope());
+                    IntermediateCodeBuilderIF cb = new IntermediateCodeBuilder(getCurrentScope());
+                    TemporalIF temp = tf.create();
+                    cb.addQuadruple("MV", temp, Boolean.compare(vBooleano.getValue(), false));
+                    expLogica.setTemporal(temp);
+                    expLogica.setIntermediateCode(cb.create());
+
+                   RESULT = expLogica;
                 :};
 
 // Reglas para sentencias.
 sentencias    ::= listSentencia:listSentencia PUNTOYCOMA
                 {:
 
-                  System.out.println(listSentencia);
                    Sentencias sentencias = new Sentencias(listSentencia);
 
                    //Código intermedio
@@ -801,21 +808,18 @@ sentencias    ::= listSentencia:listSentencia PUNTOYCOMA
                    IntermediateCodeBuilderIF cb = new IntermediateCodeBuilder(getCurrentScope());
                    cb.addQuadruples(listSentencia.getIntermediateCode());
                    sentencias.setIntermediateCode(cb.create());
-                   System.out.println(sentencias.getIntermediateCode());
 
                    RESULT = sentencias;
                 :}
                 | listSentencia:listSentencia
                 {:
 
-                   System.out.println(listSentencia);
                    Sentencias sentencias = new Sentencias(listSentencia);
                    //Código intermedio
                    TemporalFactoryIF tf = new TemporalFactory(getCurrentScope());
                    IntermediateCodeBuilderIF cb = new IntermediateCodeBuilder(getCurrentScope());
                    cb.addQuadruples(listSentencia.getIntermediateCode());
                    sentencias.setIntermediateCode(cb.create());
-                   System.out.println(sentencias.getIntermediateCode());
 
                    RESULT = sentencias;
                 :}
@@ -874,7 +878,6 @@ sentencia     ::= sentAsign:sentAsign
                 | sentFor:sentFor
                 {:
                   Sentencia sentencia = new Sentencia(sentFor);
-                   System.out.println(sentencia);
 
                   //Código intermedio
                    TemporalFactoryIF tf = new TemporalFactory(getCurrentScope());
@@ -887,7 +890,6 @@ sentencia     ::= sentAsign:sentAsign
                 | sentReturn:sentReturn
                 {:
                   Sentencia sentencia = new Sentencia(sentReturn);
-                   System.out.println(sentencia);
 
                   //Código intermedio
                    TemporalFactoryIF tf = new TemporalFactory(getCurrentScope());
@@ -924,7 +926,6 @@ sentencia     ::= sentAsign:sentAsign
                 | sWriteLn:sWriteLn
                 {:
                   Sentencia sentencia = new Sentencia(sWriteLn);
-                   System.out.println(sentencia);
 
                   //Código intermedio
                    TemporalFactoryIF tf = new TemporalFactory(getCurrentScope());
@@ -936,8 +937,7 @@ sentencia     ::= sentAsign:sentAsign
                 :}
                 | sentProcedure:sentProcedure
                 {:
-                  Sentencia sentencia = new Sentencia(sentProcedure);
-                   System.out.println(sentencia);
+                   Sentencia sentencia = new Sentencia(sentProcedure);
 
                   //Código intermedio
                    TemporalFactoryIF tf = new TemporalFactory(getCurrentScope());
@@ -1079,13 +1079,18 @@ sentProcedure ::= IDENTIFICADOR:identificador
                     LabelFactoryIF lf = new LabelFactory();
                     TemporalIF temp = tf.create();
                     LabelIF l1 = lf.create(identificador.getLexema());
-                    cb.addQuadruple("CALL",l1);
-                    // Si es una funcion añado return
+		                Procedure procedure = new Procedure(identificador.getLexema(), getCurrentScope(), symbol);
+                    cb.addQuadruple("CALL", procedure);
+
+                    if(((SymbolProcedure)symbol).getCabProcedure().getProcParemParam().getProcListParam()==null){
+                       cb.addQuadruple("PARAM");
+                    }
+
                     if (symbol instanceof SymbolFunction) {
+                      sentProcedure.setTemporal(temp);
                       cb.addQuadruple("RETVALUE", temp);
                     }
                     sentProcedure.setIntermediateCode(cb.create());
-                    sentProcedure.setTemporal(temp);
 
                     RESULT = sentProcedure;
                 :}
@@ -1118,8 +1123,12 @@ sentProcedure ::= IDENTIFICADOR:identificador
                       LabelFactoryIF lf = new LabelFactory();
                       TemporalIF temp = tf.create();
                       LabelIF l1 = lf.create(identificador.getLexema());
-                      cb.addQuadruple("CALL",l1);
-                      // Si es una funcion añado return
+                      Procedure procedure = new Procedure(identificador.getLexema(), getCurrentScope(), symbol);
+                      cb.addQuadruple("CALL", procedure);
+
+                      if(((SymbolProcedure)symbol).getCabProcedure().getProcParemParam().getProcListParam()==null){
+                        cb.addQuadruple("PARAM");
+                      }                      // Si es una funcion añado return
                       if (symbol instanceof SymbolFunction) {
                         cb.addQuadruple("RETVALUE", temp);
                       }
@@ -1180,7 +1189,6 @@ parametros    ::= parametros:parametros COMA expresion:expresion
 // Sentencias de Salida.
 sWriteString  ::= WRITESTRING PARENIZQ STRING:string PARENDER
                 {:
-
                 SWriteString sWriteString = new SWriteString(string.getLexema());
 
                 //Generacion de Codigo Intermedio
