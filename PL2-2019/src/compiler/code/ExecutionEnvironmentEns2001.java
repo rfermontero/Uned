@@ -147,54 +147,38 @@ public class ExecutionEnvironmentEns2001 implements ExecutionEnvironmentIF {
 		}
 
 		if (oper.equals("CALL")) {
-
-			scope++;
-
-			b.append("PUSH .SR \n");
-			b.append("PUSH .IX \n");
-			if (quadruple.getResult() instanceof Procedure) {
-				b.append(";Es procedure \n");
-				Procedure p = (Procedure)quadruple.getResult();
-				b.append("; " + p + " \n");
-				SymbolProcedure sf = (SymbolProcedure)p.getSymbol();
-				b.append("; " + sf + " \n");
-				b.append("; " + sf.getTempSize() + " \n");
-				int tamVarsTemp = sf.getTempSize();
-				while (tamVarsTemp > 0) {
-					b.append("DEC .SP \n");
-					tamVarsTemp--;
-				}			
-			}
-			
-			b.append("MOVE .SP, .IY \n");
-			b.append("PUSH .IX \n");
-			b.append("MOVE .IY, .IX \n");
-			b.append("CALL ").append("/L_"+quadruple.getResult()+ " \n");
-			b.append("POP .R9 \n");
-			Procedure p = (Procedure)quadruple.getResult();
-			SymbolProcedure sf = (SymbolProcedure)p.getSymbol();
-			int tamVarsTemp = sf.getTempSize();
-			while (tamVarsTemp > 0) {
-				b.append("POP .R9 \n");
-				tamVarsTemp--;
-			}
-			b.append("POP .IX \n");
-			b.append("POP .SR \n");
-			int varSize = sf.getSize() - sf.getTempSize();
-			while (varSize > 0) {
-				b.append("POP .R9 \n");
-				varSize--;
-			}
-			
-			if (sf instanceof SymbolFunction) {
-				b.append("POP ").append(transOperand(quadruple.getFirstOperand())).append(" \n");
-			} else {
-				b.append("POP .R9 \n");
-			}
-			scope--;
+			b.append("MOVE .R0,.IX\n");
+			b.append("CALL /L_"+ quadruple.getResult().toString()  + "\n");
+			b.append("MOVE .IX,.SP\n");
+			b.append("MOVE #-3[.IX],.R0\n");
+			b.append("MOVE .R0,.IX\n");
 			return b.toString();
 		}
 
+		if (oper.equals("POINTERRA")) {
+			r = transOperand(quadruple.getFirstOperand());
+			b.append("SUB .IX, "+r+"\n");
+			b.append("MOVE .A, .SP\n");
+			return b.toString();
+		}
+
+		if (oper.equals("ENDPOINTERRA")) {
+			o1= transOperand(quadruple.getFirstOperand());
+			b.append(quadruple.getResult() + ": NOP\n");
+			b.append("SUB .IX, "+o1+"\n");
+			b.append("MOVE .A, .SP\n");
+			b.append("RET\n");
+			return b.toString();
+		}
+
+		if (oper.equals("SUBPROGRAMPARAM")) {
+			o1 = transOperand(quadruple.getFirstOperand());
+			r = transOperand(quadruple.getResult());
+			b.append(o1 + ": DATA " + r);
+			b.append("\n ");
+			return b.toString();
+		}
+		
 		if (oper.equals("STRING")) {
 			o1 = transOperand(quadruple.getFirstOperand());
 			r = transOperand(quadruple.getResult());
@@ -205,14 +189,6 @@ public class ExecutionEnvironmentEns2001 implements ExecutionEnvironmentIF {
 
 		if (oper.equals("HALT")) {
 			b.append("HALT");
-			b.append("\n ");
-			return b.toString();
-		}
-
-		if (oper.equals("INC")) {
-			System.out.println(quadruple);
-			o1 = transOperand(quadruple.getResult());
-			b.append("INC ").append(o1);
 			b.append("\n ");
 			return b.toString();
 		}
@@ -267,22 +243,6 @@ public class ExecutionEnvironmentEns2001 implements ExecutionEnvironmentIF {
 			return b.toString();
 		}
 		
-		if (oper.equals("RESRA")) {//RESERVAMOS REGISTRO ACTIVACION
-			r = transOperand(quadruple.getResult());
-			b.append("SUB .IX," + r + "\n");
-			b.append("MOVE .A,.SP");
-			return b.toString();
-		}
-
-		if (oper.equals("ENDFUNC")) {
-			o1 = transOperand(quadruple.getFirstOperand());
-			b.append(quadruple.getResult() + ": NOP\n");
-			b.append("SUB .IX," + o1 + "\n");
-			b.append("MOVE .A,.SP\n");
-			b.append("RET");
-			return b.toString();
-		}
-
 		if (oper.equals("INL")) {
 			b.append(quadruple.getResult()+ ": NOP");
 			b.append("\n ");
@@ -350,20 +310,24 @@ public class ExecutionEnvironmentEns2001 implements ExecutionEnvironmentIF {
 		if (oper.equals("DATA")) {
 			b.append("RES ").append(quadruple.getFirstOperand()).append("\n");
 			b.append("MOVE ").append(transOperand(quadruple.getSecondOperand())).append(", .IX");
+			b.append("\n ");
+
 			return b.toString();
 		}
 
+		if (oper.equals("STARTRA")) {
+			b.append("MOVE .SP,.R0\n");
+			b.append("PUSH #-1\n");
+			b.append("PUSH .SR\n");
+			b.append("PUSH .IX\n");
+			return b.toString();
+		  }
+
 		if (oper.equals("PARAM")) {
-			
-			if ((quadruple.getFirstOperand() == null) || (quadruple.getSecondOperand() != null && quadruple.getSecondOperand().toString().equals("1"))) {
-				b.append("DEC ").append(".SP").append(" \n");
-			}
-		
-			if (quadruple.getFirstOperand() != null) {
-				r = transOperand(quadruple.getResult());
-				b.append("PUSH " + r);
-				b.append("\n ");
-			}
+			r = transOperand(quadruple.getResult());
+			b.append("PUSH " + r);
+			b.append("\n ");
+
 			return b.toString();
 		}
 
@@ -397,17 +361,17 @@ public class ExecutionEnvironmentEns2001 implements ExecutionEnvironmentIF {
 			return b.toString();
 		}
 
-
 		if (oper.equals("RETURN")) {
 			o1 = transOperand(quadruple.getFirstOperand());
 			b.append("MOVE " + o1 + ",[.IX]\n");
-			b.append("BR /" + quadruple.getResult());
+			b.append("BR /" + quadruple.getResult()).append(" \n");
 			return b.toString();
 		}
-		
-        if (oper.equals("RET")) {
+
+		if (oper.equals("RETVALUE")) {
 			r = transOperand(quadruple.getResult());
-			return "MOVE [.IY]," + r;
+			b.append("MOVE [.IY]," + r).append(" \n");
+			return b.toString();
 		}
 
 		if (oper.equals("STARTFUNC")) {

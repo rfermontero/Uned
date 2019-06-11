@@ -4,17 +4,15 @@ MODULE seis;
   		a1:INTEGER;
   		b1:INTEGER;
 
-  PROCEDURE Restar(a,b: INTEGER) : INTEGER;
-  	VAR s: INTEGER;
+  PROCEDURE Restar() : INTEGER;
  	BEGIN
- 		s := a-b;
- 		RETURN s; 	
+ 		RETURN 3-2; 	
  	END Restar; 
   
   BEGIN
     a1:=10;
     b1:=3;
-    resta:=Restar(a1,b1);
+    resta:=a1-b1;
     WRITEINT(a1);
     WRITEINT(b1);
     WRITEINT(resta);

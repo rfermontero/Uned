@@ -13,7 +13,10 @@ import es.uned.lsi.compiler.intermediate.LabelFactory;
 import es.uned.lsi.compiler.intermediate.LabelFactoryIF;
 import es.uned.lsi.compiler.intermediate.LabelIF;
 import es.uned.lsi.compiler.intermediate.QuadrupleIF;
+import es.uned.lsi.compiler.intermediate.TemporalFactory;
+import es.uned.lsi.compiler.intermediate.TemporalIF;
 import es.uned.lsi.compiler.semantic.ScopeIF;
+import es.uned.lsi.compiler.semantic.ScopeManager;
 import es.uned.lsi.compiler.semantic.symbol.SymbolIF;
 
 public class CabProcedure extends NonTerminal {
@@ -55,31 +58,31 @@ public class CabProcedure extends NonTerminal {
 	@Override
 	public List<QuadrupleIF> getIntermediateCode() {
 
-		SymbolProcedure symbol = (SymbolProcedure) scope.getSymbolTable().getSymbol(getIdentificador());
 		IntermediateCodeBuilder cb = new IntermediateCodeBuilder(scope);
 
 		LabelFactoryIF lf = new LabelFactory();
 		LabelIF l1 = lf.create(identificador);
-		LabelIF l2 = lf.create("F" + identificador);
-
+		LabelIF l2 = lf.create('F'+identificador);
+		TemporalFactory tF = new TemporalFactory(scope);
+		TemporalIF temp = tF.create();
+		
 		cb.addQuadruple("INL", l1);
 
-		TypeProcedure type = (TypeProcedure) CompilerContext.getScopeManager().searchType(identificador);
-		for (SymbolIF symbolInScope : scope.getSymbolTable().getSymbols()) {
-			if (symbolInScope instanceof SymbolVariable) {
-				SymbolVariable symbolVariable = (SymbolVariable) symbolInScope;
+		List<SymbolIF> symbols = scope.getSymbolTable().getSymbols();
+		for(SymbolIF symbol : symbols){
+			if(symbol instanceof SymbolVariable){
+				SymbolVariable symbolVariable = (SymbolVariable) symbol;
 				int value = symbolVariable.getValue();
-				if (value != -1) {
-					Variable var = new Variable(symbolVariable);
-					cb.addQuadruple("INITVAR",var,value);
-				}
+				//cb.addQuadruple("SUBPROGRAMPARAM", temp, value);
 			}
 		}
 
-		cb.addQuadruple("RESRA", new Value(type.getSize()));
+		int size = scope.getSymbolTable().getSize()*scope.getTemporalTable().getSize() + 5;
+		cb.addQuadruple("POINTERRA", temp, size);
 		cb.addQuadruples(cuerpo.getIntermediateCode());
-		cb.addQuadruple("ENDFUNC",l2, symbol.getNumberOfParams() + 4);
-		
+		int paramsSize = ((SymbolProcedure) CompilerContext.getScopeManager().searchSymbol(identificador)).getNumberOfParams();
+		cb.addQuadruple("ENDPOINTERRA", l2, paramsSize+5);
+
 		return cb.create();
 	}
 

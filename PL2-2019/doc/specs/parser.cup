@@ -258,7 +258,6 @@ non terminal   IntOBool          intOBool;
 non terminal   EntOId            entOid;
 non terminal   VBooleano         vBooleano;
 
-// Declaración de relaciones de precedencia
 precedence nonassoc MAYOR, IGUAL;
 precedence left     MINUS, OR;
 precedence left     PRODUCTO;
@@ -266,17 +265,14 @@ precedence right    NOT;
 
 precedence left     PARENIZQ, PARENDER, CORCHIZQ, CORCHDER;
 
-//
-// Declaración de reglas de producción
-
 start with program;
 
 program ::=
   {:
       syntaxErrorManager.syntaxInfo("Starting parsing...");
-
   :}
-  axiom:ax
+
+axiom:ax
   {:
 			int globalAddress = 0;
       int globalOffset = 0;
@@ -342,12 +338,10 @@ program ::=
 
         IntermediateCodeBuilder cb = new IntermediateCodeBuilder(currentScope);
 		    LabelFactoryIF labelFactory = new LabelFactory ();
-        LabelIF label = labelFactory.create("F_MAIN");
 
         cb.addQuadruple("DATA", null, globalAddress + globalOffset, globalAddress);		
 	    	cb.addQuadruple("BR", ax.getLabel());
         cb.addQuadruples(ax.getIntermediateCode());
-        cb.addQuadruple("INL", label, 0);
 	    	cb.addQuadruple("HALT");
 
         finalCodeFactory.setEnvironment(new ExecutionEnvironmentEns2001()); 
@@ -367,7 +361,6 @@ axiom ::= cabModule:cabModule
               Axiom axiom =  new AxiomImpl(cabModule, cuerpo);
               LabelFactoryIF labelFactory = new LabelFactory ();
               LabelIF label = labelFactory.create(cabModule.getIdentifier());
-              LabelIF endMainLabel = labelFactory.create("F_MAIN");
               
               axiom.setLabel(label);
 
@@ -382,9 +375,9 @@ axiom ::= cabModule:cabModule
 
               //Código intermedio
               boolean labelAdded = false;
-              boolean shouldAddEndMain = false;
               TemporalFactoryIF tf = new TemporalFactory(getCurrentScope());
               IntermediateCodeBuilderIF cb = new IntermediateCodeBuilder(getCurrentScope());
+              LabelIF labelFin = labelFactory.create("F_MAIN");
 
               for (Sentencia procedure : cuerpo.getSentencias().getListSentencia().getSentenciaList()) {
                 if(!labelAdded){
@@ -393,13 +386,14 @@ axiom ::= cabModule:cabModule
                 } 
                 cb.addQuadruples(procedure.getIntermediateCode());
               }
+              cb.addQuadruple("BR", labelFin);
               cb.addQuadruples(cuerpo.getStmSubprogram().getIntermediateCode());
+              cb.addQuadruple("INL", labelFin, 0);
               axiom.getIntermediateCode().addAll(cb.create());
               closeCurrentScope();
               RESULT = axiom;
           :};
 
-// Cabecera de los modulos
 cabModule     ::= MODULE IDENTIFICADOR:identificador PUNTOYCOMA
                   {:
                    ScopeIF mainScope = openScope(identificador.getLexema());
@@ -409,7 +403,6 @@ cabModule     ::= MODULE IDENTIFICADOR:identificador PUNTOYCOMA
                    RESULT = new CabModule(identificador.getLexema());
                   :};
 
-// Cuerpo de los modulos y comun para procedimientos y funciones
 cuerpo        ::= stmConstantes:stmConstantes stmTipos:stmTipos stmVar:stmVar stmSubprogram:stmSubprogram BEGIN sentencias:sentencias END IDENTIFICADOR PUNTOYCOMA
                 {:
                    Cuerpo cuerpo = new Cuerpo(stmConstantes, stmTipos, stmVar, stmSubprogram, sentencias);
@@ -426,7 +419,6 @@ cuerpo        ::= stmConstantes:stmConstantes stmTipos:stmTipos stmVar:stmVar st
                    RESULT = cuerpo;
                 :};
 
-// Reglas de producción para constantes
 stmConstantes ::= CONST sentConst:sentConst
                   {:
                    RESULT = new StmConstantes(sentConst);
@@ -472,7 +464,6 @@ valorConst    ::= ENTERO:valor
                    RESULT = valorConst;
                   :};
 
-// Reglas de producción para Tipos
 stmTipos      ::= TYPE sentTipo:sentTipo
                 {:
                   RESULT = new StmTipos(sentTipo);
@@ -505,7 +496,6 @@ expTipo       ::= IDENTIFICADOR:identificador IGUAL ARRAY CORCHIZQ entOid:endOid
                        RESULT = expTipo;
                     :};
 
-// Reglas de producción para Variables
 stmVar        ::= VAR sentVar:sentVar
                   {:
                     RESULT = new StmVar(sentVar);
@@ -554,7 +544,6 @@ tipoVar       ::= intOBool:intOBool
                     RESULT = new TipoVar(identificador.getLexema());
                   :};
 
-// Reglas de producción para Procedimientos y funciones
 stmSubprogram  ::= cabProcedure:cabProcedure
                    cuerpo:cuerpo
                    stmSubprogram:stmSubprogram
@@ -635,7 +624,6 @@ tipoRetorno    ::= DOSPUNTOS intOBool:intOBool
                    RESULT = new TipoRetorno();
                  :};
 
-// expresion logicas y aritmeticas.
 expresion      ::= exprArit:exprArit
                 {:
                   Expresion expresion = new Expresion(exprArit);
@@ -682,7 +670,6 @@ expresion      ::= exprArit:exprArit
                  RESULT = expresion;
                 :};
 
-// Reglas de produccion para expresiones aritmeticas.
 exprArit      ::= expresion:expresionl MINUS expresion:expresionr
                 {:
                   ExpArit expArit = new ExpArit(expresionl, "-", expresionr);
@@ -731,7 +718,6 @@ exprArit      ::= expresion:expresionl MINUS expresion:expresionr
                   RESULT = expArit;
                 :};
 
-// Reglas de produccion para expresiones logicas.
 exprLogica    ::= expresion:expresionl MAYOR expresion:expresionr
                 {:
                     ExprLogica expLogica = new ExprLogica(expresionl, ">", expresionr);
@@ -832,7 +818,6 @@ exprLogica    ::= expresion:expresionl MAYOR expresion:expresionr
                    RESULT = expLogica;
                 :};
 
-// Reglas para sentencias.
 sentencias    ::= listSentencia:listSentencia PUNTOYCOMA
                 {:
 
@@ -983,7 +968,6 @@ sentencia     ::= sentAsign:sentAsign
                   RESULT = sentencia;              
                 :};
 
-// Sentencias Return
 sentReturn     ::= RETURN expresion:expresion
                 {:
 
@@ -996,12 +980,11 @@ sentReturn     ::= RETURN expresion:expresion
                     TemporalIF temp = tf.create();
                     LabelIF l1 = lf.create("F" + getCurrentScope().getName());
                     cb.addQuadruples(expresion.getIntermediateCode());
-                    cb.addQuadruple("RETURN",l1,temp);
+                    cb.addQuadruple("RETURN",l1, temp);
                     sentReturn.setIntermediateCode(cb.create());
                     RESULT = sentReturn;
                 :};
 
-// Sentencias de Asignacion
 sentAsign     ::= variables:variables DOSPUNTOSIGUAL expresion:expresion
                 {:
 
@@ -1030,7 +1013,6 @@ sentAsign     ::= variables:variables DOSPUNTOSIGUAL expresion:expresion
                   RESULT = sentAsign;
                 :};
                       
-// Sentencia IF-ELSE
 sentIf        ::= IF expresion:expresion THEN sentencias:sentencias sentElse:sentElse END
                 {:
                   SentIf sentIf = new SentIf(expresion, sentencias, sentElse);
@@ -1074,7 +1056,6 @@ sentElse      ::= ELSE sentencias:sentencias
                    RESULT = new SentElse();
                 :};
 
-// Sentencia FOR
 sentFor       ::= FOR IDENTIFICADOR:identificador DOSPUNTOSIGUAL expresion:expresionFrom TO expresion:expresionTo DO sentencias:sentencias END
                 {:
                    SentFor sentFor = new SentFor(identificador.getLexema(), expresionFrom, expresionTo, sentencias);
@@ -1105,7 +1086,6 @@ sentFor       ::= FOR IDENTIFICADOR:identificador DOSPUNTOSIGUAL expresion:expre
                   RESULT = sentFor;
                 :};
 
-// Sentencia llamada Funcion o Procedimiento
 sentProcedure ::= IDENTIFICADOR:identificador
                 {:  
                      //Comprobamos que el procedimiento ya existe en el scope
@@ -1124,11 +1104,9 @@ sentProcedure ::= IDENTIFICADOR:identificador
 
                       Procedure procedure = new Procedure(identificador.getLexema(), getCurrentScope(), symbol);
 		                  cb.addQuadruple("CALL", procedure, temp);
-
                       if (getSymbol(identificador.getLexema()) instanceof SymbolFunction) {
-                        cb.addQuadruple("RET",temp);
+                        cb.addQuadruple("RETVALUE",temp);
                       }
-
                       sentProcedure.setIntermediateCode(cb.create());
                       sentProcedure.setTemporal(temp);
 
@@ -1151,10 +1129,9 @@ sentProcedure ::= IDENTIFICADOR:identificador
                         definedParams+=procParam.getCadIdVar().getIdentificadores().size();
                       }
 
-                      if(parFuncion.getParametros().getExpresionList().size()!=definedParams){
+                      if(parFuncion.getParametros()!=null && parFuncion.getParametros().getExpresionList().size()!=definedParams){
                         semanticErrorManager.semanticFatalError("Numero de parametros de llamada a funcion incorrecto");
                       }
-
 
                       if(symbol.getCabProcedure().getProcParemParam().getProcListParam().getProcListParam()!=null) {
                           for(int i=0;i<symbol.getCabProcedure().getProcParemParam().getProcListParam().getProcListParam().size();i++) {
@@ -1182,11 +1159,9 @@ sentProcedure ::= IDENTIFICADOR:identificador
 
                       //Codigo de los parametros
 		                  cb.addQuadruples(parFuncion.getIntermediateCode());
-                      cb.addQuadruple("CALL",procedure, temp);
 
-                      if (getSymbol(identificador.getLexema()) instanceof SymbolFunction) {
-                        cb.addQuadruple("RET",temp);
-                      }
+                      cb.addQuadruple("CALL", procedure, temp);
+                      cb.addQuadruple("RETURNVALUE",temp);
 
                       sentProcedure.setIntermediateCode(cb.create());
                       sentProcedure.setTemporal(temp);
@@ -1199,9 +1174,10 @@ parFuncion    ::= PARENIZQ parametros:parametros PARENDER
                 {:
                    ParFuncion parFuncion = new ParFuncion(parametros);
 
-                    //Código intermedio
+                    //Código intermedio  
                    TemporalFactoryIF tf = new TemporalFactory(getCurrentScope());
                    IntermediateCodeBuilderIF cb = new IntermediateCodeBuilder(getCurrentScope());
+		               cb.addQuadruple("STARTRA");
                    cb.addQuadruples(parametros.getIntermediateCode());
                    parFuncion.setIntermediateCode(cb.create());
 
@@ -1229,18 +1205,17 @@ parametros    ::= parametros:parametros COMA expresion:expresion
                 | expresion:expresion
                 {:
 
-                Parametros parametros = new Parametros(expresion);
+                  Parametros parametros = new Parametros(expresion);
 
-                 IntermediateCodeBuilderIF cb = new IntermediateCodeBuilder(getCurrentScope());
-                 TemporalIF temp = expresion.getTemporal();
-                 cb.addQuadruples(expresion.getIntermediateCode());
-                 cb.addQuadruple("PARAM", temp);
-                 parametros.setIntermediateCode(cb.create());
+                  IntermediateCodeBuilderIF cb = new IntermediateCodeBuilder(getCurrentScope());
+                  TemporalIF temp = expresion.getTemporal();
+                  cb.addQuadruples(expresion.getIntermediateCode());
+                  cb.addQuadruple("PARAM", temp);
+                  parametros.setIntermediateCode(cb.create());
 
                   RESULT = parametros;
                 :};
 
-// Sentencias de Salida.
 sWriteString  ::= WRITESTRING PARENIZQ STRING:string PARENDER
                 {:
                 SWriteString sWriteString = new SWriteString(string.getLexema());
@@ -1287,7 +1262,6 @@ sWriteLn      ::= WRITELN
 
                 :};
 
-// Tipos Basicos
 variables     ::= IDENTIFICADOR:identificador
                   {:
                     ScopeIF scope = scopeManager.getCurrentScope();
@@ -1407,7 +1381,7 @@ variables     ::= IDENTIFICADOR:identificador
                         definedParams+=procParam.getCadIdVar().getIdentificadores().size();
                       }
 
-                      if(parFuncion.getParametros().getExpresionList().size()!=definedParams){
+                      if(parFuncion.getParametros()!=null && parFuncion.getParametros().getExpresionList().size()!=definedParams){
                         semanticErrorManager.semanticFatalError("Numero de parametros de llamada a funcion incorrecto");
                       }
 
@@ -1418,9 +1392,10 @@ variables     ::= IDENTIFICADOR:identificador
                             ProcParam procParam = symbol.getCabProcedure().getProcParemParam().getProcListParam().getProcListParam().get(i);
                             CadIdVar cadIdVar = procParam.getCadIdVar();
                             TipoVar tipoVar   = procParam.getTipoVar();
-
-                            for(int j=0;j<cadIdVar.getIdentificadores().size();j++){
-                                checkTypesAreSame(getType(tipoVar.getIdentificadorTipo()), getExpresionTypeResult(parFuncion.getParametros().getExpresionList().get(j)));
+                            if(cadIdVar!=null && cadIdVar.getIdentificadores()!=null){
+                              for(int j=0;j<cadIdVar.getIdentificadores().size();j++){
+                                  checkTypesAreSame(getType(tipoVar.getIdentificadorTipo()), getExpresionTypeResult(parFuncion.getParametros().getExpresionList().get(j)));
+                              }
                             }
                         }
                       }
@@ -1434,10 +1409,13 @@ variables     ::= IDENTIFICADOR:identificador
                       LabelIF l1 = lf.create(identificador.getLexema());
 
                       Procedure procedure = new Procedure(identificador.getLexema(), getCurrentScope(), symbol);
-		                  cb.addQuadruple("CALL", procedure, temp);
+  
+                      //Codigo de los parametros
+		                  cb.addQuadruples(parFuncion.getIntermediateCode());
+                      cb.addQuadruple("CALL", procedure, temp);
 
-                      if (getSymbol(identificador.getLexema()) instanceof SymbolFunction) {
-                        cb.addQuadruple("RET",temp);
+                      if(getSymbol(identificador.getLexema()) instanceof SymbolFunction) {
+                        cb.addQuadruple("RETVALUE",temp);
                       }
 
                       variables.setIntermediateCode(cb.create());
@@ -1469,7 +1447,6 @@ entOid        ::= ENTERO:entero
                     RESULT = new EntOId(identificador.getLexema());
                   :};
 
-// Constantes Booleanas.
 vBooleano     ::= TRUE
                   {:
                    RESULT = new VBooleano(true);
