@@ -1,6 +1,5 @@
 package compiler.code;
 
-import compiler.intermediate.Label;
 import compiler.intermediate.Procedure;
 import compiler.intermediate.Temporal;
 import compiler.intermediate.Value;
@@ -16,7 +15,6 @@ import es.uned.lsi.compiler.intermediate.LabelFactoryIF;
 import es.uned.lsi.compiler.intermediate.LabelIF;
 import es.uned.lsi.compiler.intermediate.OperandIF;
 import es.uned.lsi.compiler.intermediate.QuadrupleIF;
-import es.uned.lsi.compiler.intermediate.VariableIF;
 
 import java.util.Arrays;
 import java.util.List;
@@ -152,16 +150,8 @@ public class ExecutionEnvironmentEns2001 implements ExecutionEnvironmentIF {
 
 			scope++;
 
-			b.append("; Ambitos abiertos: " + scope);
-			b.append("; Llamada a la funcion, continuo creando el RA \n");
-			b.append("; En primer lugar almaceno el estado \n");
 			b.append("PUSH .SR \n");
-			b.append("; Almaceno un enlace al registro de activacion del subprograma llamante \n");
-
-			// TODO Este apilamiento de IX va a sobrar, lo conservo para no rehacer de momento todas las refedrencias
 			b.append("PUSH .IX \n");
-			
-			
 			if (quadruple.getResult() instanceof Procedure) {
 				b.append(";Es procedure \n");
 				Procedure p = (Procedure)quadruple.getResult();
@@ -170,37 +160,26 @@ public class ExecutionEnvironmentEns2001 implements ExecutionEnvironmentIF {
 				b.append("; " + sf + " \n");
 				b.append("; " + sf.getTempSize() + " \n");
 				int tamVarsTemp = sf.getTempSize();
-				b.append("; Reservo espacio para " + tamVarsTemp + " temporales y variables locales \n");
 				while (tamVarsTemp > 0) {
 					b.append("DEC .SP \n");
 					tamVarsTemp--;
 				}			
 			}
 			
-			b.append("; Almaceno el taman del procedimiento justo antes del PC para poder localizar el vinculo de control \n");
-			b.append("; Almaceno un enlace al registro de activacion del subprograma llamante \n");
 			b.append("MOVE .SP, .IY \n");
 			b.append("PUSH .IX \n");
-			b.append("; Situo el indice IX al inicio del frame \n");
 			b.append("MOVE .IY, .IX \n");
 			b.append("CALL ").append("/L_"+quadruple.getResult());
-			
-			b.append("; Saco el tamaño \n");
 			b.append("POP .R9 \n");
 			Procedure p = (Procedure)quadruple.getResult();
 			SymbolProcedure sf = (SymbolProcedure)p.getSymbol();
 			int tamVarsTemp = sf.getTempSize();
-			b.append("; Saco variables y temporales \n");
 			while (tamVarsTemp > 0) {
 				b.append("POP .R9 \n");
 				tamVarsTemp--;
 			}
-			b.append("; Restauro el enlace de control \n");
 			b.append("POP .IX \n");
-			
-			b.append("; Restauro el estado \n");
 			b.append("POP .SR \n");
-			b.append("; Saco parametros de la pila \n");
 			int varSize = sf.getSize() - sf.getTempSize();
 			while (varSize > 0) {
 				b.append("POP .R9 \n");
@@ -208,14 +187,11 @@ public class ExecutionEnvironmentEns2001 implements ExecutionEnvironmentIF {
 			}
 			
 			if (sf instanceof SymbolFunction) {
-				b.append("; Saco el resultado a un temporal \n");
 				b.append("POP ").append(transOperand(quadruple.getFirstOperand())).append(" \n");
 			} else {
-				b.append("; Extraigo el ultimo hueco del RA \n");
 				b.append("POP .R9 \n");
 			}
 			scope--;
-			b.append("; Ambitos abiertos: " + scope);
 			return b.toString();
 		}
 
@@ -269,8 +245,8 @@ public class ExecutionEnvironmentEns2001 implements ExecutionEnvironmentIF {
 			LabelIF l2 = lf.create();
 			b.append("SUB ").append(transOperand(quadruple.getFirstOperand()))
 					.append(", " + transOperand(quadruple.getSecondOperand())).append("\n");
-			b.append("BZ /").append(l1).append("; Salto si el resultado es 0, es decir, op1 == op2 ").append("\n");
-			b.append("BN /").append(l1).append(";Salto si el resultado es negativo, es decir, op1 < op2").append("\n");
+			b.append("BZ /").append(l1).append("\n");
+			b.append("BN /").append(l1).append("\n");
 			b.append("MOVE #1, ").append(transOperand(quadruple.getResult())).append("\n");
 			b.append("BR /").append(l2).append("\n");
 			b.append(l1).append(" : ").append("\n");
@@ -323,39 +299,39 @@ public class ExecutionEnvironmentEns2001 implements ExecutionEnvironmentIF {
 		}
 
 		if (oper.equals("MVA")) {
-			String traduccionOperando1 = null;
-			boolean restaurarIY = false;
+			String op1 = null;
+			boolean IY = false;
 			if (quadruple.getFirstOperand() instanceof Variable) {
 				Variable v = (Variable)quadruple.getFirstOperand();
 				if (v.getScope().getLevel() != scope) {
 					if (v.getScope().getLevel() == 0) {
-						traduccionOperando1 = transOperand(quadruple.getFirstOperand());
+						op1 = transOperand(quadruple.getFirstOperand());
 					} else {
-						restaurarIY  = true;
+						IY  = true;
 						b.append("MOVE ").append("[.IY]").append(", ").append(".IY \n");
 
 						if (scope - v.getScope().getLevel() > 1) {
-							int nivelDescendido = v.getScope().getLevel() +1;
-							while (nivelDescendido < scope) {
+							int level = v.getScope().getLevel() +1;
+							while (level < scope) {
 								b.append("MOVE ").append("[.IY]").append(", ").append(".IY \n");
-								nivelDescendido++;
+								level++;
 							}
 						}
-						traduccionOperando1 = transOperand(quadruple.getFirstOperand());
+						op1 = transOperand(quadruple.getFirstOperand());
 					}
 				} else {
-					traduccionOperando1 = transOperand(quadruple.getFirstOperand());
+					op1 = transOperand(quadruple.getFirstOperand());
 				}
 			} else {
-				traduccionOperando1 = transOperand(quadruple.getFirstOperand());
+				op1 = transOperand(quadruple.getFirstOperand());
 			}
 			
 			b.append("MOVE ");
-			b.append(traduccionOperando1);
+			b.append(op1);
 			b.append(", ");
 			b.append(transOperand(quadruple.getResult()));
 			b.append("\n");
-			if (restaurarIY) {
+			if (IY) {
 				b.append("; Restauro IY ").append("\n");
 				b.append("MOVE .IX, .IY \n");
 			}
@@ -372,10 +348,8 @@ public class ExecutionEnvironmentEns2001 implements ExecutionEnvironmentIF {
 		}
 
 		if (oper.equals("DATA")) {
-			b.append("RES ").append(quadruple.getFirstOperand())
-					.append(" ;Reservo memoria para variables globales y temporales \n");
-			b.append("MOVE ").append(transOperand(quadruple.getSecondOperand())).append(", .IX")
-				.append("  ;Situo IX en la posicion en la que va el primer temporal> globalAddress \n");
+			b.append("RES ").append(quadruple.getFirstOperand()).append("\n");
+			b.append("MOVE ").append(transOperand(quadruple.getSecondOperand())).append(", .IX");
 			return b.toString();
 		}
 
@@ -414,6 +388,15 @@ public class ExecutionEnvironmentEns2001 implements ExecutionEnvironmentIF {
 			b.append("\n ");
 			return b.toString();
 		}
+
+		if (oper.equals("ADD")) {
+			b.append("ADD ").append(transOperand(quadruple.getFirstOperand())).append(", ")
+				.append(transOperand(quadruple.getSecondOperand())).append(" \n");
+			b.append("MOVE .A, ").append(transOperand(quadruple.getResult()))
+				.append(" \n");
+			return b.toString();
+		}
+
 
 		if (oper.equals("RETURN")) {
 			o1 = transOperand(quadruple.getFirstOperand());
@@ -462,16 +445,12 @@ public class ExecutionEnvironmentEns2001 implements ExecutionEnvironmentIF {
 		if (o instanceof Procedure) {
 			return "/" + ((Procedure)o).getCodeLabel();
 		} if (o instanceof Variable) {
-			// Si se trata de una variable global direcciona directo a memoria
-			// en el espacio que se ha reservado inicialmente
 			Variable v = (Variable) o;
 			int dirVar = v.getAddress() + v.getOffset();
 			if (v.isGlobal()) {	
 				return "/" + dirVar;
 			} else if (!v.isParameter()) {
-				// Si se trata de una variable local se direcciona relativo al registro [.IX]
 				if (v.getScope().getLevel() == scope) {
-					// Referencia local
 					return "#" + dirVar + "[.IX]";
 				} else {
 					dirVar = dirVar + v.getEnclosingSymbol().getSize() + 4;
@@ -483,7 +462,6 @@ public class ExecutionEnvironmentEns2001 implements ExecutionEnvironmentIF {
 							+ (v.getEnclosingSymbol().getSize() + 2
 									- v.getEnclosingSymbol().getParamSize() + dirVar + 1)
 							+ "[.IX]";
-//					return "#-" + (dirVar + 1)  + "[.IY]";
 				} else {
 					dirVar = dirVar + v.getEnclosingSymbol().getSize() + 4;
 					return "#-" + (dirVar + 1)  + "[.IY]";

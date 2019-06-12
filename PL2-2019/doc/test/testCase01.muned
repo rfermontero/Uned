@@ -1,16 +1,13 @@
 MODULE cinco;
 
-	TYPE TVector = ARRAY [1..3] OF INTEGER;
+	TYPE TVector = ARRAY [1..2] OF INTEGER;
 	VAR v: TVector;
 
 BEGIN
-	v[1] := 1;
-	v[2] := 2;
-	v[3] := v[1] * v[v[2]] * v[v[v[2]]];
+	v[1] := 99;
+	v[2] := v[v[1]];
 
-	WRITESTRING("Pos 1:");
 	WRITEINT(v[1]);
+	WRITEINT(v[2]);
 
-	WRITESTRING("Pos 3:");
-	WRITEINT(v[3]);
 END cinco;

@@ -1,207 +1,105 @@
-;Quadruple - [DATA null, 16, 4] 
-RES 16 ;Reservo memoria para variables globales y temporales 
-MOVE #4, .IX  ;Situo IX en la posicion en la que va el primer temporal> globalAddress 
-
-;Quadruple - [BR L_cuatro, null, null] 
-BR /L_cuatro
+;Quadruple - [DATA null, 34, 2] 
+RES 34
+MOVE #2, .IX
+;Quadruple - [BR L_cinco, null, null] 
+BR /L_cinco
  
-;Quadruple - [INL L_cuatro, 0, null] 
-L_cuatro: NOP
+;Quadruple - [INL L_cinco, 0, null] 
+L_cinco: NOP
  
-;Quadruple - [MV T_1, 2, null] 
-MOVE #2, #1[.IX] 
+;Quadruple - [MV T_5, 99, null] 
+MOVE #99, #5[.IX] 
 
-;Quadruple - [MVA T_0, a1, null] 
-MOVE /0, #0[.IX]
+;Quadruple - [MVA T_1, v, null] 
+MOVE /0, #1[.IX]
 
-;Quadruple - [MV T_2, T_1, null] 
-MOVE #1[.IX], #2[.IX] 
+;Quadruple - [MV T_3, T_0, null] 
+MOVE #0[.IX], #3[.IX] 
 
-;Quadruple - [MV a1, T_2, null] 
-MOVE #2[.IX], /0 
+;Quadruple - [ADD T_4, T_2, T_3] 
+ADD #2[.IX], #3[.IX] 
+MOVE .A, #4[.IX] 
 
-;Quadruple - [MV T_4, 2, null] 
-MOVE #2, #4[.IX] 
-
-;Quadruple - [MVA T_3, b1, null] 
-MOVE /3, #3[.IX]
-
-;Quadruple - [MV T_5, T_4, null] 
-MOVE #4[.IX], #5[.IX] 
-
-;Quadruple - [MV b1, T_5, null] 
-MOVE #5[.IX], /3 
-
-;Quadruple - [CALL Restar, T_9, null] 
-; Ambitos abiertos: 1; Llamada a la funcion, continuo creando el RA 
-; En primer lugar almaceno el estado 
-PUSH .SR 
-; Almaceno un enlace al registro de activacion del subprograma llamante 
-PUSH .IX 
-;Es procedure 
-; Restar 
-; Symbol - SymbolFunction [scope = cuatro, name = Restar, type = null] - {} 
-; 14 
-; Reservo espacio para 14 temporales y variables locales 
-DEC .SP 
-DEC .SP 
-DEC .SP 
-DEC .SP 
-DEC .SP 
-DEC .SP 
-DEC .SP 
-DEC .SP 
-DEC .SP 
-DEC .SP 
-DEC .SP 
-DEC .SP 
-DEC .SP 
-DEC .SP 
-; Almaceno el taman del procedimiento justo antes del PC para poder localizar el vinculo de control 
-; Almaceno un enlace al registro de activacion del subprograma llamante 
-MOVE .SP, .IY 
-PUSH .IX 
-; Situo el indice IX al inicio del frame 
-MOVE .IY, .IX 
-CALL /L_Restar; Saco el tamaÃ±o 
-POP .R9 
-; Saco variables y temporales 
-POP .R9 
-POP .R9 
-POP .R9 
-POP .R9 
-POP .R9 
-POP .R9 
-POP .R9 
-POP .R9 
-POP .R9 
-POP .R9 
-POP .R9 
-POP .R9 
-POP .R9 
-POP .R9 
-; Restauro el enlace de control 
-POP .IX 
-; Restauro el estado 
-POP .SR 
-; Saco parametros de la pila 
-POP .R9 
-POP .R9 
-; Saco el resultado a un temporal 
-POP #9[.IX] 
-; Ambitos abiertos: 0
-MOVE [.IY],#9[.IX]
-;Quadruple - [MVA T_6, resta, null] 
-MOVE /2, #6[.IX]
-
-;Quadruple - [MV T_10, T_9, null] 
-MOVE #9[.IX], #10[.IX] 
-
-;Quadruple - [MV resta, T_10, null] 
-MOVE #10[.IX], /2 
-
-;Quadruple - [MVA T_11, a1, null] 
-MOVE /0, #11[.IX]
-
-;Quadruple - [WRITEINT T_11, null, null] 
-WRINT #11[.IX]
-WRCHAR #10
+;Quadruple - [MVP T_1, T_4, null] 
+MOVE #4[.IX],.R0
+MOVE [.R0],#1[.IX]
  
-;Quadruple - [INL L_Restar, null, null] 
-L_Restar: NOP
- 
-;Quadruple - [INITVAR a1, 0, null] 
-MOVE #0,/0
- 
-;Quadruple - [INITVAR mult, 0, null] 
-MOVE #0,/1
- 
-;Quadruple - [INITVAR resta, 0, null] 
-MOVE #0,/2
- 
-;Quadruple - [INITVAR b1, 0, null] 
-MOVE #0,/3
- 
-;Quadruple - [RESRA 4, null, null] 
-SUB .IX,#4
-MOVE .A,.SP
-;Quadruple - [MVA T_1, a, null] 
-MOVE [.IY], .IY 
-MOVE #-21[.IY], #3[.IX]
-; Restauro IY 
-MOVE .IX, .IY 
-
-;Quadruple - [MV T_2, 2, null] 
-MOVE #2, #4[.IX] 
-
-;Quadruple - [MULT T_3, T_1, T_2] 
-MUL #3[.IX],#4[.IX]
-MOVE .A,#5[.IX]
- 
-;Quadruple - [MVA T_0, a, null] 
-MOVE [.IY], .IY 
-MOVE #-21[.IY], #2[.IX]
-; Restauro IY 
-MOVE .IX, .IY 
-
-;Quadruple - [MV T_4, T_3, null] 
+;Quadruple - [MV T_6, T_5, null] 
 MOVE #5[.IX], #6[.IX] 
 
-;Quadruple - [MV a, T_4, null] 
-MOVE #6[.IX], #-21[.IY] 
+;Quadruple - [MV v, T_6, null] 
+MOVE #6[.IX], /0 
 
-;Quadruple - [MVA T_6, a, null] 
-MOVE [.IY], .IY 
-MOVE #-21[.IY], #8[.IX]
-; Restauro IY 
-MOVE .IX, .IY 
+;Quadruple - [MVA T_17, v, null] 
+MOVE /0, #17[.IX]
 
-;Quadruple - [MVA T_7, b, null] 
-MOVE [.IY], .IY 
-MOVE #-22[.IY], #9[.IX]
-; Restauro IY 
-MOVE .IX, .IY 
+;Quadruple - [MV T_19, T_13, null] 
+MOVE #13[.IX], #19[.IX] 
 
-;Quadruple - [SUB T_8, T_6, T_7] 
-SUB #8[.IX],#9[.IX]
-MOVE .A,#10[.IX]
+;Quadruple - [ADD T_20, T_18, T_19] 
+ADD #18[.IX], #19[.IX] 
+MOVE .A, #20[.IX] 
+
+;Quadruple - [MVP T_17, T_20, null] 
+MOVE #20[.IX],.R0
+MOVE [.R0],#17[.IX]
  
-;Quadruple - [MVA T_5, s, null] 
-MOVE [.IY], .IY 
-MOVE #21[.IX], #7[.IX]
-; Restauro IY 
-MOVE .IX, .IY 
+;Quadruple - [MVA T_8, v, null] 
+MOVE /0, #8[.IX]
 
-;Quadruple - [MV T_9, T_8, null] 
-MOVE #10[.IX], #11[.IX] 
+;Quadruple - [MV T_10, T_7, null] 
+MOVE #7[.IX], #10[.IX] 
 
-;Quadruple - [MV s, T_9, null] 
-MOVE #11[.IX], #21[.IX] 
+;Quadruple - [ADD T_11, T_9, T_10] 
+ADD #9[.IX], #10[.IX] 
+MOVE .A, #11[.IX] 
 
-;Quadruple - [MVA T_10, s, null] 
-MOVE [.IY], .IY 
-MOVE #21[.IX], #12[.IX]
-; Restauro IY 
-MOVE .IX, .IY 
+;Quadruple - [MVP T_8, T_11, null] 
+MOVE #11[.IX],.R0
+MOVE [.R0],#8[.IX]
+ 
+;Quadruple - [MV T_21, T_17, null] 
+MOVE #17[.IX], #21[.IX] 
 
-;Quadruple - [WRITEINT T_10, null, null] 
-WRINT #12[.IX]
+;Quadruple - [MV v, T_21, null] 
+MOVE #21[.IX], /0 
+
+;Quadruple - [MVA T_23, v, null] 
+MOVE /0, #23[.IX]
+
+;Quadruple - [MV T_25, T_22, null] 
+MOVE #22[.IX], #25[.IX] 
+
+;Quadruple - [ADD T_26, T_24, T_25] 
+ADD #24[.IX], #25[.IX] 
+MOVE .A, #26[.IX] 
+
+;Quadruple - [MVP T_23, T_26, null] 
+MOVE #26[.IX],.R0
+MOVE [.R0],#23[.IX]
+ 
+;Quadruple - [WRITEINT T_23, null, null] 
+WRINT #23[.IX]
 WRCHAR #10
  
-;Quadruple - [MVA T_11, s, null] 
-MOVE [.IY], .IY 
-MOVE #21[.IX], #13[.IX]
-; Restauro IY 
-MOVE .IX, .IY 
+;Quadruple - [MVA T_28, v, null] 
+MOVE /0, #28[.IX]
 
-;Quadruple - [RETURN L_FRestar, T_12, null] 
-MOVE #14[.IX],[.IX]
-BR /L_FRestar
-;Quadruple - [ENDFUNC L_FRestar, 6, null] 
-L_FRestar: NOP
-SUB .IX,#6
-MOVE .A,.SP
-RET
+;Quadruple - [MV T_30, T_27, null] 
+MOVE #27[.IX], #30[.IX] 
+
+;Quadruple - [ADD T_31, T_29, T_30] 
+ADD #29[.IX], #30[.IX] 
+MOVE .A, #31[.IX] 
+
+;Quadruple - [MVP T_28, T_31, null] 
+MOVE #31[.IX],.R0
+MOVE [.R0],#28[.IX]
+ 
+;Quadruple - [WRITEINT T_28, null, null] 
+WRINT #28[.IX]
+WRCHAR #10
+ 
 ;Quadruple - [HALT null, null, null] 
 HALT
  

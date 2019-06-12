@@ -294,8 +294,10 @@ program ::=
             if(symbol instanceof SymbolVariable) {
                SymbolVariable variableSymbol = (SymbolVariable)symbol;
                if (scope.getLevel() == 0) {
+                semanticErrorManager.semanticDebug("Global address of "+variableSymbol.getName()+" is now "+globalAddress);
                 variableSymbol.setAddress(globalAddress);
                 globalAddress += variableSymbol.getType().getSize();
+                semanticErrorManager.semanticDebug("Global address is now "+globalAddress);
             } else {						
                 variableSymbol.setAddress(functionOffset); // Ademas de la dir de retorno se reserva espacio para el estado y el enlace de control
                 functionOffset += variableSymbol.getType().getSize();
@@ -1025,8 +1027,7 @@ sentReturn     ::= RETURN expresion:expresion
                     cb.addQuadruples(expresion.getIntermediateCode());
                     cb.addQuadruple("RETURN",l1,temp);
                     sentReturn.setIntermediateCode(cb.create());
-                    System.out.println(cb.create());
-                   RESULT = sentReturn;
+                    RESULT = sentReturn;
                 :};
 
 // Sentencias de Asignacion
@@ -1045,17 +1046,19 @@ sentAsign     ::= variables:variables DOSPUNTOSIGUAL expresion:expresion
                    TemporalIF tempExp = expresion.getTemporal();
                    TemporalIF temp = tf.create();
                   if (symbol instanceof TypeFunction) {
+                      semanticErrorManager.semanticDebug("Function "+expresion+" expresion code: "+expresion.getIntermediateCode());
                       cb.addQuadruples(expresion.getIntermediateCode());
                       cb.addQuadruple("MV", temp, tempExp);
                       cb.addQuadruple("MV", variables.getVariable(), temp);
                   } else {
+                     semanticErrorManager.semanticDebug("variables "+variables+" expresion code: "+variables.getIntermediateCode());
                       cb.addQuadruples(expresion.getIntermediateCode());
                       cb.addQuadruples(variables.getIntermediateCode());   	
                       cb.addQuadruple("MV", temp, tempExp);
                       cb.addQuadruple("MV", variables.getVariable(), temp);
                   }
-
                    sentAsign.setIntermediateCode(cb.create());
+                   semanticErrorManager.semanticDebug("sentAsign "+sentAsign+" expresion code: "+sentAsign.getIntermediateCode());
                   RESULT = sentAsign;
                 :};
                       
@@ -1197,7 +1200,7 @@ sentProcedure ::= IDENTIFICADOR:identificador
                       sentProcedure.setTemporal(temp);
 
                       Procedure procedure = new Procedure(identificador.getLexema(), getCurrentScope(), symbol);
-                        
+
                       //Codigo de los parametros
 		                  cb.addQuadruples(parFuncion.getIntermediateCode());
                       cb.addQuadruple("CALL",procedure, temp);
@@ -1363,26 +1366,44 @@ variables     ::= IDENTIFICADOR:identificador
                     if (idArray.getExpresion().getVariables()!= null && idArray.getExpresion().getVariables()!=null){
                         String identificadorVariableIdArray = idArray.getExpresion().getVariables().getIdentificador();
                         SymbolVariable symbolVariableIdArray = (SymbolVariable) getSymbol(identificadorVariableIdArray);
-                        if (!symbolVariableIdArray.getType().getName().equals("int")) {
+                        
+                        if (!symbolVariableIdArray.getType().getName().equals("int") && !symbolVariableIdArray.getType().getName().equals("TVector")) {
                           semanticErrorManager.semanticFatalError("Acceso a posicion de array con variable no entera");
                         }
                     }
 
                     //Código intermedio
+                    ScopeIF scope = scopeManager.getCurrentScope();
                     TemporalFactory tF = new TemporalFactory(getCurrentScope());
                     IntermediateCodeBuilder cb = new IntermediateCodeBuilder(getCurrentScope());
-                    //añadir al codigo intermedio las cuadruplas de la expresiones
-                    cb.addQuadruples(idArray.getExpresion().getIntermediateCode());
+                    SymbolIF symbol = scopeManager.searchSymbol(identificador.getLexema());
+
                     TemporalIF temp = tF.create();
                     TemporalIF temp1 = tF.create();
                     TemporalIF temp2 = tF.create();
                     TemporalIF temp3 = tF.create();
+
+                    if (symbol instanceof SymbolVariable) {
+                      Variable variable = new Variable(identificador.getLexema(), symbol.getScope());
+                      SymbolProcedure enclosingSymbol = (SymbolProcedure) scopeManager.searchSymbol(scope.getName());
+                      variable.setEnclosingSymbol(enclosingSymbol);
+                      cb.addQuadruple("MVA", temp, variable);   
+                      variables.setVariable(variable);
+                    } else if (symbol instanceof SymbolParameter) { 
+                      OperandIF  o = new Variable(identificador.getLexema(), symbol);     
+                      SymbolProcedure enclosingSymbol = (SymbolProcedure) scopeManager.searchSymbol(scope.getName());
+                      ((Variable) o).setEnclosingSymbol(enclosingSymbol);
+                      ((Variable) o).setParameter(true);      
+                      variables.setVariable((Variable)o);
+                      cb.addQuadruple("MVA", temp, o);   
+                    } else {
+                        SymbolConstant constant = (SymbolConstant) symbol;
+                        OperandIF o = new Value(constant.getValue());
+                        cb.addQuadruple("MV", temp, o);
+                    }
+                    
                     TemporalIF tempPosicion = idArray.getExpresion().getTemporal();
-                    SymbolIF sV = getSymbol(identificador.getLexema());
-                    Variable var = new Variable(identificador.getLexema(), sV.getScope());
-                    cb.addQuadruple("MVA", temp1, var); //dirección base de la variable 
-                    cb.addQuadruple("MV", temp2, tempPosicion); //desplazamiento
-                    //Sumamos el desplazamiento si la memoria va de posiciones inferiores a superiores
+                    cb.addQuadruple("MV", temp2, tempPosicion);
                     cb.addQuadruple("ADD", temp3, temp1, temp2);
                     cb.addQuadruple("MVP", temp, temp3);
 
