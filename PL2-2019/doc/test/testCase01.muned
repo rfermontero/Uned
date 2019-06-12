@@ -1,13 +1,7 @@
-MODULE cinco;
+MODULE uno;
+(* programa vacio*)
+(* no se debe de imprimir nada*)
 
-	TYPE TVector = ARRAY [1..2] OF INTEGER;
-	VAR v: TVector;
+  BEGIN
 
-BEGIN
-	v[1] := 99;
-	v[2] := v[v[1]];
-
-	WRITEINT(v[1]);
-	WRITEINT(v[2]);
-
-END cinco;
+  END uno;
