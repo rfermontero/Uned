@@ -202,7 +202,7 @@ terminal Token TRUE, FALSE;
 // Declaración de no terminales
 //
 non terminal                     program;
-non terminal   Axiom		     axiom;
+non terminal   Axiom		         axiom;
 
 non terminal   CabModule         cabModule;
 non terminal   Cuerpo            cuerpo;
@@ -278,7 +278,6 @@ program ::=
   :}
   axiom:ax
   {:
-		  semanticErrorManager.semanticDebug("************************************* ASIGNACION DIRECCIONES");
 			int globalAddress = 0;
       int globalOffset = 0;
       ScopeIF currentScope = null;
@@ -294,10 +293,8 @@ program ::=
             if(symbol instanceof SymbolVariable) {
                SymbolVariable variableSymbol = (SymbolVariable)symbol;
                if (scope.getLevel() == 0) {
-                semanticErrorManager.semanticDebug("Global address of "+variableSymbol.getName()+" is now "+globalAddress);
                 variableSymbol.setAddress(globalAddress);
                 globalAddress += variableSymbol.getType().getSize();
-                semanticErrorManager.semanticDebug("Global address is now "+globalAddress);
             } else {						
                 variableSymbol.setAddress(functionOffset); // Ademas de la dir de retorno se reserva espacio para el estado y el enlace de control
                 functionOffset += variableSymbol.getType().getSize();
@@ -305,19 +302,10 @@ program ::=
                 function.incrementSize(variableSymbol.getType().getSize());
                 function.incrementTempSize(variableSymbol.getType().getSize());
                 variableSymbol.setEnclosingSymbol(function);
-                semanticErrorManager.semanticDebug(variableSymbol.getName()  + "Incremento el tam del subprograma: "+ function);
               }
-              semanticErrorManager.semanticDebug("Var: "+ variableSymbol.getName() 
-                      + " tipo: " +variableSymbol.getType().getName() + "scope: "+variableSymbol.getScope()
-                      + " -------------> direccion " + variableSymbol.getAddress());
-  
            } else if (symbol instanceof SymbolFunction) {
-            semanticErrorManager.semanticDebug("Funcion: "+ symbol.getName() + " scope: " + symbol.getScope()
-                              + " tipo: " +symbol.getType().getName());
             procedures.put(symbol.getName(), (SymbolFunction)symbol);
           } else if (symbol instanceof SymbolProcedure) {
-            semanticErrorManager.semanticDebug("Procedimiento: "+ symbol.getName() + " scope: " + symbol.getScope()
-                              + " tipo: " +symbol.getType().getName());
             procedures.put(symbol.getName(), (SymbolProcedure)symbol);
           } else if (symbol instanceof SymbolParameter) {
             SymbolParameter parametro = (SymbolParameter)symbol;
@@ -326,12 +314,6 @@ program ::=
             SymbolProcedure function = (SymbolProcedure)procedures.get(parametro.getScope().getName());
             function.incrementSize(parametro.getType().getSize());
             parametro.setEnclosingSymbol(function);
-            semanticErrorManager.semanticDebug("Param: "+ parametro.getName() 
-                              + " tipo: " +parametro.getType().getName()
-                              + " -------------> direccion " + parametro.getAddress() + " Desplazamiento :" + scopeOffset);
-            semanticErrorManager.semanticDebug("Incremento el tam del subprograma: "+ function +": " + function.getSize());
-          } else {
-            semanticErrorManager.semanticDebug("Simbolo no procesado: "+ symbol.getName() + " " + symbol.getClass());
           }
 
         }
@@ -340,49 +322,35 @@ program ::=
           for (TemporalIF t:temporalesAmbito) {
             if (scope.getLevel() == 0) {
               t.setAddress(scopeOffset);
-                          semanticErrorManager.semanticDebug("-------Global adress change from " +scopeOffset+"---------------to "+scopeOffset+++"--------------------");
+              scopeOffset++;
             } else {
               t.setAddress(functionOffset);
               SymbolProcedure function = (SymbolProcedure)procedures.get(t.getScope().getName());
               function.incrementSize();
               ((Temporal)t).setEnclosingSymbol(function);
-              semanticErrorManager.semanticDebug("Incremento el tam del subprograma: "+ function +": " + function.getSize());
               function.incrementTempSize();
               functionOffset++;
             }
-            
-            semanticErrorManager.semanticDebug("Temporal: "+ t.getName() + " " + t.getScope()
-                                + " -------------> direccion " + t.getAddress());
           }
 
           if (scope.getLevel() == 0) {
             currentScope = scope;
-            semanticErrorManager.semanticDebug("-------Global adress change from " +globalOffset+"---------------to "+scopeOffset+"--------------------");
             globalOffset = scopeOffset;
           }
 			}
 
-      for (SymbolProcedure p : procedures.values()) {
-            semanticErrorManager.semanticDebug("Funciones y procedimiento: "+ p.getName() + " Size: " + p.getSize()
-														+ "varTempSize: " + p.getTempSize());
-          }
-		      semanticErrorManager.semanticDebug("----------------------------------------------------------------------------");
-		
 
         IntermediateCodeBuilder cb = new IntermediateCodeBuilder(currentScope);
-		
-	    	semanticErrorManager.semanticDebug("Para variables globales reservo: "+ globalAddress);
-        semanticErrorManager.semanticDebug("-------Global adress " +globalAddress+"--------------------------------------");
-        semanticErrorManager.semanticDebug("-------Global offset " +globalOffset+"--------------------------------------");
+		    LabelFactoryIF labelFactory = new LabelFactory ();
+        LabelIF label = labelFactory.create("F_MAIN");
+
         cb.addQuadruple("DATA", null, globalAddress + globalOffset, globalAddress);		
 	    	cb.addQuadruple("BR", ax.getLabel());
-        List intermediateCode = ax.getIntermediateCode();
-        cb.addQuadruples(intermediateCode);
+        cb.addQuadruples(ax.getIntermediateCode());
+        cb.addQuadruple("INL", label, 0);
 	    	cb.addQuadruple("HALT");
 
-        ExecutionEnvironmentEns2001 e = new ExecutionEnvironmentEns2001();
-        finalCodeFactory.setEnvironment(e); 
-          
+        finalCodeFactory.setEnvironment(new ExecutionEnvironmentEns2001()); 
         finalCodeFactory.create(cb.create());               
         
         syntaxErrorManager.syntaxInfo ("Codigo intermedio generado; \n  ");
@@ -399,6 +367,8 @@ axiom ::= cabModule:cabModule
               Axiom axiom =  new AxiomImpl(cabModule, cuerpo);
               LabelFactoryIF labelFactory = new LabelFactory ();
               LabelIF label = labelFactory.create(cabModule.getIdentifier());
+              LabelIF endMainLabel = labelFactory.create("F_MAIN");
+              
               axiom.setLabel(label);
 
               TypeIF type = scopeManager.searchType(cabModule.getIdentifier());
@@ -412,6 +382,7 @@ axiom ::= cabModule:cabModule
 
               //Código intermedio
               boolean labelAdded = false;
+              boolean shouldAddEndMain = false;
               TemporalFactoryIF tf = new TemporalFactory(getCurrentScope());
               IntermediateCodeBuilderIF cb = new IntermediateCodeBuilder(getCurrentScope());
 
@@ -420,7 +391,6 @@ axiom ::= cabModule:cabModule
                     cb.addQuadruple("INL", label, 0);
                     labelAdded = true;
                 } 
-
                 cb.addQuadruples(procedure.getIntermediateCode());
               }
               cb.addQuadruples(cuerpo.getStmSubprogram().getIntermediateCode());
@@ -445,6 +415,7 @@ cuerpo        ::= stmConstantes:stmConstantes stmTipos:stmTipos stmVar:stmVar st
                    Cuerpo cuerpo = new Cuerpo(stmConstantes, stmTipos, stmVar, stmSubprogram, sentencias);
                    //Código intermedio
                    TemporalFactoryIF tf = new TemporalFactory(getCurrentScope());
+                  
                    IntermediateCodeBuilderIF cb = new IntermediateCodeBuilder(getCurrentScope());
                    cb.addQuadruples(stmSubprogram.getIntermediateCode());
                    cb.addQuadruples(sentencias.getIntermediateCode());
@@ -1131,7 +1102,7 @@ sentFor       ::= FOR IDENTIFICADOR:identificador DOSPUNTOSIGUAL expresion:expre
                   cb.addQuadruple("BR",l1);
                   cb.addQuadruple("INL",l2);
                   sentFor.setIntermediateCode(cb.create());
-                   RESULT = sentFor;
+                  RESULT = sentFor;
                 :};
 
 // Sentencia llamada Funcion o Procedimiento
@@ -1174,7 +1145,18 @@ sentProcedure ::= IDENTIFICADOR:identificador
                       //Comprobamos que los parametros son correctos
                       //Obtenemos el simbolo en la tabla de simbolos
                       SymbolProcedure symbol = (SymbolProcedure) getSymbol(identificador.getLexema());
-                      if(symbol.getCabProcedure().getProcParemParam().getProcListParam().getProcListParam()!=null){
+
+                      int definedParams = 0;
+                      for(ProcParam procParam : symbol.getCabProcedure().getProcParemParam().getProcListParam().getProcListParam()){
+                        definedParams+=procParam.getCadIdVar().getIdentificadores().size();
+                      }
+
+                      if(parFuncion.getParametros().getExpresionList().size()!=definedParams){
+                        semanticErrorManager.semanticFatalError("Numero de parametros de llamada a funcion incorrecto");
+                      }
+
+
+                      if(symbol.getCabProcedure().getProcParemParam().getProcListParam().getProcListParam()!=null) {
                           for(int i=0;i<symbol.getCabProcedure().getProcParemParam().getProcListParam().getProcListParam().size();i++) {
                             //Comprobamos en base a la definicion
                             ProcParam procParam = symbol.getCabProcedure().getProcParemParam().getProcListParam().getProcListParam().get(i);
@@ -1239,7 +1221,7 @@ parametros    ::= parametros:parametros COMA expresion:expresion
                     TemporalIF temp = expresion.getTemporal();
                     cb.addQuadruples(expresion.getIntermediateCode());
                     cb.addQuadruples(parametros.getIntermediateCode());
-                    cb.addQuadruple("PARAM",temp);
+                    cb.addQuadruple("PARAM", temp);
                     parametros.setIntermediateCode(cb.create());
 
                     RESULT = parametros;
@@ -1419,6 +1401,17 @@ variables     ::= IDENTIFICADOR:identificador
                       //Comprobamos que los parametros son correctos
                       //Obtenemos el simbolo en la tabla de simbolos
                       SymbolProcedure symbol = (SymbolProcedure) getSymbol(identificador.getLexema());
+
+                      int definedParams = 0;
+                      for(ProcParam procParam : symbol.getCabProcedure().getProcParemParam().getProcListParam().getProcListParam()){
+                        definedParams+=procParam.getCadIdVar().getIdentificadores().size();
+                      }
+
+                      if(parFuncion.getParametros().getExpresionList().size()!=definedParams){
+                        semanticErrorManager.semanticFatalError("Numero de parametros de llamada a funcion incorrecto");
+                      }
+
+
                       if(symbol.getCabProcedure().getProcParemParam().getProcListParam().getProcListParam()!=null){
                           for(int i=0;i<symbol.getCabProcedure().getProcParemParam().getProcListParam().getProcListParam().size();i++) {
                             //Comprobamos en base a la definicion

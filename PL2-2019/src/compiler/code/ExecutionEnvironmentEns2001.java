@@ -169,7 +169,7 @@ public class ExecutionEnvironmentEns2001 implements ExecutionEnvironmentIF {
 			b.append("MOVE .SP, .IY \n");
 			b.append("PUSH .IX \n");
 			b.append("MOVE .IY, .IX \n");
-			b.append("CALL ").append("/L_"+quadruple.getResult());
+			b.append("CALL ").append("/L_"+quadruple.getResult()+ " \n");
 			b.append("POP .R9 \n");
 			Procedure p = (Procedure)quadruple.getResult();
 			SymbolProcedure sf = (SymbolProcedure)p.getSymbol();
