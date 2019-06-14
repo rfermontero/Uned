@@ -1,5 +1,7 @@
 package compiler.syntax.nonTerminal;
 
+import java.util.ArrayList;
+import java.util.List;
 
 public class ProcParenParam extends NonTerminal {
 
@@ -17,6 +19,14 @@ public class ProcParenParam extends NonTerminal {
 
 	public ProcListParam getProcListParam() {
 		return this.procListParam;
+	}
+
+	public List<ProcParam> getProcParams(){
+		List<ProcParam> params = new ArrayList<>();
+		for(ProcParam procParam : procListParam.getProcListParam()){
+			params.add(procParam);
+		}
+		return params;
 	}
 
 	@Override

@@ -86,7 +86,6 @@ public class Temporal implements TemporalIF {
 		return enclosingSymbol;
 	}
 
-
 	/**
 	 * @param enclosingSymbol the enclosingSymbol to set
 	 */

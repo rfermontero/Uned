@@ -27,11 +27,14 @@ import java.util.List;
 
 public class ExecutionEnvironmentEns2001 implements ExecutionEnvironmentIF {
 	private final static int MAX_ADDRESS = 65535;
+
 	private final static String[] REGISTERS = {".PC", ".SP", ".SR", ".IX", ".IY", ".A", ".R0", ".R1", ".R2", ".R3",
 			".R4", ".R5", ".R6", ".R7", ".R8", ".R9"};
 
 	private RegisterDescriptorIF registerDescriptor;
 	private MemoryDescriptorIF memoryDescriptor;
+
+	public static int scope = 0;
 
 	/**
 	 * Constructor for ENS2001Environment.
@@ -105,78 +108,114 @@ public class ExecutionEnvironmentEns2001 implements ExecutionEnvironmentIF {
 		StringBuffer b = new StringBuffer();
 		b.append(";").append(quadruple.toString()).append(" \n");
 
-		if (oper.equals("ADD")) {
+		if (oper.equals("MULT")) {
 			o1 = transOperand(quadruple.getFirstOperand());
 			o2 = transOperand(quadruple.getSecondOperand());
 			r = transOperand(quadruple.getResult());
-			b.append("ADD " + o1 + "," + o2 + "\n");
+			b.append("MUL " + o1 + "," + o2 + "\n");
 			b.append("MOVE .A," + r);
 			b.append("\n ");
 			return b.toString();
 		}
 
 		if (oper.equals("BR")) {
-			r = transOperand(quadruple.getResult());
-			b.append("BR /" + r);
+			b.append("BR /" + quadruple.getResult());
 			b.append("\n ");
 			return b.toString();
 		}
 
 		if (oper.equals("BRF")) {
 			if (quadruple.getSecondOperand() != null) {
-				b.append("CMP ").append(transOperand(quadruple.getFirstOperand())).append(", ")
-						.append(transOperand(quadruple.getSecondOperand())).append(" \n");
-			} else {
-				b.append("CMP #0, ").append(transOperand(quadruple.getFirstOperand())).append(" \n");
-			}
-			b.append("BZ /" + quadruple.getResult()).append(" \n");
+				b.append("CMP ").append(transOperand(quadruple.getFirstOperand()))
+						.append(", ").append(transOperand(quadruple.getSecondOperand()))
+						.append(" \n");
+				} else {
+					b.append("CMP #0, ").append(transOperand(quadruple.getFirstOperand())).append(" \n");
+				}
+				b.append("BZ /" + quadruple.getResult()).append(" \n");
+				return b.toString();
+		}
+
+		if (oper.equals("END")) {
+			b.append("END");
+			return b.toString();
+		}
+
+		if (oper.equals("ENDMAIN")) {
+			r = transOperand(quadruple.getResult());
+			b.append(r + ": NOP\n");
+			b.append("MOVE .IX, .SP");
 			return b.toString();
 		}
 
 		if (oper.equals("CALL")) {
 
-			b.append("PUSH .SR \n");
-			b.append("PUSH .IX \n");
+			scope++;
 
+			b.append("; Ambitos abiertos: " + scope);
+			b.append("; Llamada a la funcion, continuo creando el RA \n");
+			b.append("; En primer lugar almaceno el estado \n");
+			b.append("PUSH .SR \n");
+			b.append("; Almaceno un enlace al registro de activacion del subprograma llamante \n");
+
+			// TODO Este apilamiento de IX va a sobrar, lo conservo para no rehacer de momento todas las refedrencias
+			b.append("PUSH .IX \n");
+			
+			
 			if (quadruple.getResult() instanceof Procedure) {
-				Procedure p = (Procedure) quadruple.getResult();
+				b.append(";Es procedure \n");
+				Procedure p = (Procedure)quadruple.getResult();
 				b.append("; " + p + " \n");
-				SymbolProcedure sf = (SymbolProcedure) p.getScope().getSymbolTable().getSymbol(p.getName());
+				SymbolProcedure sf = (SymbolProcedure)p.getSymbol();
+				b.append("; " + sf + " \n");
+				b.append("; " + sf.getTempSize() + " \n");
 				int tamVarsTemp = sf.getTempSize();
+				b.append("; Reservo espacio para " + tamVarsTemp + " temporales y variables locales \n");
 				while (tamVarsTemp > 0) {
 					b.append("DEC .SP \n");
 					tamVarsTemp--;
-				}
+				}			
 			}
-
+			
+			b.append("; Almaceno el taman del procedimiento justo antes del PC para poder localizar el vinculo de control \n");
+			b.append("; Almaceno un enlace al registro de activacion del subprograma llamante \n");
 			b.append("MOVE .SP, .IY \n");
 			b.append("PUSH .IX \n");
+			b.append("; Situo el indice IX al inicio del frame \n");
 			b.append("MOVE .IY, .IX \n");
-			Procedure p = (Procedure) quadruple.getResult();
-
-			b.append("CALL ").append("/").append(p.getCodeLabel()).append("\n");
-
+			b.append("CALL ").append("/L_"+quadruple.getResult());
+			
+			b.append("; Saco el tamaño \n");
 			b.append("POP .R9 \n");
-			SymbolProcedure sf = (SymbolProcedure) p.getSymbol();
+			Procedure p = (Procedure)quadruple.getResult();
+			SymbolProcedure sf = (SymbolProcedure)p.getSymbol();
 			int tamVarsTemp = sf.getTempSize();
 			b.append("; Saco variables y temporales \n");
 			while (tamVarsTemp > 0) {
 				b.append("POP .R9 \n");
 				tamVarsTemp--;
 			}
+			b.append("; Restauro el enlace de control \n");
 			b.append("POP .IX \n");
+			
+			b.append("; Restauro el estado \n");
 			b.append("POP .SR \n");
+			b.append("; Saco parametros de la pila \n");
 			int varSize = sf.getSize() - sf.getTempSize();
 			while (varSize > 0) {
 				b.append("POP .R9 \n");
 				varSize--;
 			}
-
+			
 			if (sf instanceof SymbolFunction) {
+				b.append("; Saco el resultado a un temporal \n");
 				b.append("POP ").append(transOperand(quadruple.getFirstOperand())).append(" \n");
 			} else {
+				b.append("; Extraigo el ultimo hueco del RA \n");
 				b.append("POP .R9 \n");
 			}
+			scope--;
+			b.append("; Ambitos abiertos: " + scope);
 			return b.toString();
 		}
 
@@ -184,6 +223,12 @@ public class ExecutionEnvironmentEns2001 implements ExecutionEnvironmentIF {
 			o1 = transOperand(quadruple.getFirstOperand());
 			r = transOperand(quadruple.getResult());
 			b.append(o1 + ": DATA " + r);
+			b.append("\n ");
+			return b.toString();
+		}
+
+		if (oper.equals("HALT")) {
+			b.append("HALT");
 			b.append("\n ");
 			return b.toString();
 		}
@@ -196,14 +241,10 @@ public class ExecutionEnvironmentEns2001 implements ExecutionEnvironmentIF {
 			return b.toString();
 		}
 
-		if (oper.equals("RESG")) {
-			b.append("RES ").append(quadruple.getFirstOperand())
-					.append(" ;Reservo memoria para variables globales y temporales \n");
-			b.append("MOVE ").append(transOperand(quadruple.getSecondOperand())).append(", .IX")
-					.append("  ;Situo IX en la posicion en la que va el primer temporal > globalAddress");
-			b.append("\n ");
-			return b.toString();
-		}
+		if (oper.equals("ORG")) {
+			r = quadruple.getResult().toString();
+			return "ORG " + r;
+		  }
 
 		if (oper.equals("EQ")) {
 			LabelFactoryIF lf = new LabelFactory();
@@ -249,34 +290,75 @@ public class ExecutionEnvironmentEns2001 implements ExecutionEnvironmentIF {
 			b.append("\n ");
 			return b.toString();
 		}
+		
+		if (oper.equals("RESRA")) {//RESERVAMOS REGISTRO ACTIVACION
+			r = transOperand(quadruple.getResult());
+			b.append("SUB .IX," + r + "\n");
+			b.append("MOVE .A,.SP");
+			return b.toString();
+		}
+
+		if (oper.equals("ENDFUNC")) {
+			o1 = transOperand(quadruple.getFirstOperand());
+			b.append(quadruple.getResult() + ": NOP\n");
+			b.append("SUB .IX," + o1 + "\n");
+			b.append("MOVE .A,.SP\n");
+			b.append("RET");
+			return b.toString();
+		}
 
 		if (oper.equals("INL")) {
-			r = transOperand(quadruple.getResult());
-			b.append(r + ": NOP");
+			b.append(quadruple.getResult()+ ": NOP");
 			b.append("\n ");
 			return b.toString();
 		}
 
 		if (oper.equals("MV")) {
-			o1 = transOperand(quadruple.getFirstOperand());
-			r = transOperand(quadruple.getResult());
-			b.append("MOVE " + o1 + "," + r);
-			b.append("\n ");
+			b.append("MOVE ");
+			b.append(transOperand(quadruple.getFirstOperand()));
+			b.append(", ");
+			b.append(transOperand(quadruple.getResult()));
+			b.append(" \n");
 			return b.toString();
 		}
 
 		if (oper.equals("MVA")) {
-			OperandIF o = quadruple.getFirstOperand();
-			r = transOperand(quadruple.getResult());
-			VariableIF var = (Variable) o;
-			if (var.isGlobal()) {
-				String vadd = ((Integer) var.getAddress()).toString();
-				b.append("MOVE #" + vadd + "," + r);
+			String traduccionOperando1 = null;
+			boolean restaurarIY = false;
+			if (quadruple.getFirstOperand() instanceof Variable) {
+				Variable v = (Variable)quadruple.getFirstOperand();
+				if (v.getScope().getLevel() != scope) {
+					if (v.getScope().getLevel() == 0) {
+						traduccionOperando1 = transOperand(quadruple.getFirstOperand());
+					} else {
+						restaurarIY  = true;
+						b.append("MOVE ").append("[.IY]").append(", ").append(".IY \n");
+
+						if (scope - v.getScope().getLevel() > 1) {
+							int nivelDescendido = v.getScope().getLevel() +1;
+							while (nivelDescendido < scope) {
+								b.append("MOVE ").append("[.IY]").append(", ").append(".IY \n");
+								nivelDescendido++;
+							}
+						}
+						traduccionOperando1 = transOperand(quadruple.getFirstOperand());
+					}
+				} else {
+					traduccionOperando1 = transOperand(quadruple.getFirstOperand());
+				}
 			} else {
-				b.append("SUB .IX,#" + var.getAddress() + "\n");
-				b.append("MOVE .A," + r);
+				traduccionOperando1 = transOperand(quadruple.getFirstOperand());
 			}
-			b.append("\n ");
+			
+			b.append("MOVE ");
+			b.append(traduccionOperando1);
+			b.append(", ");
+			b.append(transOperand(quadruple.getResult()));
+			b.append("\n");
+			if (restaurarIY) {
+				b.append("; Restauro IY ").append("\n");
+				b.append("MOVE .IX, .IY \n");
+			}
 			return b.toString();
 		}
 
@@ -289,10 +371,20 @@ public class ExecutionEnvironmentEns2001 implements ExecutionEnvironmentIF {
 			return b.toString();
 		}
 
+		if (oper.equals("DATA")) {
+			b.append("RES ").append(quadruple.getFirstOperand())
+					.append(" ;Reservo memoria para variables globales y temporales \n");
+			b.append("MOVE ").append(transOperand(quadruple.getSecondOperand())).append(", .IX")
+				.append("  ;Situo IX en la posicion en la que va el primer temporal> globalAddress \n");
+			return b.toString();
+		}
+
 		if (oper.equals("PARAM")) {
-			if (quadruple.getFirstOperand() == null) {
+			
+			if ((quadruple.getFirstOperand() == null) || (quadruple.getSecondOperand() != null && quadruple.getSecondOperand().toString().equals("1"))) {
 				b.append("DEC ").append(".SP").append(" \n");
 			}
+		
 			if (quadruple.getFirstOperand() != null) {
 				r = transOperand(quadruple.getResult());
 				b.append("PUSH " + r);
@@ -324,29 +416,22 @@ public class ExecutionEnvironmentEns2001 implements ExecutionEnvironmentIF {
 		}
 
 		if (oper.equals("RETURN")) {
-			if (quadruple.getResult() != null) {
-				b.append("MOVE ").append(transOperand(quadruple.getResult())).append(", ");
-				Temporal temporalResult = (Temporal) quadruple.getResult();
-				b.append("#").append(temporalResult.getEnclosingSymbol().getSize() + 3).append("[.IX]").append(" \n");
-			}
-			b.append("RET \n");
+			o1 = transOperand(quadruple.getFirstOperand());
+			b.append("MOVE " + o1 + ",[.IX]\n");
+			b.append("BR /" + quadruple.getResult());
 			return b.toString();
 		}
+		
+        if (oper.equals("RET")) {
+			r = transOperand(quadruple.getResult());
+			return "MOVE [.IY]," + r;
+		}
 
-		if (oper.equals("STARTSUB")) {
+		if (oper.equals("STARTFUNC")) {
 			b.append("MOVE .SP,.R0\n");
 			b.append("PUSH #1\n");
 			b.append("PUSH .IX\n");
 			b.append("PUSH .SR");
-			b.append("\n ");
-			return b.toString();
-		}
-
-		if (oper.equals("STP")) {
-			o1 = transOperand(quadruple.getFirstOperand());
-			r = transOperand(quadruple.getResult());
-			b.append("MOVE " + r + "," + ".R0\n");
-			b.append("MOVE " + o1 + "," + "[.R0]");
 			b.append("\n ");
 			return b.toString();
 		}
@@ -374,26 +459,52 @@ public class ExecutionEnvironmentEns2001 implements ExecutionEnvironmentIF {
 
 	private String transOperand(OperandIF o) {
 
-		if (o instanceof Variable) {
-			VariableIF v = (Variable) o;
-			if (v.isGlobal()) {
-				return "/" + v.getAddress();
-			} else {
-				return "#" + v.getAddress() + "[.IX]";
+		if (o instanceof Procedure) {
+			return "/" + ((Procedure)o).getCodeLabel();
+		} if (o instanceof Variable) {
+			// Si se trata de una variable global direcciona directo a memoria
+			// en el espacio que se ha reservado inicialmente
+			Variable v = (Variable) o;
+			int dirVar = v.getAddress() + v.getOffset();
+			if (v.isGlobal()) {	
+				return "/" + dirVar;
+			} else if (!v.isParameter()) {
+				// Si se trata de una variable local se direcciona relativo al registro [.IX]
+				if (v.getScope().getLevel() == scope) {
+					// Referencia local
+					return "#" + dirVar + "[.IX]";
+				} else {
+					dirVar = dirVar + v.getEnclosingSymbol().getSize() + 4;
+					return "#" + dirVar + "[.IX]";
+				}
+			} else if (v.isParameter()) {
+				if (v.getScope().getLevel() == scope) {
+					return "#"
+							+ (v.getEnclosingSymbol().getSize() + 2
+									- v.getEnclosingSymbol().getParamSize() + dirVar + 1)
+							+ "[.IX]";
+//					return "#-" + (dirVar + 1)  + "[.IY]";
+				} else {
+					dirVar = dirVar + v.getEnclosingSymbol().getSize() + 4;
+					return "#-" + (dirVar + 1)  + "[.IY]";
+				}
 			}
+		} else if (o instanceof Temporal) {
+			Temporal t = (Temporal) o;
+			return "#" + t.getAddress() + "[.IX]";
+		} else if (o instanceof Value) {
+			Value v = (Value) o;
+			if (v.getValue().toString().equals("true")) {
+				return "#1";
+			} else if (v.getValue().toString().equals("false")) {
+				return "#0";
+			} else if (v.getValue() instanceof String) {
+				return v.getValue().toString();
+			}
+
+			return "#" + v.getValue();
 		}
 
-		if (o instanceof Value) {
-			return "#" + ((Value) o).getValue();
-		}
-
-		if (o instanceof Temporal) {
-			return "#" + ((Temporal) o).getAddress() + "[.IX]";
-		}
-
-		if (o instanceof Label) {
-			return ((Label) o).getName();
-		}
 		return null;
 	}
 }

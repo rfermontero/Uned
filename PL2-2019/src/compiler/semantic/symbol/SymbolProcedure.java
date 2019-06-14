@@ -1,6 +1,12 @@
 package compiler.semantic.symbol;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import java.util.List;
+
 import compiler.syntax.nonTerminal.CabProcedure;
+import compiler.syntax.nonTerminal.ProcParam;
 import es.uned.lsi.compiler.semantic.ScopeIF;
 import es.uned.lsi.compiler.semantic.symbol.SymbolBase;
 import es.uned.lsi.compiler.semantic.type.TypeIF;
@@ -33,6 +39,24 @@ public class SymbolProcedure extends SymbolBase {
 
 	public CabProcedure getCabProcedure() {
 		return cabProcedure;
+	}
+
+	public int getNumberOfParams() {
+		int params = 0;
+		for(ProcParam procParam : cabProcedure.getProcParemParam().getProcParams()){
+			params+=procParam.getCadIdVar().getIdentificadores().size();
+		}
+		return params;
+	}
+
+	public List<String> getParameterNames() {
+		List<String> params = new ArrayList<String>();
+		for(ProcParam procParam : cabProcedure.getProcParemParam().getProcParams()){
+			for(String param : procParam.getCadIdVar().getIdentificadores()){
+				params.add(param);
+			}
+		}
+		return params;
 	}
 
 	public int getTempSize() {

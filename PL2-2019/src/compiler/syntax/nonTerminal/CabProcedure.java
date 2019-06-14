@@ -1,12 +1,20 @@
 package compiler.syntax.nonTerminal;
 
-import compiler.intermediate.Procedure;
+import java.util.List;
+
+import compiler.CompilerContext;
+import compiler.intermediate.Value;
+import compiler.intermediate.Variable;
+import compiler.semantic.symbol.SymbolProcedure;
+import compiler.semantic.symbol.SymbolVariable;
+import compiler.semantic.type.TypeProcedure;
 import es.uned.lsi.compiler.intermediate.IntermediateCodeBuilder;
+import es.uned.lsi.compiler.intermediate.LabelFactory;
+import es.uned.lsi.compiler.intermediate.LabelFactoryIF;
+import es.uned.lsi.compiler.intermediate.LabelIF;
 import es.uned.lsi.compiler.intermediate.QuadrupleIF;
 import es.uned.lsi.compiler.semantic.ScopeIF;
 import es.uned.lsi.compiler.semantic.symbol.SymbolIF;
-
-import java.util.List;
 
 public class CabProcedure extends NonTerminal {
 
@@ -46,14 +54,32 @@ public class CabProcedure extends NonTerminal {
 
 	@Override
 	public List<QuadrupleIF> getIntermediateCode() {
-		SymbolIF symbol = scope.getSymbolTable().getSymbol(getIdentificador());
-		Procedure procedure = new Procedure(getIdentificador(), scope, symbol);
+
+		SymbolProcedure symbol = (SymbolProcedure) scope.getSymbolTable().getSymbol(getIdentificador());
 		IntermediateCodeBuilder cb = new IntermediateCodeBuilder(scope);
-		cb.addQuadruple("INL", procedure.getCodeLabel(), scope.getLevel());
-		cb.addQuadruples(cuerpo.getIntermediateCode());
-		if (tipoRetorno.getIntOBool() == null) {
-			cb.addQuadruple("RETURN");
+
+		LabelFactoryIF lf = new LabelFactory();
+		LabelIF l1 = lf.create(identificador);
+		LabelIF l2 = lf.create("F" + identificador);
+
+		cb.addQuadruple("INL", l1);
+
+		TypeProcedure type = (TypeProcedure) CompilerContext.getScopeManager().searchType(identificador);
+		for (SymbolIF symbolInScope : scope.getSymbolTable().getSymbols()) {
+			if (symbolInScope instanceof SymbolVariable) {
+				SymbolVariable symbolVariable = (SymbolVariable) symbolInScope;
+				int value = symbolVariable.getValue();
+				if (value != -1) {
+					Variable var = new Variable(symbolVariable);
+					cb.addQuadruple("INITVAR",var,value);
+				}
+			}
 		}
+
+		cb.addQuadruple("RESRA", new Value(type.getSize()));
+		cb.addQuadruples(cuerpo.getIntermediateCode());
+		cb.addQuadruple("ENDFUNC",l2, symbol.getNumberOfParams() + 4);
+		
 		return cb.create();
 	}
 

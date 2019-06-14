@@ -1,8 +1,5 @@
 MODULE cuatro;
 
-  (* pruebas con operaciones *)
-(* se tiene que imprimir 20*)
-
   CONST A = 10;
 	B = 20;
 

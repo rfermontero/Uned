@@ -7,11 +7,10 @@ import es.uned.lsi.compiler.semantic.type.TypeBase;
  * Class for TypeProcedure.
  */
 
-// TODO: Student work
-//       Include properties to characterize procedure declarations
+public class TypeProcedure extends TypeBase {
 
-public class TypeProcedure
-		extends TypeBase {
+	private int size;
+
 	/**
 	 * Constructor for TypeProcedure.
 	 *
@@ -19,6 +18,7 @@ public class TypeProcedure
 	 */
 	public TypeProcedure(ScopeIF scope) {
 		super(scope);
+		this.size = 4;
 	}
 
 	/**
@@ -29,6 +29,7 @@ public class TypeProcedure
 	 */
 	public TypeProcedure(ScopeIF scope, String name) {
 		super(scope, name);
+		this.size = 4;
 	}
 
 	/**
@@ -38,7 +39,14 @@ public class TypeProcedure
 	 */
 	@Override
 	public int getSize() {
-		// TODO: Student work
-		return 1;
+		return size;
+	}
+
+	public void setSize(int size){
+		this.size = size;
+	}
+
+	public void incSize(int size){
+		this.size+=size;
 	}
 }

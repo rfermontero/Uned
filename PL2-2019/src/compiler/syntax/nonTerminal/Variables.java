@@ -1,10 +1,13 @@
 package compiler.syntax.nonTerminal;
 
+import compiler.intermediate.Variable;
+
 public class Variables extends NonTerminal {
 
 	private IdArray idArray;
 	private ParFuncion parFuncion;
 	private String identificador;
+	private Variable variable;
 
 	public Variables(String identificador) {
 		super();
@@ -23,6 +26,10 @@ public class Variables extends NonTerminal {
 		this.identificador = identificador;
 	}
 
+	public void setVariable(Variable variable) {
+		this.variable = variable;
+	}
+
 	public IdArray getIdArray() {
 		return idArray;
 	}
@@ -34,6 +41,11 @@ public class Variables extends NonTerminal {
 	public String getIdentificador() {
 		return identificador;
 	}
+
+	public Variable getVariable(){
+		return this.variable;
+	}
+
 
 	@Override
 	public String toString() {

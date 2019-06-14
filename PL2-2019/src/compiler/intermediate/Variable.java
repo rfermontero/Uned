@@ -1,6 +1,7 @@
 package compiler.intermediate;
 
 import compiler.semantic.symbol.SymbolParameter;
+import compiler.semantic.symbol.SymbolProcedure;
 import compiler.semantic.symbol.SymbolVariable;
 import es.uned.lsi.compiler.intermediate.VariableIF;
 import es.uned.lsi.compiler.semantic.ScopeIF;
@@ -16,6 +17,8 @@ public class Variable implements VariableIF {
 	private ScopeIF scope;
 	private SymbolIF symbol;
 	private int offset;
+	private boolean isParameter;
+	private SymbolProcedure enclosingSymbol;
 
 	/**
 	 * Constructor for Variable.
@@ -28,6 +31,19 @@ public class Variable implements VariableIF {
 		this.name = name;
 		this.scope = scope;
 		this.symbol = scope.getSymbolTable().getSymbol(name);
+	}
+
+	/**
+	 * Constructor for Variable.
+	 *
+	 * @param name  The name.
+	 * @param scope The scope index.
+	 */
+	public Variable(String name, SymbolIF symbol) {
+		super();
+		this.name = name;
+		this.scope = symbol.getScope();
+		this.symbol = symbol;
 	}
 
 	public Variable(SymbolIF symbol) {
@@ -70,6 +86,19 @@ public class Variable implements VariableIF {
 	}
 
 	/**
+	 * @return the enclosingSymbol
+	 */
+	public SymbolProcedure getEnclosingSymbol() {
+		return enclosingSymbol;
+	}
+	/**
+	 * @param enclosingSymbol the enclosingSymbol to set
+	 */
+	public void setEnclosingSymbol(SymbolProcedure enclosingSymbol) {
+		this.enclosingSymbol = enclosingSymbol;
+	}
+
+	/**
 	 * Indicates whether the address is a global address.
 	 *
 	 * @return true if the address is a global address.
@@ -85,6 +114,20 @@ public class Variable implements VariableIF {
 
 	public void setOffset(int offset) {
 		this.offset = offset;
+	}
+
+	/**
+	 * @return the isParameter
+	 */
+	public boolean isParameter() {
+		return isParameter;
+	}
+
+	/**
+	 * @param isParameter the isParameter to set
+	 */
+	public void setParameter(boolean isParameter) {
+		this.isParameter = isParameter;
 	}
 
 	/**
