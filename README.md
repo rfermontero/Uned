@@ -30,9 +30,9 @@ This repository contains solutions for practises career of Uned in IT engineerin
 * [Almacenamiento ficheros en nube] (https://github.com/colymore/Uned/tree/master/Sidi-Practica)
 
 ### Procesadores del Lenguaje 1
-*  [Compulador Muned] (https://github.com/colymore/Uned/tree/master/PL1)
+*  [Compilador Muned] (https://github.com/colymore/Uned/tree/master/PL1)
 ### Procesadores del Lenguaje 2
-*  [Compulador Muned 2019] (https://github.com/colymore/Uned/tree/master/PL2-2019)
+*  [Compilador Muned 2019] (https://github.com/colymore/Uned/tree/master/PL2-2019)
 
 
 ### Sistemas de Bases de Datos
